@@ -1,4 +1,4 @@
-"use server";
+export const dynamic = "force-dynamic";
 
 import ClientComponent from "./ClientComponent";
 import { globalServerRequest } from "@/actions/globalApi";

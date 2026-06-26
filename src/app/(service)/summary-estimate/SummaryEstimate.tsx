@@ -138,7 +138,7 @@ const SummaryEstimate = () => {
                       <div className="selected-category">
                         <div className="category">
                           <p>Selected Category</p>
-                          <Link href="/serviceDetails">
+                          <Link href={`/serviceDetails?categoryId=${summary_estimate?.category?.id || ""}&requestedId=${activeRequestId || ""}`}>
                             <img
                               src="images/inner-page/edit-icon-c.svg"
                               alt="Edit"
@@ -152,7 +152,7 @@ const SummaryEstimate = () => {
                       <div className="selected-category">
                         <div className="category">
                           <p>Selected Subcategory</p>
-                          <Link href="/serviceDetails">
+                          <Link href={`/serviceDetails?categoryId=${summary_estimate?.category?.id || ""}&requestedId=${activeRequestId || ""}`}>
                             <img
                               src="images/inner-page/edit-icon-c.svg"
                               alt="Edit"
@@ -166,7 +166,7 @@ const SummaryEstimate = () => {
                       <div className="selected-category">
                         <div className="category">
                           <p>Selected Issue</p>
-                          <Link href="/serviceDetails">
+                          <Link href={`/serviceDetails?categoryId=${summary_estimate?.category?.id || ""}&requestedId=${activeRequestId || ""}`}>
                             <img
                               src="images/inner-page/edit-icon-c.svg"
                               alt="Edit"
@@ -202,7 +202,7 @@ const SummaryEstimate = () => {
                       <div className="selected-category">
                         <div className="category">
                           <p>Problem Description</p>
-                          <Link href="/serviceDetails">
+                          <Link href={`/serviceDetails?categoryId=${summary_estimate?.category?.id || ""}&requestedId=${activeRequestId || ""}`}>
                             <img
                               src="images/inner-page/edit-icon-c.svg"
                               alt="Edit"
@@ -253,7 +253,7 @@ const SummaryEstimate = () => {
                         <button
                           type="button"
                           className="secondary-cta"
-                          onClick={() => router.push("/serviceDetails")}
+                          onClick={() => router.push(`/serviceDetails?categoryId=${summary_estimate?.category?.id || ""}&requestedId=${activeRequestId || ""}`)}
                         >
                           Save & Add More
                         </button>

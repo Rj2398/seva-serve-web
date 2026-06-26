@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { serviceDetails } from "../../../json/service-detail.json";
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
@@ -60,6 +60,9 @@ export default function ServiceViewDetail({
   const dispatch = useDispatch();
   console.log(initialData, "initial data***");
 
+  const searchParams = useSearchParams();
+  const requestedId = searchParams.get("requestedId");
+
   // FIX: Unified selectedOptionId with selectedSpecificIssueId so state flows down to the API payload correctly
   const [selectedSpecificIssueId, setSelectedSpecificIssueId] = useState<
     number | null
@@ -90,6 +93,97 @@ export default function ServiceViewDetail({
   );
   const [activeIssueId, setActiveIssueId] = useState<string | null>(null);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [loadedData, setLoadedData] = useState<{
+    subCategoryId: number | null;
+    issueId: number | null;
+    specificIssueId: number | null;
+    description: string;
+    mediaUrls: string[];
+  } | null>(null);
+
+  // Load existing quote request if editing (requestedId is present)
+  useEffect(() => {
+    const fetchSavedRequest = async () => {
+      if (!requestedId) return;
+      try {
+        const response = await globalServerRequest({
+          endpoint: `quotes/${requestedId}`,
+          method: "GET",
+        });
+
+        if (response.success) {
+          const savedData = response.data?.data || response.data;
+          if (savedData) {
+            setLoadedData({
+              subCategoryId: savedData.subCategory?.id || null,
+              issueId: savedData.issue?.[0]?.id || null,
+              specificIssueId: savedData.specificIssue?.[0]?.id || null,
+              description: savedData.description || "",
+              mediaUrls: savedData.mediaUrls || [],
+            });
+
+            // 1. Select the sub-category
+            if (savedData.subCategory?.id) {
+              setSelectSubCategories(savedData.subCategory.id);
+            }
+            // 2. Select the issue
+            if (savedData.issue?.[0]?.id) {
+              setActiveIssueId(String(savedData.issue[0].id));
+              setAddedCategory(true);
+            }
+            // 3. Select the specific issue
+            if (savedData.specificIssue?.[0]?.id) {
+              setSelectedSpecificIssueId(Number(savedData.specificIssue[0].id));
+            }
+            // 4. Pre-fill problem description
+            if (savedData.description) {
+              setProblemDesc(savedData.description);
+            }
+            // 5. Pre-fill uploaded images
+            if (savedData.mediaUrls && Array.isArray(savedData.mediaUrls)) {
+              setUploadedImage(savedData.mediaUrls);
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Failed to load saved quote request:", error);
+      }
+    };
+
+    fetchSavedRequest();
+  }, [requestedId]);
+
+  // Check if form changed when editing
+  const isFormChanged = () => {
+    if (!requestedId || !loadedData) return true;
+
+    // Compare subcategory
+    if (Number(selectSubCategories || 0) !== Number(loadedData.subCategoryId || 0)) return true;
+
+    // Compare issue
+    const cleanActiveIssueId = activeIssueId ? Number(String(activeIssueId).replace("issue_", "")) : null;
+    const cleanLoadedIssueId = loadedData.issueId ? Number(loadedData.issueId) : null;
+    if (cleanActiveIssueId !== cleanLoadedIssueId) return true;
+
+    // Compare specific issue
+    if (Number(selectedSpecificIssueId || 0) !== Number(loadedData.specificIssueId || 0)) return true;
+
+    // Compare description
+    if ((problemDesc || "") !== (loadedData.description || "")) return true;
+
+    // Compare uploaded files (if any new files are selected, it's changed)
+    if (uploadedFiles.length > 0) return true;
+
+    // Compare uploadedImg remote URLs
+    const currentRemoteUrls = uploadedImg.filter((url) => url.startsWith("http"));
+    if (currentRemoteUrls.length !== loadedData.mediaUrls.length) return true;
+
+    for (let i = 0; i < currentRemoteUrls.length; i++) {
+      if (currentRemoteUrls[i] !== loadedData.mediaUrls[i]) return true;
+    }
+
+    return false;
+  };
 
   // Sync state if initialData changes via route update
   useEffect(() => {
@@ -150,6 +244,21 @@ export default function ServiceViewDetail({
     } else if (!problemDesc) {
       toast.error("please enter the description");
     } else {
+      // Direct redirect if editing and form was not changed
+      if (requestedId && !isFormChanged()) {
+        toast.success(
+          actionType === "addtocart"
+            ? "Added to cart!"
+            : "Redirecting to summary..."
+        );
+        if (actionType === "checkout") {
+          router.push(`/summary-estimate?requestedId=${requestedId}`);
+        } else {
+          router.push(`/`);
+        }
+        return;
+      }
+
       try {
         const formData = new FormData();
 
@@ -177,10 +286,21 @@ export default function ServiceViewDetail({
         // description
         formData.append("description", problemDesc);
 
-        // mediaUrls
+        // mediaUrls (only new file uploads)
         uploadedFiles.forEach((file, index) => {
           formData.append(`mediaUrls[${index}]`, file);
         });
+
+        // Pass existing remote URLs in a separate existingMediaUrls parameter
+        const existingRemoteUrls = uploadedImg.filter((url) => url.startsWith("http"));
+        existingRemoteUrls.forEach((url, index) => {
+          formData.append(`existingMediaUrls[index]`, url);
+        });
+
+        if (requestedId) {
+          formData.append("requestId", requestedId);
+          formData.append("id", requestedId);
+        }
 
         const response = await globalServerRequest({
           endpoint:
@@ -194,7 +314,7 @@ export default function ServiceViewDetail({
           throw new Error(response.error || "Failed to add service to cart");
         }
         const apiNavigateData = response.data;
-        const requestedId = response?.data?.data?.requestId;
+        const newRequestedId = response?.data?.data?.requestId || requestedId;
 
         toast.success(
           actionType === "addtocart"
@@ -203,7 +323,7 @@ export default function ServiceViewDetail({
         );
         // dispatch(setSummaryestimate(apiNavigateData?.data));//when api got called
         if (actionType === "checkout")
-          router.push(`/summary-estimate?requestedId=${requestedId}`);
+          router.push(`/summary-estimate?requestedId=${newRequestedId}`);
 
         if (actionType === "addtocart") router.push(`/`);
 

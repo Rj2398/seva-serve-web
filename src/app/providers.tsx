@@ -10,7 +10,6 @@ import { Toaster } from "react-hot-toast";
 // Global Modal Imports
 import LoginModal from "@/components/modals/LoginModal";
 import OtpModal from "@/components/modals/OtpModal";
-import WelcomeModal from "@/components/modals/WelcomeModal";
 import LocationModal from "@/components/modals/LocationModal";
 import AddAddressModal from "@/components/modals/AddAddressModal";
 import SevaServeWorkModal from "@/components/modals/SevaServeWorkModal";
@@ -160,7 +159,6 @@ export default function ClientProviders({
           {/* Global Modals */}
           <LoginModal />
           <OtpModal />
-          <WelcomeModal />
           <LocationModal />
           <AddAddressModal />
           <SevaServeWorkModal />

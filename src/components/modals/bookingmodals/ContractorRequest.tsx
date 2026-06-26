@@ -1,7 +1,8 @@
-import React from 'react'
+import React, { useState } from 'react'
 import DatePopup from './DatePopup'
 
 const ContractorRequest = () => {
+  const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
   return (
     <>
        <div className="modal fade header-bdr" id="contractorTime" data-bs-backdrop="static" data-bs-keyboard="false" tabIndex={-1} aria-labelledby="staticBackdropLabel" aria-hidden="true">
@@ -25,7 +26,7 @@ const ContractorRequest = () => {
                   </div>
                   <div className="contractor-btn">
                     <a href="#" data-bs-toggle="modal" className="secondary-cta">Reject</a>
-                     <a href="#select-date-time-popup" data-bs-toggle="modal" className="Propose-cta">Propose</a>
+                     <a href="#select-date-time-popup" onClick={() => setShowDatePicker(true)} data-bs-toggle="modal" className="Propose-cta">Propose</a>
                       <a href="#" data-bs-toggle="modal" className="primary-cta">Accept <img src="images/modal/right-arrow-icon.svg" alt=""/></a>
                   </div>
                 </div>
@@ -35,7 +36,7 @@ const ContractorRequest = () => {
           </div>
         </div>
 
-        <DatePopup/>
+        <DatePopup isOpen={showDatePicker} setIsOpen={setShowDatePicker}/>
     </>
   )
 }

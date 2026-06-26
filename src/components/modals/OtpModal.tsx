@@ -91,6 +91,29 @@ const OtpModal = ({ emailLogin = false, loginValue = "" }: OtpModalProps) => {
         localStorage.setItem("user", JSON.stringify(response?.data?.data));
         localStorage.setItem("isLoggedIn", "true");
 
+        const verifyData = response?.data?.data;
+        const isNewUser =
+          verifyData?.isNewUser === true ||
+          verifyData?.isNewUser === "true" ||
+          verifyData?.isNewUser === 1 ||
+          verifyData?.isNewUser === "1";
+
+        const hasCard =
+          verifyData?.user?.hasCard === true ||
+          verifyData?.user?.hasCard === "true" ||
+          verifyData?.user?.hasCard === 1 ||
+          verifyData?.user?.hasCard === "1";
+
+        if (isNewUser) {
+          if (typeof window !== "undefined") {
+            sessionStorage.setItem("showWelcomeModal", "true");
+          }
+        } else if (!hasCard) {
+          if (typeof window !== "undefined") {
+            sessionStorage.setItem("showAddCardModal", "true");
+          }
+        }
+
         if (typeof window !== "undefined") {
           window.dispatchEvent(new Event("loginStatusChanged"));
         }
@@ -106,12 +129,6 @@ const OtpModal = ({ emailLogin = false, loginValue = "" }: OtpModalProps) => {
           const currentInstance =
             window.bootstrap?.Modal.getInstance(currentModal);
           currentInstance?.hide();
-        }
-
-        const nextModal = document.getElementById("welcome-SevaServeModal");
-        if (nextModal) {
-          const nextInstance = new window.bootstrap.Modal(nextModal);
-          nextInstance.show();
         }
       } else {
         setError(response.error || "Invalid OTP entered. Please try again.");

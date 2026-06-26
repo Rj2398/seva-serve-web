@@ -8,9 +8,11 @@ import PaymentRemainingPopup from '@/components/modals/bookingmodals/PaymentRema
 import RateContractorPopup from '@/components/modals/bookingmodals/RateContractorPopup'
 import RescheduleRequestSubmit from '@/components/modals/bookingmodals/RescheduleRequestSubmit'
 import Link from 'next/link'
-import React from 'react'
+import React, { useState } from 'react'
 
 const BookingUpdate = () => {
+  const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
+
   return (
     <>
     <main>
@@ -67,7 +69,7 @@ const BookingUpdate = () => {
 
                 <div className="vahicle-footer-btn">
                   <button className="secondary-cta">Cancel</button>
-                  <button className="primary-cta" >Accept new time 1:00 PM</button>
+                  <button className="primary-cta" onClick={() => setShowDatePicker(true)}>Accept new time 1:00 PM</button>
                 </div>
 
               </div>
@@ -80,7 +82,7 @@ const BookingUpdate = () => {
 
     </main>
 
-   <DatePopup/>
+    <DatePopup isOpen={showDatePicker} setIsOpen={setShowDatePicker} />
 
       
             <ContractorRequest/>

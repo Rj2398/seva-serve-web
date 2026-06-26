@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import WelcomeModal from "@/components/modals/WelcomeModal";
+import AddCardModal from "@/components/modals/AddCardModal";
 import DatePopup from "@/components/modals/bookingmodals/DatePopup";
 import RescheduleRequestSubmit from "@/components/modals/bookingmodals/RescheduleRequestSubmit";
 import CancelBooking from "@/components/modals/bookingmodals/CancelBooking";
@@ -14,6 +16,10 @@ interface homeprops {
 }
 
 const ClientComponent = ({ data }: homeprops) => {
+  const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
+  const [showWelcomeModal, setShowWelcomeModal] = useState<boolean>(false);
+  const [showAddCardModal, setShowAddCardModal] = useState<boolean>(false);
+
   const user =
     typeof window !== "undefined" ? localStorage.getItem("user") : null;
   const isNewUser = user ? JSON.parse(user)?.isNewUser : false;
@@ -22,6 +28,32 @@ const ClientComponent = ({ data }: homeprops) => {
   const isLogin = isLoginUser === "true";
 
   const router = useRouter();
+
+  useEffect(() => {
+    const checkModalFlags = () => {
+      if (typeof window !== "undefined") {
+        if (sessionStorage.getItem("showWelcomeModal") === "true") {
+          setShowWelcomeModal(true);
+          sessionStorage.removeItem("showWelcomeModal");
+        }
+        if (sessionStorage.getItem("showAddCardModal") === "true") {
+          setShowAddCardModal(true);
+          sessionStorage.removeItem("showAddCardModal");
+        }
+      }
+    };
+
+    checkModalFlags();
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("loginStatusChanged", checkModalFlags);
+    }
+    return () => {
+      if (typeof window !== "undefined") {
+        window.removeEventListener("loginStatusChanged", checkModalFlags);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     let frameId: number;
@@ -351,6 +383,7 @@ const ClientComponent = ({ data }: homeprops) => {
                               <div className="upcm-slider-btn">
                                 <button
                                   className="primary-cta upcm-btn"
+                                  onClick={() => setShowDatePicker(true)}
                                   data-bs-target="#select-date-time-popup"
                                   data-bs-toggle="modal"
                                 >
@@ -578,7 +611,15 @@ const ClientComponent = ({ data }: homeprops) => {
           )}
         </div>
       </main>
-      <DatePopup />
+      <WelcomeModal
+        isOpen={showWelcomeModal}
+        setIsOpen={setShowWelcomeModal}
+        onConfirm={() => {
+          router.push("/edit-profile");
+        }}
+      />
+      <AddCardModal isOpen={showAddCardModal} setIsOpen={setShowAddCardModal} />
+      <DatePopup isOpen={showDatePicker} setIsOpen={setShowDatePicker} />
       <RescheduleRequestSubmit />
       <ServiceRejected />
       <ServiceAccepted />
