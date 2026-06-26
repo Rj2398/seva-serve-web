@@ -1,0 +1,57 @@
+{
+  "cartItems": [
+    {
+      "id": 1,
+      "category": "Plumbing",
+      "estimatedCost": 299,
+      "visibleServices": [
+        {
+          "mainCategory": "Installation",
+          "subCategory": "Sink Installation",
+          "service": "Replace Existing Sink"
+        },
+        {
+          "mainCategory": "Toilet Blockage",
+          "subCategory": "Blockage",
+          "service": "Complete blockage"
+        }
+      ],
+      "additionalServices": [
+        {
+          "mainCategory": "Installation",
+          "subCategory": "Sink Installation",
+          "service": "Replace Existing Sink"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "category": "Plumbing",
+      "estimatedCost": 299,
+      "visibleServices": [
+        {
+          "mainCategory": "Installation",
+          "subCategory": "Sink Installation",
+          "service": "Replace Existing Sink"
+        },
+        {
+          "mainCategory": "Toilet Blockage",
+          "subCategory": "Blockage",
+          "service": "Complete blockage"
+        }
+      ],
+      "additionalServices": [
+        {
+          "mainCategory": "Pipe Repair",
+          "subCategory": "Leakage Repair",
+          "service": "Kitchen Pipe Leakage"
+        },
+        {
+          "mainCategory": "Water Tank",
+          "subCategory": "Tank Cleaning",
+          "service": "Deep Cleaning"
+        }
+      ]
+    }
+  ]
+}

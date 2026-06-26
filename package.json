@@ -1,0 +1,37 @@
+{
+  "name": "sevaservenext",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@reduxjs/toolkit": "^2.12.0",
+    "@tanstack/react-query": "^5.100.11",
+    "@types/bootstrap": "^5.2.10",
+    "axios": "^1.16.1",
+    "bootstrap": "^5.3.8",
+    "formik": "^2.4.9",
+    "next": "16.2.6",
+    "react": "19.2.4",
+    "react-datepicker": "^9.1.0",
+    "react-day-picker": "^10.0.1",
+    "react-dom": "19.2.4",
+    "react-hot-toast": "^2.6.0",
+    "react-redux": "^9.3.0",
+    "yup": "^1.7.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.6",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

@@ -1,0 +1,91 @@
+{
+  "bookingData": {
+    "upcoming": [
+      {
+        "id": 1,
+        "category": "Plumbing",
+        "status": "In Progress",
+        "booking_date": "2026-11-19",
+        "booking_time": "10:30 AM",
+        "amount": 149,
+        "image": "images/inner-page/booking-img.svg",
+        "services": [
+          "Sink Installation",
+          "Toilet Blockage",
+          "Pipe Leakage Repair"
+        ],
+        "show_more_services": true,
+        "actions": {
+          "view_details": "/view-booking-detail",
+          "contractor_request_modal": "#contractorTime"
+        }
+      },
+      {
+        "id": 2,
+        "category": "Plumbing",
+        "status": "Pending",
+        "booking_date": "2026-11-19",
+        "booking_time": "10:30 AM",
+        "amount": 149,
+        "image": "images/inner-page/booking-img.svg",
+        "services": [
+          "Sink Installation",
+          "Toilet Blockage"
+        ],
+        "actions": {
+          "cancel_modal": "#cancelBookingPopup",
+          "reschedule_modal": "#rescheduleRequest"
+        }
+      }
+    ],
+    "previous": [
+      {
+        "id": 3,
+        "category": "Plumbing",
+        "status": "Completed",
+        "booking_date": "2026-11-19",
+        "booking_time": "10:30 AM",
+        "amount": 149,
+        "image": "images/inner-page/booking-img.svg",
+        "services": [
+          "Sink Installation",
+          "Toilet Blockage"
+        ],
+        "actions": {
+          "feedback_modal": "#rate-contractor-popup",
+          "payment_modal": "#pay-remaining-popup"
+        }
+      },
+      {
+        "id": 4,
+        "category": "Plumbing",
+        "status": "fully-Completed",
+        "booking_date": "2026-11-19",
+        "booking_time": "10:30 AM",
+        "amount": 149,
+        "image": "images/inner-page/booking-img.svg",
+        "services": [
+          "Sink Installation",
+          "Toilet Blockage"
+        ],
+        "actions": {
+          "download_invoice": true
+        }
+      }
+    ],
+    "cancelled": [
+      {
+        "id": 5,
+        "category": "Cleaning",
+        "status": "Cancelled",
+        "booking_date": "2026-11-19",
+        "booking_time": "10:30 AM",
+        "amount": 0,
+        "image": "images/inner-page/cleaning.svg",
+        "services": [
+          "Floor Cleaning"
+        ]
+      }
+    ]
+  }
+}

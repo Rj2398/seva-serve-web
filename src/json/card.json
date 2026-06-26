@@ -1,0 +1,45 @@
+{
+    "cards": [
+        {
+            "id": 1,
+            "cardNumber": "**** **** **** 1234",
+            "bankName": "Bank Name",
+            "holderName": "NAME SURNAME",
+            "expiry": "01/80"
+        },
+        {
+            "id": 2,
+            "cardNumber": "**** **** **** 5678",
+            "bankName": "Bank Name",
+            "holderName": "NAME SURNAME",
+            "expiry": "05/29"   
+        },
+        {
+            "id": 3,
+            "cardNumber": "**** **** **** 9012",
+            "bankName": "Bank Name",
+            "holderName": "NAME SURNAME",
+            "expiry": "12/30"
+        },
+        {
+            "id": 4,
+            "cardNumber": "**** **** **** 3456",
+            "bankName": "Bank Name",
+            "holderName": "NAME SURNAME",
+            "expiry": "08/27"
+        },
+        {
+            "id": 5,
+            "cardNumber": "**** **** **** 7890",
+            "bankName": "Bank Name",
+            "holderName": "NAME SURNAME",
+            "expiry": "03/28"
+        },{
+            "id": 6,
+            "cardNumber": "**** **** **** 2345",
+            "bankName": "Bank Name",
+            "holderName": "NAME SURNAME",
+            "expiry": "11/29"
+        }
+    ]
+}

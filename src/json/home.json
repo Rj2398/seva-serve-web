@@ -1,0 +1,37 @@
+{ "bookingCard":[
+  {
+    "id": 1,
+    "image": "/images/home/hero-slider-img.svg",
+    "title": "Get 15% Off Your First SevaServe Booking Today",
+    "buttonText": "Book Now",
+    "buttonIcon": "/images/home/right-arrow.svg"
+  },
+  {
+    "id": 2,
+    "image": "/images/home/hero-slider-img.svg",
+    "title": "Get 15% Off Your First SevaServe Booking Today",
+    "buttonText": "Book Now",
+    "buttonIcon": "/images/home/right-arrow.svg"
+  },
+  {
+    "id": 3,
+    "image": "/images/home/hero-slider-img.svg",
+    "title": "Get 15% Off Your First SevaServe Booking Today",
+    "buttonText": "Book Now",
+    "buttonIcon": "/images/home/right-arrow.svg"
+  },
+  {
+    "id": 4,
+    "image": "/images/home/hero-slider-img.svg",
+    "title": "Get 15% Off Your First SevaServe Booking Today",
+    "buttonText": "Book Now",
+    "buttonIcon": "/images/home/right-arrow.svg"
+  },
+  {
+    "id": 5,
+    "image": "/images/home/hero-slider-img.svg",
+    "title": "Get 15% Off Your First SevaServe Booking Today",
+    "buttonText": "Book Now",
+    "buttonIcon": "/images/home/right-arrow.svg"
+  }
+]}

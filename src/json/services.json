@@ -1,0 +1,128 @@
+{
+  "topServices": [
+    {
+      "id": 1,
+      "title": "Pipe Leakage Repair",
+      "description": "Fix leakage in concealed or exposed pipes.",
+      "image": "/images/services/plumbing.jpg"
+    },
+    {
+      "id": 2,
+      "title": "Tap / Shower Repair",
+      "description": "Repair or replace faulty taps & showers.",
+      "image": "/images/services/tap-repair.jpg"
+    },
+    {
+      "id": 3,
+      "title": "Pipe Leakage Repair",
+      "description": "Fix leakage in concealed or exposed pipes.",
+      "image": "/images/services/plumbing.jpg"
+    },
+    {
+      "id": 4,
+      "title": "Pipe Leakage Repair",
+      "description": "Fix leakage in concealed or exposed pipes.",
+      "image": "/images/services/plumbing.jpg"
+    },
+    {
+      "id": 5,
+      "title": "Pipe Leakage Repair",
+      "description": "Fix leakage in concealed or exposed pipes.",
+      "image": "/images/services/plumbing.jpg"
+    }
+  ],
+
+  "featuredCategory": [
+    {
+      "id": 1,
+      "title": "Plumbing",
+      "icon": "images/home/browse-category/1.svg"
+    },
+    {
+      "id": 2,
+      "title": "Repairing",
+      "icon": "images/home/browse-category/2.svg"
+    },
+    {
+      "id": 3,
+      "title": "Painting",
+      "icon": "images/home/browse-category/3.svg"
+    },
+    {
+      "id": 4,
+      "title": "Laundry",
+      "icon": "images/home/browse-category/4.svg"
+    },
+    {
+      "id": 5,
+      "title": "Appliance",
+      "icon": "images/home/browse-category/5.svg"
+    },
+    {
+      "id": 6,
+      "title": "Cleaning",
+      "icon": "images/home/browse-category/6.svg"
+    },
+    {
+      "id": 7,
+      "title": "Car Wash",
+      "icon": "images/home/browse-category/7.svg"
+    },
+    {
+      "id": 8,
+      "title": "AC Services",
+      "icon": "images/home/browse-category/8.svg"
+    }
+  ],
+
+  "allServices": [
+    {
+      "id": 1,
+      "title": "Pipe Leakage Repair",
+      "description": "Fix leakage in concealed or exposed pipes.",
+      "image": "images/home/home-slider/1.svg"
+    },
+    {
+      "id": 2,
+      "title": "Tap / Shower Repair",
+      "description": "Repair or replace faulty taps & showers.",
+      "image": "images/home/home-slider/1.svg"
+    },
+    {
+      "id": 3,
+      "title": "Wall Painting",
+      "description": "Premium paint & labour.",
+      "image": "images/home/home-slider/1.svg"
+    },
+    {
+      "id": 4,
+      "title": "Pipe Leakage Repair",
+      "description": "Fix leakage in concealed or exposed pipes.",
+      "image": "images/home/home-slider/1.svg"
+    },
+    {
+      "id": 5,
+      "title": "Pipe Leakage Repair",
+      "description": "Fix leakage in concealed or exposed pipes.",
+      "image": "images/home/home-slider/1.svg"
+    },
+    {
+      "id": 6,
+      "title": "Wall Painting",
+      "description": "Premium paint & labour.",
+      "image": "images/home/home-slider/1.svg"
+    },
+    {
+      "id": 7,
+      "title": "Tap / Shower Repair",
+      "description": "Repair or replace faulty taps & showers.",
+      "image": "images/home/home-slider/1.svg"
+    },
+    {
+      "id": 8,
+      "title": "Pipe Leakage Repair",
+      "description": "Fix leakage in concealed or exposed pipes.",
+      "image": "images/home/home-slider/1.svg"
+    }
+  ]
+}

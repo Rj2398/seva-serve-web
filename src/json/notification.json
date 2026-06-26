@@ -1,0 +1,53 @@
+{ "notifications": {
+  "All": [
+    {
+      "id": 1,
+      "title": "Confirm & Pay Remaining Amount",
+      "message": "$149 is pending for AC Repair – Cooling Issue.",
+      "time": "Just Now"
+    },
+    {
+      "id": 2,
+      "title": "Contractor suggested a new time",
+      "message": "Your contractor proposed a new service time for Plumbing – Sink Installation.",
+      "time": "Just Now"
+    },
+    {
+      "id": 3,
+      "title": "Your booking is confirmed",
+      "message": "Your plumbing service is scheduled for 20 Nov, 11:30 AM.",
+      "time": "1h ago"
+    },
+    {
+      "id": 4,
+      "title": "Flat 20% Off",
+      "message": "Avail discount on all home repair services. Valid till tonight.",
+      "couponCode": "HOME20",
+      "time": "5h ago"
+    },
+    {
+      "id": 5,
+      "title": "Safety Alert",
+      "message": "Please verify the technician identity before allowing entry.",
+      "time": "Yesterday"
+    }
+  ],
+  "Offers": [
+    {
+      "id": 4,
+      "title": "Flat 20% Off",
+      "message": "Avail discount on all home repair services. Valid till tonight.",
+      "couponCode": "HOME20",
+      "time": "5h ago"
+    }
+  ],
+  "Alerts": [
+    {
+      "id": 5,
+      "title": "Safety Alert",
+      "message": "Please verify the technician identity before allowing entry.",
+      "time": "Yesterday"
+    }
+  ]
+}
+}

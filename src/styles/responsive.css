@@ -1,0 +1,2528 @@
+/* Toggle button CSS Query */
+
+@media only screen and (max-width: 999px) {
+  .right-section {
+    display: none;
+  }
+  .icon-header {
+    display: flex;
+  }
+  .showData {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    width: 100%;
+    top: 56px;
+    background-color: var(--white);
+    text-align: center;
+    padding: 0;
+    grid-area: 20px;
+    height: 330px;
+  }
+}
+@media only screen and (max-width: 389px){
+    .showData{
+        width: 82%;
+    }
+}
+@media only screen and (max-width: 467px){
+    .showData{
+        width: 87%;
+    }
+}
+/* Toggle button CSS Query */
+
+@media only screen and (min-width: 1280px) and (max-width: 1366px) {
+    .services-sec-in .upcoming-my-slide {
+    width: 23.5%;
+}
+.single-card img.card {
+    width: 260px;
+}
+}
+
+@media only screen and (min-width: 1000px) and (max-width: 1299px) {
+  /* My Profile */
+  .search-bar {
+    width: 250px;
+}
+.search-bar input {
+    font-size: 11px;
+
+}
+.location {
+    font-size: 12px;
+}
+  /* My Profile */
+}
+
+@media only screen and (min-width: 999px) and (max-width: 1024px)
+{
+
+     /* index */
+      .hero-btn button {
+        padding: 5px 10px;
+        bottom: 54px;
+        left: 30px;
+        font-size: 10px;
+    }
+      .hero-img {
+        width: 200px;
+    }
+        .inner-hero p {
+        font-size: 16px;
+        left: 28px;
+        top: 30px;
+    }
+     /* index */
+
+    /* Service */
+.services-sec-in .upcoming-my-slide {
+    width: 30%;
+}
+/* Service */
+
+/* Plumbing */
+.service-issues-content-problem-thumbs-image {
+    width: 15%;
+}
+/* Plumbing */
+
+}
+@media only screen and (min-width: 912px) and (max-width: 999px) {
+    /* Service */
+.services-sec-in .upcoming-my-slide {
+    width: 47%;
+}
+/* Service */
+
+/* Plumbing */
+.service-issues-content-problem-thumbs-image {
+    width: 15%;
+}
+/* Plumbing */
+div#login-screen-1 .modal-content {
+    margin-right: 20px;
+    margin-left: 20px;
+}
+}
+
+@media only screen and (min-width: 820px) and (max-width: 911px) {
+
+     /* index */
+         .showData {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        position: absolute;
+        width: 100%;
+        top: 85px;
+        background-color: var(--white);
+        text-align: center;
+        padding: 0;
+        grid-area: 20px;
+        height: 81px;
+    }
+
+
+    .hero-btn button {
+        padding: 5px 10px;
+        bottom: 5px;
+        left: 12px;
+        font-size: 10px;
+    }
+        .hero-img {
+        width: 110px;
+    }
+    .inner-hero p {
+        font-size: 12px;
+        left: 10px;
+        top: 16px;
+    }
+     /* index */
+
+  /* My Profile */
+
+  .browse-ctg-head h2 {
+    font-size: 16px;
+  }
+
+  .roger-data {
+    width: 100%;
+  }
+
+  .roger-data .input-row {
+    gap: 0px;
+    flex-direction: column;
+  }
+
+  .footer-text {
+    font-size: 12px;
+  }
+  .my-profile-wrapper .upload-icon {
+    top: 22%;
+    right: 40%;
+    width: 35px;
+    height: 35px;
+  }
+
+  /* My Profile */
+  /* Service */
+.services-sec-in .upcoming-my-slide {
+    width: 47%;
+}
+/* Service */
+
+/* Plumbing */
+.service-issues-content-problem-thumbs-image {
+    width: 20%;
+}
+/* Plumbing */
+div#login-screen-1 .modal-content {
+            margin-right: 60px;
+        margin-left: 30px;
+}
+
+
+}
+
+@media only screen and (min-width: 768px) and (max-width: 819px) {
+
+    /* index */
+
+        .showData {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        position: absolute;
+        width: 100%;
+        top: 85px;
+        background-color: var(--white);
+        text-align: center;
+        padding: 0;
+        grid-area: 20px;
+        height: 81px;
+        right:-4px;
+    }
+
+
+    .hero-btn button {
+        padding: 5px 10px;
+        bottom: 5px;
+        left: 12px;
+        font-size: 10px;
+    }
+        .hero-img {
+        width: 110px;
+    }
+    .inner-hero p {
+        font-size: 12px;
+        left: 10px;
+        top: 16px;
+    }
+     /* index */
+  /* My Profile */
+
+  .browse-ctg-head h2 {
+    font-size: 16px;
+  }
+
+  .roger-data {
+    width: 100%;
+  }
+
+  .roger-data .input-row {
+    gap: 0px;
+    flex-direction: column;
+  }
+
+  .footer-text {
+    font-size: 12px;
+  }
+  .my-profile-wrapper .upload-icon {
+    top: 22%;
+    right: 40%;
+    width: 35px;
+    height: 35px;
+  }
+
+  /* My Profile */
+
+/*My Payments  */
+.my-payments-body .paid h5 {
+    font-size: 17px;
+    font-weight: 600;
+}
+.my-payments-body .paid.pending h5 span {
+    margin: 8px;
+    display: inline-block;
+}
+.right-payments-body button.secondary-cta {
+    font-size: 12px;
+    width: 100%;
+}
+/*My Payments  */
+
+/* Payment Method */
+.card-wrp {
+            flex-wrap: wrap;
+}
+    .single-card img.card {
+        width: 310px;
+    }
+/* Payment Method */
+
+/* Booking Traking */
+.service-quotes {
+    flex-direction: column;
+}
+/* Booking Traking */
+
+/* Service */
+.services-sec-in .upcoming-my-slide {
+    width: 47%;
+}
+/* Service */
+
+/* Plumbing */
+.service-issues-content-problem-thumbs-image {
+    width: 15%;
+}
+/* Plumbing */
+div#login-screen-1 .modal-content {
+            margin-right: 60px;
+        margin-left: 30px;
+}
+}
+
+@media only screen and (min-width: 480px) and (max-width: 767px) {
+  /* My Profile */
+  .user-img-circle {
+    left: 50%;
+    top: 45px;
+    width: 70px;
+    height: 70px;
+  }
+
+  .user-img-circle img {
+    width: 60px;
+    height: 60px;
+  }
+
+  .my-profile-wrapper .upload-icon {
+    top: 13%;
+    right: 38%;
+    width: 20px;
+    height: 20px;
+  }
+
+  .my-profile-wrapper label.upload-icon img {
+    height: 16px;
+    width: 16px;
+  }
+
+  .browse-ctg-head h2 {
+    font-size: 16px;
+  }
+
+  .roger-data {
+    width: 100%;
+  }
+
+  .roger-data .input-row {
+    gap: 0px;
+    flex-direction: column;
+  }
+
+  .footer-text {
+    font-size: 12px;
+  }
+
+  .input-data-file {
+    padding-bottom: 70px;
+  }
+
+  /* My Profile */
+  /* Account Privacy */
+  .container.home-wraper.my-profile {
+    height: auto;
+}
+.delete-account .modal-header h5.modal-title {
+    font-size: 15px;
+}
+.delete-account ul.list-group.list-group-flush {
+    gap: 12px;
+}
+.modal-body.delete-account-bdy li.list-group-item.custom-item span {
+  font-size: 14px;
+}
+.modal-dialog.modal-dialog-centered .modal-header button.btn-close {
+    right: 9px;
+    top: -2rem;
+    width: 18px;
+    height: 18px;
+}
+  /* Account Privacy */
+
+  /* Delete Account */
+  .delete-account-wrp h3 {
+    font-size: 15px;
+}
+.delete-account-wrp p {
+    font-size: 14px;
+}
+.delete-btn-rgt button.primary-cta {
+    margin: auto;
+}
+.notice-data h4 {
+    font-size: 15px;
+}
+.notice-data p {
+    font-size: 14px;
+}
+.service-important h4 {
+    font-size: 14px;
+}
+.notice-footer-btn a.primary-cta img {
+    width: 9px;
+    height: 9px;
+    margin-left: 7px;
+}
+.notice-footer-btn a.primary-cta {
+    font-size: 11px;
+}
+.notice-footer-btn button.secondary-cta {
+    font-size: 15px;
+}
+/* Delete Account */
+
+/* About SevaServe */
+.about-swap-inner .inner-data span {
+    font-size: 14px;
+}
+.about-swap-inner .inner-data span img {
+    height: 17px;
+    width: 17px;
+    margin-right: 6px;
+}
+/* About SevaServe */
+
+/* Help & Support */
+.help-support-wrp h3 {
+    font-size: 15px;
+}
+.help-support-wrp p {
+    font-size: 14px;
+}
+.email-box {
+    font-size: 12px;
+}
+/* Help & Support */
+
+/* My Payments */
+.left-payments-body {
+    flex-direction: column;
+}
+.browse-ctg-head {
+    flex-direction: column;
+}
+.browse-ctg-head.my-con-head .tab-left {
+    margin-top: 10px;
+}
+.my-payments-body {
+    flex-direction: column;
+}
+.my-payments-body .paid h5 {
+    font-size: 15px;
+}
+.my-payments-body .paid h5 span {
+    display: inline-block;
+    margin-top: 8px;
+}
+.my-payments-body .paid p span {
+    font-size: 14px;
+}
+.right-payments-body button.secondary-cta {
+    font-size: 11px;
+    font-weight: 500;
+}
+.right-payments-body button.primary-cta {
+    font-size: 11px;
+}
+.right-payments-body button.primary-cta img.pay {
+    width: 12px;
+    height: 12px;
+    margin-right: 7px;
+}
+.my-payments-body .paid.pending h5 span {
+    margin: 8px;
+    display: inline-block;
+}
+/* My Payments */
+
+/* Checkout */
+.cost-details-wrp h4 {
+    font-size: 15px;
+}
+.cost-details-in p {
+    font-size: 14px;
+}
+.select-pay-met h4 {
+    font-size: 16px;
+}
+.select-pay-met ul {
+    align-items: flex-start;
+    flex-direction: column;
+}
+.cost-details-wrp {
+   padding: 0;
+}
+/* Checkout */
+
+/* Payment Method */
+.card-wrp {
+    flex-direction: column;
+}
+.single-card img.card {
+    width: 255px;
+}
+/* Payment Method */
+
+/* Payment Method */
+.card-wrp {
+    flex-direction: column;
+}
+.single-card img.card {
+        width: 366px;
+    }
+/* Payment Method */
+
+/* My Bookings */
+.my-booking-wrpper {
+    flex-direction: column;
+}
+.plumbing-top .add-progress p.right {
+    padding: 3px 8px;
+}
+.home-quotes-cta {
+    flex-direction: column;
+}
+.service-quotes {
+    flex-direction: column;
+}
+/* My Bookings */
+
+/* Service */
+.services-sec-in .upcoming-my-slide {
+    width: 47%;
+}
+/* Service */
+
+/* Plumbing */
+.sub-cat-filtr-btns {
+    flex-direction: column;
+}
+.sub-cat-filtr-btns button {
+    width: 100%;
+}
+.service-details-sub-cat h3 {
+    font-size: 15px;
+}
+.service-details-banner-data h1 {
+    font-size: 16px;
+}
+.service-details-banner-data p {
+    font-size: 14px;
+    flex-direction: column;
+}
+.service-issues-tab {
+    flex-direction: column;
+    gap: 20px;
+}
+.service-issues-tab-data h4 {
+    font-size: 15px;
+}
+.service-issues-tab-data p {
+    font-size: 14px;
+}
+.service-issues-content p {
+    font-size: 14px;
+}
+.service-issues-content ul li {
+    width: 100%;
+}
+.service-details-issues h3 {
+    font-size: 15px;
+}
+.service-issues-content-problem label {
+    font-size: 14px;
+    padding: 10px;
+}
+.service-issues-content-problem label img {
+    width: 25px;
+}
+.service-issues-content-problem-thumbs-image {
+    width: 100%;
+}
+.service-issues-content-problem-thumbs {
+    flex-direction: column;
+}
+/* Plumbing */
+/* View Details */
+.view-sum-subcat h3 {
+    font-size: 15px;
+    flex-direction: column;
+    gap: 20px;
+}
+.view-sum-subcat h3 a img {
+    width: 15px;
+}
+.sub-cat-head a {
+    width: 15px;
+}
+.sub-cat-head p {
+    font-size: 14px;
+}
+.estimated-total .estimated p {
+    font-size: 14px;
+}
+.estimated-total .estimated span {
+    font-size: 15px;
+}
+.estimated-total .avrg span {
+    font-size: 15px;
+}
+.request-btn button.primary-cta {
+    font-size: 15px;
+}
+.accordion-body ol.main-category li {
+    font-size: 14px;
+}
+.view-sum-cat h5 {
+    font-size: 15px;
+}
+/* View Details */
+
+/* Issue Details */
+.up-image-wrp {
+    flex-wrap: wrap;
+}
+.upload-img .up-image-wrp img {
+    width: 110px;
+    height: 110px;
+}
+.issue-details-wrp h4 {
+    font-size: 15px;
+}
+span.primary-cta.tap {
+    font-size: 15px;
+}
+/* Issue Details */
+
+/* Booking Tracking */
+.boking-right-img {
+    position: relative;
+}
+.plumbing-wrp-book {
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+}
+.plumbing-wrp-book .plumbing p.bold-text {
+    font-size: 15px;
+}
+/* Booking Tracking */
+
+
+    .select-date-time-inner {
+    flex-direction: column;
+}
+.select-time-in {
+    width: 100%;
+}
+.select-time-btn-grp label{
+    width: 100%;
+}
+.select-date-time-foot button {
+    font-size: 11px;
+}
+.select-date-in {
+    width: 100%;
+}
+.secondary-cta {
+    font-size: 12px;
+}
+a.Propose-cta {
+    font-size: 12px;
+}
+.welcome-seva-ser a.primary-cta{
+    font-size: 12px;
+}
+a.primary-cta img {
+    width: 10px;
+    height: 16px;
+}
+.responsive-header{
+    display: flex;
+            gap: 20px;
+}
+.search-bar {
+        width: 242px;
+    }
+    .showData{
+        flex-direction: row;
+                flex-wrap: wrap;
+                        height: 187px;
+    }
+    .working-process h2 {
+    font-size: 14px;
+}
+.work-list li p {
+    font-size: 14px;
+}
+.profile.login .primary-cta {
+    font-size: 14px;
+}
+.notification-list {
+    width: 255px;
+}
+.notification-data h3 {
+    font-size: 12px;
+}
+.notification-data p {
+    font-size: 12px;
+}
+
+}
+
+@media only screen and (min-width: 390px) and (max-width: 479px) {
+  /* My Profile */
+  .logo {
+    width: 35px;
+    height: 45px;
+}
+.left-section {
+    gap: 10px;
+}
+ .location {
+    font-size: 13px;
+  }
+      .icon-header {
+        font-size: 22px;
+    }
+  .user-img-circle {
+    left: 50%;
+    top: 45px;
+    width: 70px;
+    height: 70px;
+  }
+
+  .user-img-circle img {
+    width: 60px;
+    height: 60px;
+  }
+
+  .my-profile-wrapper .upload-icon {
+            top: 16%;
+        right: 40%;
+    width: 20px;
+    height: 20px;
+  }
+
+  .my-profile-wrapper label.upload-icon img {
+    height: 16px;
+    width: 16px;
+  }
+
+  .browse-ctg-head h2 {
+    font-size: 16px;
+  }
+      .hero-btn button {
+        padding: 5px 10px;
+        bottom: 5px;
+        left: 12px;
+        font-size: 10px;
+    }
+        .hero-img {
+        width: 110px;
+    }
+    .inner-hero p {
+        font-size: 12px;
+        left: 10px;
+        top: 16px;
+    }
+  .home-quotes-cta .primary-cta.rgt {
+    justify-content: center;
+}
+  .roger-data {
+    width: 100%;
+  }
+
+  .roger-data .input-row {
+    gap: 0px;
+    flex-direction: column;
+  }
+
+  .footer-text {
+    font-size: 12px;
+  }
+
+  .input-data-file {
+    padding-bottom: 70px;
+  }
+
+  /* My Profile */
+    /* Account Privacy */
+p.about-us-data {
+    font-size: 14px;
+}
+.inner-data a span {
+    font-size: 15px;
+}
+.about-swap-inner .inner-data a img {
+    height: 15px;
+    width: 15px;
+}
+.container.home-wraper.my-profile {
+    height: auto;
+}
+.delete-account .modal-header h5.modal-title {
+    font-size: 15px;
+}
+.delete-account ul.list-group.list-group-flush {
+    gap: 12px;
+}
+.modal-body.delete-account-bdy li.list-group-item.custom-item span {
+  font-size: 14px;
+}
+.modal-dialog.modal-dialog-centered .modal-header button.btn-close {
+    right: 9px;
+    top: -2rem;
+    width: 18px;
+    height: 18px;
+}
+  /* Account Privacy */
+
+  /* Delete Account */
+  .delete-account-wrp h3 {
+    font-size: 15px;
+}
+.delete-account-wrp p {
+    font-size: 14px;
+}
+.delete-btn-rgt button.primary-cta {
+    margin: auto;
+}
+.notice-data h4 {
+    font-size: 15px;
+}
+.notice-data p {
+    font-size: 14px;
+}
+.service-important h4 {
+    font-size: 14px;
+}
+.notice-footer-btn a.primary-cta img {
+    width: 9px;
+    height: 9px;
+    margin-left: 7px;
+}
+.notice-footer-btn a.primary-cta {
+    font-size: 11px;
+}
+.notice-footer-btn button.secondary-cta {
+    font-size: 15px;
+}
+/* Delete Account */
+
+/* About SevaServe */
+.about-swap-inner .inner-data span {
+    font-size: 14px;
+}
+.about-swap-inner .inner-data span img {
+    height: 17px;
+    width: 17px;
+    margin-right: 6px;
+}
+/* About SevaServe */
+
+/* Help & Support */
+.help-support-wrp h3 {
+    font-size: 15px;
+}
+.help-support-wrp p {
+    font-size: 14px;
+}
+.email-box {
+    font-size: 12px;
+}
+/* Help & Support */
+
+/* My Payments */
+.left-payments-body {
+    flex-direction: column;
+}
+.browse-ctg-head {
+    flex-direction: column;
+}
+.browse-ctg-head.my-con-head .tab-left {
+    margin-top: 10px;
+}
+.my-payments-body {
+    flex-direction: column;
+}
+.my-payments-body .paid h5 {
+    font-size: 15px;
+}
+.my-payments-body .paid h5 span {
+    display: inline-block;
+    margin-top: 8px;
+}
+.my-payments-body .paid p span {
+    font-size: 14px;
+}
+.right-payments-body button.secondary-cta {
+    font-size: 11px;
+    font-weight: 500;
+}
+.right-payments-body button.primary-cta {
+    font-size: 11px;
+}
+.right-payments-body button.primary-cta img.pay {
+    width: 12px;
+    height: 12px;
+    margin-right: 7px;
+}
+/* My Payments */
+
+/* Saved Address  */
+
+.browse-ctg-head.my-con-head a.primary-cta {
+    width: fit-content;
+    font-size: 12px;
+}
+.saved-addresses-in {
+    flex-direction: column;
+}
+.use-location {
+    flex-direction: column;
+}
+.your-location-top-in button.reject-btn {
+    margin-top: 10px;
+}
+.addres-form button.primary-cta {
+    justify-content: center;
+}
+/* Saved Address  */
+
+/* Checkout */
+.cost-details-wrp h4 {
+    font-size: 15px;
+}
+.cost-details-in p {
+    font-size: 14px;
+}
+.select-pay-met h4 {
+    font-size: 16px;
+}
+.select-pay-met ul {
+    align-items: flex-start;
+    flex-direction: column;
+}
+.cost-details-wrp {
+   padding: 0;
+}
+/* Checkout */
+
+/* Payment Method */
+.card-wrp {
+    flex-direction: column;
+}
+.single-card img.card {
+        width: 366px;
+    }
+/* Payment Method */
+
+/* My Bookings */
+.my-booking-wrpper {
+    flex-direction: column;
+}
+.plumbing-top .add-progress p.right {
+    padding: 3px 8px;
+     font-size: 13px;
+}
+.home-quotes-cta {
+    flex-direction: column;
+}
+.service-quotes {
+    flex-direction: column;
+}
+/* My Bookings */
+
+/* Payment */
+.payment-in {
+    padding: 20px 80px;
+}
+.smart-analysis p {
+    font-size: 14px;
+}
+.payment-btom p {
+    font-size: 14px;
+}
+.upload-screenshot h4 {
+    font-size: 15px;
+}
+.smart-analysis h5 {
+    font-size: 15px;
+}
+.payment-wrp p {
+    font-size: 15px;
+}
+.payment-in h3 {
+    font-size: 28px;
+}
+.payment-in h5 {
+    font-size: 15px;
+}
+.payment-in h6 {
+    font-size: 15px;
+}
+.select-pay-met ul li {
+    font-size: 14px;
+}
+.upload-screenshot input[type="file"] {
+    font-size: 14px;
+}
+.payment-btom .primary-cta {
+    font-size: 14px;
+}
+.payment-btom .primary-cta img {
+    margin-left: 8px;
+}
+/* Payment */
+
+/* Services */
+.browse-ctg-head .your-location-top {
+    flex-direction: column;
+    gap: 20px;
+}
+.browse-ctg-head .your-location-top {
+    align-items: unset;
+}
+.browse-ctg-head .your-location-top select {
+    padding: 10px 30px 10px 10px;
+    margin-left: 0px;
+}
+.services-sec-wrp h3 {
+    font-size: 15px;
+}
+.services-sec-wrp .upcoming-my-slide  .upcoming-data.ser {
+    left: 29px;
+}
+.top-services-slider button.slick-prev.slick-arrow, .top-services-slider button.slick-next.slick-arrow {
+    width: 42px;
+    height: 40px;
+}
+.services-sec-in .upcoming-my-slide {
+    width: 100%;
+}
+/* Services */
+
+/* Plumbing */
+.sub-cat-filtr-btns {
+    flex-direction: column;
+}
+.sub-cat-filtr-btns button {
+    width: 100%;
+}
+.service-details-sub-cat h3 {
+    font-size: 15px;
+}
+.service-details-banner-data h1 {
+    font-size: 16px;
+}
+.service-details-banner-data p {
+    font-size: 14px;
+    flex-direction: column;
+}
+.service-issues-tab {
+    flex-direction: column;
+    gap: 20px;
+}
+.service-issues-tab-data h4 {
+    font-size: 15px;
+}
+.service-issues-tab-data p {
+    font-size: 14px;
+}
+.service-issues-content p {
+    font-size: 14px;
+}
+.service-issues-content ul li {
+    width: 100%;
+}
+.service-details-issues h3 {
+    font-size: 15px;
+}
+.service-issues-content-problem label {
+    font-size: 14px;
+    padding: 10px;
+}
+.service-issues-content-problem label img {
+    width: 25px;
+}
+.service-issues-content-problem-thumbs-image {
+    width: 46%;
+}
+.service-issues-content-problem-thumbs {
+            flex-wrap: wrap;
+}
+/* Plumbing */
+
+/* View Details */
+.view-sum-subcat h3 {
+    font-size: 15px;
+    flex-direction: column;
+    gap: 20px;
+}
+.view-sum-subcat h3 a img {
+    width: 15px;
+}
+.sub-cat-head a {
+    width: 15px;
+}
+.sub-cat-head p {
+    font-size: 14px;
+}
+.estimated-total .estimated p {
+    font-size: 14px;
+}
+.estimated-total .estimated span {
+    font-size: 15px;
+}
+.estimated-total .avrg span {
+    font-size: 15px;
+}
+.request-btn button.primary-cta {
+    font-size: 15px;
+}
+.accordion-body ol.main-category li {
+    font-size: 14px;
+}
+.view-sum-cat h5 {
+    font-size: 15px;
+}
+/* View Details */
+
+/* Issue Details */
+.up-image-wrp {
+    flex-wrap: wrap;
+}
+.upload-img .up-image-wrp img {
+        width: 104px;
+        height: 110px;
+    }
+.issue-details-wrp h4 {
+    font-size: 15px;
+}
+span.primary-cta.tap {
+    font-size: 15px;
+}
+/* Issue Details */
+
+/* Booking Tracking */
+.boking-right-img {
+    position: relative;
+}
+.plumbing-wrp-book {
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+}
+.plumbing-wrp-book .plumbing p.bold-text {
+    font-size: 15px;
+}
+/* Booking Tracking */
+.left-leakage button.primary-cta {
+    margin-top: 10px;
+    font-size: 12px;
+    padding: 0 8px;
+    height: 25px;
+}
+.browse-inner ul {
+        justify-content: center;
+    }
+    .left-rgt-car-wrp {
+    display: flex;
+    flex-direction: column;
+}
+.left-rgt-car-wrp {
+    display: flex;
+    flex-direction: column;
+}
+.left-slider-pop {
+    width: 100%;
+}
+.right-slider-pop {
+    width: 100%;
+}
+    div#login-screen-1 .modal-content {
+        padding: 0;
+        margin-top: 50px;
+    }
+
+
+
+        .select-date-time-inner {
+    flex-direction: column;
+}
+.select-time-in {
+    width: 100%;
+}
+.select-time-btn-grp label{
+    width: 100%;
+}
+.select-date-time-foot button {
+    font-size: 11px;
+}
+.select-date-in {
+    width: 100%;
+}
+.secondary-cta {
+    font-size: 12px;
+}
+a.Propose-cta {
+    font-size: 12px;
+}
+.welcome-seva-ser a.primary-cta{
+    font-size: 12px;
+}
+a.primary-cta img {
+    width: 10px;
+    height: 16px;
+}
+.responsive-header{
+    display: flex;
+            gap: 20px;
+}
+.search-bar {
+        width: 334px;
+    }
+    .showData{
+        flex-direction: row;
+                flex-wrap: wrap;
+                        height: 187px;
+    }
+    .working-process h2 {
+    font-size: 14px;
+}
+.work-list li p {
+    font-size: 14px;
+}
+.profile.login .primary-cta {
+    font-size: 14px;
+}
+.notification-list {
+    width: 255px;
+}
+.notification-data h3 {
+    font-size: 12px;
+}
+.notification-data p {
+    font-size: 12px;
+}
+}
+
+@media only screen and (min-width: 360px) and (max-width: 389px) {
+
+     /* Home Page */
+  .logo {
+    width: 30px;
+    height: 40px;
+  }
+  .left-section {
+    gap: 10px;
+  }
+  .dropdown-toggle.location-toggle img.loca {
+    margin-right: 0px;
+  }
+  .location img.loca {
+    height: 20px;
+    width: 20px;
+  }
+  .browse-inner ul {
+    justify-content: center;
+}
+  .location {
+    font-size: 12px;
+  }
+  .search-bar {
+    width: 220px;
+  }
+  .inner-hero p {
+    font-size: 12px;
+    left: 10px;
+    top: 16px;
+  }
+  .hero-img {
+    width: 110px;
+  }
+  .hero-btn button {
+    padding: 5px 10px;
+    bottom: 5px;
+    left: 12px;
+    font-size: 10px;
+  }
+  .hero-btn img {
+    width: 12px;
+    height: 12px;
+  }
+  .pipe-leakage {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+.left-leakage p {
+    font-size: 14px;
+}
+.leakage-img {
+    width: 60px;
+}
+.right-leakage .right-text .frist {
+    font-size: 14px;
+    font-weight: 500;
+}
+.right-leakage .right-text .sec {
+    justify-content: flex-start;
+}
+.browse-ctg-head p.see-all {
+    font-size: 15px;
+    font-weight: 400;
+}
+.upcoming-data .up-text {
+    font-size: 14px;
+    font-weight: 500;
+}
+.upcoming-data .up-date {
+    font-size: 14px;
+}
+.upcoming-data {
+    left: 48px;
+}
+button.primary-cta.upcm-btn {
+    font-size: 14px;
+    height: 35px;
+}
+.upcm-slider-btn .cnl {
+    padding: 0px 15px;
+    font-size: 14px;
+    height: 35px;
+}
+.primary-cta.upcm-btn img {
+    width: 15px;
+    height: 15px;
+    margin-right: 3px;
+}
+.plumbing .plm {
+    font-size: 14px;
+    font-weight: 500;
+}
+.plumbing .plm img {
+    width: 15px;
+    height: 16px;
+}
+.plumbing .sub-cate {
+    font-size: 14px;
+}
+.service-list-type ol.main-category li {
+    font-size: 14px;
+}
+.additional-services .additional-text {
+    font-weight: 500;
+}
+.additional-services ul.service-list li {
+    font-size: 14px;
+}
+.service-list-type p {
+    font-size: 14px;
+}
+.service-cost span {
+    font-size: 14px;
+}
+.service-quotes {
+    flex-direction: column;
+}
+button.reject-btn {
+    font-size: 14px;
+    padding: 0px 25px;
+}
+button.primary-cta.rgt {
+    font-size: 14px;
+    justify-content: center;
+}
+.primary-cta.rgt img {
+    width: 12px;
+    height: 12px;
+    margin-left: 6px;
+}
+.icon-header {
+    font-size: 18px;
+    margin-left: 13px;
+}
+.left-leakage span {
+    height: 22px;
+}
+  /* Home Page */
+  
+  /* My Profile */
+  .user-img-circle {
+    left: 50%;
+    top: 45px;
+    width: 70px;
+    height: 70px;
+  }
+
+  .user-img-circle img {
+    width: 60px;
+    height: 60px;
+  }
+
+  .my-profile-wrapper .upload-icon {
+    top: 17%;
+    right: 38%;
+    width: 20px;
+    height: 20px;
+  }
+
+  .my-profile-wrapper label.upload-icon img {
+    height: 16px;
+    width: 16px;
+  }
+
+  .browse-ctg-head h2 {
+    font-size: 16px;
+  }
+
+  .roger-data {
+    width: 100%;
+  }
+
+  .roger-data .input-row {
+    gap: 0px;
+    flex-direction: column;
+  }
+
+  .footer-text {
+    font-size: 12px;
+  }
+
+  .input-data-file {
+    padding-bottom: 70px;
+  }
+
+  /* My Profile */
+
+    /* Account Privacy */
+p.about-us-data {
+    font-size: 14px;
+}
+.inner-data a span {
+    font-size: 15px;
+}
+.about-swap-inner .inner-data a img {
+    height: 15px;
+    width: 15px;
+}
+.container.home-wraper.my-profile {
+    height: auto;
+}
+.delete-account .modal-header h5.modal-title {
+    font-size: 15px;
+}
+.delete-account ul.list-group.list-group-flush {
+    gap: 12px;
+}
+.modal-body.delete-account-bdy li.list-group-item.custom-item span {
+  font-size: 14px;
+}
+.modal-dialog.modal-dialog-centered .modal-header button.btn-close {
+    right: 9px;
+    top: -2rem;
+    width: 18px;
+    height: 18px;
+}
+  /* Account Privacy */
+
+  /* Delete Account */
+  .delete-account-wrp h3 {
+    font-size: 15px;
+}
+.delete-account-wrp p {
+    font-size: 14px;
+}
+.delete-btn-rgt button.primary-cta {
+    margin: auto;
+}
+.notice-data h4 {
+    font-size: 15px;
+}
+.notice-data p {
+    font-size: 14px;
+}
+.service-important h4 {
+    font-size: 14px;
+}
+.notice-footer-btn a.primary-cta img {
+    width: 9px;
+    height: 9px;
+    margin-left: 7px;
+}
+.notice-footer-btn a.primary-cta {
+    font-size: 11px;
+}
+.notice-footer-btn button.secondary-cta {
+    font-size: 15px;
+}
+/* Delete Account */
+
+/* About SevaServe */
+.about-swap-inner .inner-data span {
+    font-size: 14px;
+}
+.about-swap-inner .inner-data span img {
+    height: 17px;
+    width: 17px;
+    margin-right: 6px;
+}
+/* About SevaServe */
+
+/* Help & Support */
+.help-support-wrp h3 {
+    font-size: 15px;
+}
+.help-support-wrp p {
+    font-size: 14px;
+}
+.email-box {
+    font-size: 12px;
+}
+/* Help & Support */
+
+/* My Payments */
+.left-payments-body {
+    flex-direction: column;
+}
+.browse-ctg-head {
+    flex-direction: column;
+}
+.browse-ctg-head.my-con-head .tab-left {
+    margin-top: 10px;
+}
+.my-payments-body {
+    flex-direction: column;
+}
+.my-payments-body .paid h5 {
+    font-size: 15px;
+}
+.my-payments-body .paid h5 span {
+    display: inline-block;
+    margin-top: 8px;
+}
+.my-payments-body .paid p span {
+    font-size: 14px;
+}
+.right-payments-body button.secondary-cta {
+    font-size: 11px;
+    font-weight: 500;
+}
+.right-payments-body button.primary-cta {
+    font-size: 11px;
+}
+.right-payments-body button.primary-cta img.pay {
+    width: 12px;
+    height: 12px;
+    margin-right: 7px;
+}
+/* My Payments */
+
+/* Saved Address  */
+
+.browse-ctg-head.my-con-head a.primary-cta {
+    width: fit-content;
+    font-size: 12px;
+}
+.saved-addresses-in {
+    flex-direction: column;
+}
+.use-location {
+    flex-direction: column;
+}
+.your-location-top-in button.reject-btn {
+    margin-top: 10px;
+}
+.addres-form button.primary-cta {
+    justify-content: center;
+}
+/* Saved Address  */
+
+/* Checkout */
+.cost-details-wrp h4 {
+    font-size: 15px;
+}
+.cost-details-in p {
+    font-size: 14px;
+}
+.select-pay-met h4 {
+    font-size: 16px;
+}
+.select-pay-met ul {
+    align-items: flex-start;
+    flex-direction: column;
+}
+.cost-details-wrp {
+   padding: 0;
+}
+/* Checkout */
+
+/* Payment Method */
+.card-wrp {
+    flex-direction: column;
+}
+    .single-card img.card {
+        width: 314px;
+    }
+/* Payment Method */
+
+/* My Bookings */
+.my-booking-wrpper {
+    flex-direction: column;
+}
+.plumbing-top .add-progress p.right {
+    padding: 3px 8px;
+    font-size: 13px;
+}
+.home-quotes-cta {
+    flex-direction: column;
+}
+/* My Bookings */
+
+/* Payment */
+.payment-in {
+    padding: 20px 80px;
+}
+.smart-analysis p {
+    font-size: 14px;
+}
+.payment-btom p {
+    font-size: 14px;
+}
+.upload-screenshot h4 {
+    font-size: 15px;
+}
+.smart-analysis h5 {
+    font-size: 15px;
+}
+.payment-wrp p {
+    font-size: 15px;
+}
+.payment-in h3 {
+    font-size: 28px;
+}
+.payment-in h5 {
+    font-size: 15px;
+}
+.payment-in h6 {
+    font-size: 15px;
+}
+.select-pay-met ul li {
+    font-size: 14px;
+}
+.upload-screenshot input[type="file"] {
+    font-size: 14px;
+}
+.payment-btom .primary-cta {
+    font-size: 14px;
+}
+.payment-btom .primary-cta img {
+    margin-left: 8px;
+}
+/* Payment */
+
+/* Services */
+.browse-ctg-head .your-location-top {
+    flex-direction: column;
+    gap: 20px;
+}
+.browse-ctg-head .your-location-top {
+    align-items: unset;
+}
+.browse-ctg-head .your-location-top select {
+    padding: 10px 30px 10px 10px;
+    margin-left: 0px;
+}
+.services-sec-wrp h3 {
+    font-size: 15px;
+}
+.services-sec-wrp .upcoming-my-slide  .upcoming-data.ser {
+    left: 29px;
+}
+.top-services-slider button.slick-prev.slick-arrow, .top-services-slider button.slick-next.slick-arrow {
+    width: 42px;
+    height: 40px;
+}
+.services-sec-in .upcoming-my-slide {
+    width: 100%;
+}
+/* Services */
+
+/* Plumbing */
+.sub-cat-filtr-btns {
+    flex-direction: column;
+}
+.sub-cat-filtr-btns button {
+    width: 100%;
+}
+.service-details-sub-cat h3 {
+    font-size: 15px;
+}
+.service-details-banner-data h1 {
+    font-size: 16px;
+}
+.service-details-banner-data p {
+    font-size: 14px;
+    flex-direction: column;
+}
+.service-issues-tab {
+    flex-direction: column;
+    gap: 20px;
+}
+.service-issues-tab-data h4 {
+    font-size: 15px;
+}
+.service-issues-tab-data p {
+    font-size: 14px;
+}
+.service-issues-content p {
+    font-size: 14px;
+}
+.service-issues-content ul li {
+    width: 100%;
+}
+.service-details-issues h3 {
+    font-size: 15px;
+}
+.service-issues-content-problem label {
+    font-size: 14px;
+    padding: 10px;
+}
+.service-issues-content-problem label img {
+    width: 25px;
+}
+.service-issues-content-problem-thumbs-image {
+    width: 46%;
+}
+.service-issues-content-problem-thumbs {
+            flex-wrap: wrap;
+}
+/* Plumbing */
+
+/* View Details */
+.view-sum-subcat h3 {
+    font-size: 15px;
+    flex-direction: column;
+    gap: 20px;
+}
+.view-sum-subcat h3 a img {
+    width: 15px;
+}
+.sub-cat-head a {
+    width: 15px;
+}
+.sub-cat-head p {
+    font-size: 14px;
+}
+.estimated-total .estimated p {
+    font-size: 14px;
+}
+.estimated-total .estimated span {
+    font-size: 15px;
+}
+.estimated-total .avrg span {
+    font-size: 15px;
+}
+.request-btn button.primary-cta {
+    font-size: 15px;
+}
+.accordion-body ol.main-category li {
+    font-size: 14px;
+}
+.view-sum-cat h5 {
+    font-size: 15px;
+}
+/* View Details */
+
+/* Issue Details */
+.up-image-wrp {
+    flex-wrap: wrap;
+}
+.upload-img .up-image-wrp img {
+    width: 110px;
+    height: 110px;
+}
+.issue-details-wrp h4 {
+    font-size: 15px;
+}
+span.primary-cta.tap {
+    font-size: 15px;
+}
+/* Issue Details */
+
+/* Booking Tracking */
+.boking-right-img {
+    position: relative;
+}
+.plumbing-wrp-book {
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+}
+.plumbing-wrp-book .plumbing p.bold-text {
+    font-size: 15px;
+}
+/* Booking Tracking */
+.left-leakage button.primary-cta {
+    margin-top: 10px;
+    font-size: 12px;
+    padding: 0 8px;
+    height: 25px;
+}
+.left-rgt-car-wrp {
+    display: flex;
+    flex-direction: column;
+}
+.left-slider-pop {
+    width: 100%;
+}
+.right-slider-pop {
+    width: 100%;
+}
+    div#login-screen-1 .modal-content {
+        padding: 0;
+        margin-top: 50px;
+    }
+
+
+
+        .select-date-time-inner {
+    flex-direction: column;
+}
+.select-time-in {
+    width: 100%;
+}
+.select-time-btn-grp label{
+    width: 100%;
+}
+.select-date-time-foot button {
+    font-size: 11px;
+}
+.select-date-in {
+    width: 100%;
+}
+.secondary-cta {
+    font-size: 12px;
+}
+a.Propose-cta {
+    font-size: 12px;
+}
+.welcome-seva-ser a.primary-cta{
+    font-size: 12px;
+}
+a.primary-cta img {
+    width: 10px;
+    height: 16px;
+}
+.responsive-header{
+    display: flex;
+            gap: 20px;
+}
+.search-bar {
+        width: 286px;
+    }
+    .showData{
+        flex-direction: row;
+                flex-wrap: wrap;
+                        height: 187px;
+    }
+    .working-process h2 {
+    font-size: 14px;
+}
+.work-list li p {
+    font-size: 14px;
+}
+.profile.login .primary-cta {
+    font-size: 14px;
+}
+.notification-list {
+    width: 255px;
+}
+.notification-data h3 {
+    font-size: 12px;
+}
+.notification-data p {
+    font-size: 12px;
+}
+
+}
+
+@media only screen and (min-width: 320px) and (max-width: 359px) {
+  /* Home Page */
+  .logo {
+    width: 30px;
+    height: 40px;
+  }
+  .left-section {
+    gap: 10px;
+  }
+  .dropdown-toggle.location-toggle img.loca {
+    margin-right: 0px;
+  }
+  .location img.loca {
+    height: 20px;
+    width: 20px;
+  }
+  .location {
+    font-size: 12px;
+  }
+  .search-bar {
+    width: 220px;
+  }
+  .inner-hero p {
+    font-size: 12px;
+    left: 10px;
+    top: 16px;
+  }
+  .hero-img {
+    width: 110px;
+  }
+  .hero-btn button {
+    padding: 5px 10px;
+    bottom: 5px;
+    left: 12px;
+    font-size: 10px;
+  }
+  .hero-btn img {
+    width: 12px;
+    height: 12px;
+  }
+  .pipe-leakage {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+.left-leakage p {
+    font-size: 14px;
+}
+.leakage-img {
+    width: 60px;
+}
+.right-leakage .right-text .frist {
+    font-size: 14px;
+    font-weight: 500;
+}
+.right-leakage .right-text .sec {
+    justify-content: flex-start;
+}
+.browse-ctg-head p.see-all {
+    font-size: 15px;
+    font-weight: 400;
+}
+.upcoming-data .up-text {
+    font-size: 14px;
+    font-weight: 500;
+}
+.upcoming-data .up-date {
+    font-size: 14px;
+}
+.upcoming-data {
+    left: 48px;
+}
+button.primary-cta.upcm-btn {
+    font-size: 14px;
+    height: 35px;
+}
+.upcm-slider-btn .cnl {
+    padding: 0px 15px;
+    font-size: 14px;
+    height: 35px;
+}
+.primary-cta.upcm-btn img {
+    width: 15px;
+    height: 15px;
+    margin-right: 3px;
+}
+.plumbing .plm {
+    font-size: 14px;
+    font-weight: 500;
+}
+.plumbing .plm img {
+    width: 15px;
+    height: 16px;
+}
+.plumbing .sub-cate {
+    font-size: 14px;
+}
+.service-list-type ol.main-category li {
+    font-size: 14px;
+}
+.additional-services .additional-text {
+    font-weight: 500;
+}
+.additional-services ul.service-list li {
+    font-size: 14px;
+}
+.service-list-type p {
+    font-size: 14px;
+}
+.service-cost span {
+    font-size: 14px;
+}
+.service-quotes {
+    flex-direction: column;
+}
+button.reject-btn {
+    font-size: 14px;
+    padding: 0px 25px;
+}
+button.primary-cta.rgt {
+    font-size: 14px;
+    justify-content: center;
+}
+.home-quotes-cta a.primary-cta.rgt {
+    justify-content: center;
+}
+.primary-cta.rgt img {
+    width: 12px;
+    height: 12px;
+    margin-left: 6px;
+}
+.icon-header {
+    font-size: 18px;
+    margin-left: 13px;
+}
+.left-leakage span {
+    height: 22px;
+}
+  /* Home Page */
+
+  /* My Profile */
+  .user-img-circle {
+    left: 50%;
+    top: 45px;
+    width: 70px;
+    height: 70px;
+  }
+
+  .user-img-circle img {
+    width: 60px;
+    height: 60px;
+  }
+
+  .my-profile-wrapper .upload-icon {
+    top: 19%;
+    right: 38%;
+    width: 20px;
+    height: 20px;
+  }
+
+  .my-profile-wrapper label.upload-icon img {
+    height: 16px;
+    width: 16px;
+  }
+
+  .browse-ctg-head h2 {
+    font-size: 15px;
+  }
+.browse-ctg-head p.see-all {
+    font-size: 15px;
+}
+  .roger-data {
+    width: 100%;
+  }
+.browse-ctg-head p.see-all {
+    font-size: 15px;
+    font-weight: 500;
+}
+  .roger-data .input-row {
+    gap: 0px;
+    flex-direction: column;
+  }
+
+  .footer-text {
+    font-size: 12px;
+  }
+
+  .input-data-file {
+    padding-bottom: 70px;
+  }
+
+  /* My Profile */
+
+  /* Account Privacy */
+p.about-us-data {
+    font-size: 14px;
+}
+.inner-data a span {
+    font-size: 15px;
+}
+.about-swap-inner .inner-data a img {
+    height: 15px;
+    width: 15px;
+}
+.container.home-wraper.my-profile {
+    height: auto;
+}
+.delete-account .modal-header h5.modal-title {
+    font-size: 15px;
+}
+.delete-account ul.list-group.list-group-flush {
+    gap: 12px;
+}
+.modal-body.delete-account-bdy li.list-group-item.custom-item span {
+  font-size: 14px;
+}
+.modal-dialog.modal-dialog-centered .modal-header button.btn-close {
+    right: 9px;
+    top: -2rem;
+    width: 18px;
+    height: 18px;
+}
+  /* Account Privacy */
+
+/* Delete Account */
+  .delete-account-wrp h3 {
+    font-size: 15px;
+}
+.delete-account-wrp p {
+    font-size: 14px;
+}
+.delete-btn-rgt button.primary-cta {
+    margin: auto;
+}
+.notice-data h4 {
+    font-size: 15px;
+}
+.notice-data p {
+    font-size: 14px;
+}
+.service-important h4 {
+    font-size: 14px;
+}
+.notice-footer-btn a.primary-cta img {
+    width: 9px;
+    height: 9px;
+    margin-left: 7px;
+}
+.notice-footer-btn a.primary-cta {
+    font-size: 11px;
+}
+.notice-footer-btn button.secondary-cta {
+    font-size: 15px;
+}
+/* Delete Account */
+
+/* About SevaServe */
+.about-swap-inner .inner-data span {
+    font-size: 14px;
+}
+.about-swap-inner .inner-data span img {
+    height: 17px;
+    width: 17px;
+    margin-right: 6px;
+}
+/* About SevaServe */
+
+/* Help & Support */
+.help-support-wrp h3 {
+    font-size: 15px;
+}
+.help-support-wrp p {
+    font-size: 14px;
+}
+.email-box {
+    font-size: 12px;
+}
+/* Help & Support */
+
+/* My Payments */
+.left-payments-body {
+    flex-direction: column;
+}
+.browse-ctg-head {
+    flex-direction: column;
+}
+.browse-ctg-head.my-con-head .tab-left {
+    margin-top: 10px;
+}
+.my-payments-body {
+    flex-direction: column;
+}
+.my-payments-body .paid h5 {
+    font-size: 15px;
+}
+.my-payments-body .paid h5 span {
+    display: inline-block;
+    margin-top: 8px;
+}
+.my-payments-body .paid p span {
+    font-size: 14px;
+}
+.right-payments-body button.secondary-cta {
+    font-size: 11px;
+    font-weight: 500;
+}
+.right-payments-body button.primary-cta {
+    font-size: 11px;
+}
+.right-payments-body button.primary-cta img.pay {
+    width: 12px;
+    height: 12px;
+    margin-right: 7px;
+}
+/* My Payments */
+
+/* Saved Address  */
+
+.browse-ctg-head.my-con-head a.primary-cta {
+    width: fit-content;
+    font-size: 12px;
+}
+.saved-addresses-in {
+    flex-direction: column;
+}
+.use-location {
+    flex-direction: column;
+}
+.your-location-top-in button.reject-btn {
+    margin-top: 10px;
+}
+.addres-form button.primary-cta {
+    justify-content: center;
+}
+/* Saved Address  */
+
+/* Checkout */
+.cost-details-wrp h4 {
+    font-size: 15px;
+}
+.cost-details-in p {
+    font-size: 14px;
+}
+.select-pay-met h4 {
+    font-size: 16px;
+}
+.select-pay-met ul {
+    align-items: flex-start;
+    flex-direction: column;
+}
+.cost-details-wrp {
+   padding: 0;
+}
+/* Checkout */
+
+/* Payment Method */
+.card-wrp {
+    flex-direction: column;
+}
+.single-card img.card {
+    width: 255px;
+}
+/* Payment Method */
+
+/* My Bookings */
+.my-booking-wrpper {
+    flex-direction: column;
+}
+.plumbing-top .add-progress p.right {
+    padding: 3px 8px;
+    font-size: 12px;
+}
+.home-quotes-cta {
+    flex-direction: column;
+}
+/* My Bookings */
+
+/* Payment */
+.payment-in {
+    padding: 20px 80px;
+}
+.smart-analysis p {
+    font-size: 14px;
+}
+.payment-btom p {
+    font-size: 14px;
+}
+.upload-screenshot h4 {
+    font-size: 15px;
+}
+.smart-analysis h5 {
+    font-size: 15px;
+}
+.payment-wrp p {
+    font-size: 15px;
+}
+.payment-in h3 {
+    font-size: 28px;
+}
+.payment-in h5 {
+    font-size: 15px;
+}
+.payment-in h6 {
+    font-size: 15px;
+}
+.select-pay-met ul li {
+    font-size: 14px;
+}
+.upload-screenshot input[type="file"] {
+    font-size: 14px;
+}
+.payment-btom .primary-cta {
+    font-size: 14px;
+}
+.payment-btom .primary-cta img {
+    margin-left: 8px;
+}
+/* Payment */
+
+/* Services */
+.browse-ctg-head .your-location-top {
+    flex-direction: column;
+    gap: 20px;
+}
+.browse-ctg-head .your-location-top {
+    align-items: unset;
+}
+.browse-ctg-head .your-location-top select {
+    padding: 10px 30px 10px 10px;
+    margin-left: 0px;
+}
+.services-sec-wrp h3 {
+    font-size: 15px;
+}
+.services-sec-wrp .upcoming-my-slide  .upcoming-data.ser {
+    left: 29px;
+}
+.top-services-slider button.slick-prev.slick-arrow, .top-services-slider button.slick-next.slick-arrow {
+    width: 42px;
+    height: 40px;
+}
+.services-sec-in .upcoming-my-slide {
+    width: 100%;
+}
+/* Services */
+
+/* Plumbing */
+.sub-cat-filtr-btns {
+    flex-direction: column;
+}
+.sub-cat-filtr-btns button {
+    width: 100%;
+}
+.service-details-sub-cat h3 {
+    font-size: 15px;
+}
+.service-details-banner-data h1 {
+    font-size: 16px;
+}
+.service-details-banner-data p {
+    font-size: 14px;
+    flex-direction: column;
+}
+.service-issues-tab {
+    flex-direction: column;
+    gap: 20px;
+}
+.service-issues-tab-data h4 {
+    font-size: 15px;
+}
+.service-issues-tab-data p {
+    font-size: 14px;
+}
+.service-issues-content p {
+    font-size: 14px;
+}
+.service-issues-content ul li {
+    width: 100%;
+}
+.service-details-issues h3 {
+    font-size: 15px;
+}
+.service-issues-content-problem label {
+    font-size: 14px;
+    padding: 10px;
+}
+.service-issues-content-problem label img {
+    width: 25px;
+}
+.service-issues-content-problem-thumbs-image {
+    width: 46%;
+}
+.service-issues-content-problem-thumbs {
+            flex-wrap: wrap;
+}
+/* Plumbing */
+
+/* View Details */
+.view-sum-subcat h3 {
+    font-size: 15px;
+    flex-direction: column;
+    gap: 20px;
+}
+.view-sum-subcat h3 a img {
+    width: 15px;
+}
+.sub-cat-head a {
+    width: 15px;
+}
+.sub-cat-head p {
+    font-size: 14px;
+}
+.estimated-total .estimated p {
+    font-size: 14px;
+}
+.estimated-total .estimated span {
+    font-size: 15px;
+}
+.estimated-total .avrg span {
+    font-size: 15px;
+}
+.request-btn button.primary-cta {
+    font-size: 15px;
+}
+.accordion-body ol.main-category li {
+    font-size: 14px;
+}
+.view-sum-cat h5 {
+    font-size: 15px;
+}
+/* View Details */
+
+/* Issue Details */
+.up-image-wrp {
+    flex-wrap: wrap;
+}
+.upload-img .up-image-wrp img {
+    width: 110px;
+    height: 110px;
+}
+.issue-details-wrp h4 {
+    font-size: 15px;
+}
+span.primary-cta.tap {
+    font-size: 15px;
+}
+/* Issue Details */
+
+/* Booking Tracking */
+.boking-right-img {
+    position: relative;
+}
+.plumbing-wrp-book {
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+}
+.plumbing-wrp-book .plumbing p.bold-text {
+    font-size: 15px;
+}
+
+/* Booking Tracking */
+
+.left-leakage button.primary-cta {
+    margin-top: 10px;
+    font-size: 12px;
+    padding: 0 8px;
+    height: 25px;
+}
+.left-rgt-car-wrp {
+    display: flex;
+    flex-direction: column;
+}
+.left-slider-pop {
+    width: 100%;
+}
+.right-slider-pop {
+    width: 100%;
+}
+    div#login-screen-1 .modal-content {
+        padding: 0;
+        margin-top: 50px;
+    }
+
+
+
+
+
+    .select-date-time-inner {
+    flex-direction: column;
+}
+.select-time-in {
+    width: 100%;
+}
+.select-time-btn-grp label{
+    width: 100%;
+}
+.select-date-time-foot button {
+    font-size: 11px;
+}
+.select-date-in {
+    width: 100%;
+}
+.secondary-cta {
+    font-size: 12px;
+}
+a.Propose-cta {
+    font-size: 12px;
+}
+.welcome-seva-ser a.primary-cta{
+    font-size: 12px;
+}
+a.primary-cta img {
+    width: 10px;
+    height: 16px;
+}
+.responsive-header{
+    display: flex;
+            gap: 20px;
+}
+.search-bar {
+        width: 242px;
+    }
+    .showData{
+        flex-direction: row;
+                flex-wrap: wrap;
+                        height: 187px;
+    }
+    .working-process h2 {
+    font-size: 14px;
+}
+.work-list li p {
+    font-size: 14px;
+}
+.profile.login .primary-cta {
+    font-size: 14px;
+}
+.notification-list {
+    width: 255px;
+}
+.notification-data h3 {
+    font-size: 12px;
+}
+.notification-data p {
+    font-size: 12px;
+}
+
+}

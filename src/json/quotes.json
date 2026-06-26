@@ -1,0 +1,68 @@
+{
+  "quotesData":{"received": [
+    {
+      "quote_id": "Q1015",
+      "status": "Additional Services",
+      "category": "Plumbing",
+      "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
+      "cost": 149,
+      "services": [
+        {
+          "category": "Installation",
+          "service": "Sink Installation",
+          "sub_service": "Replace Existing Sink"
+        }
+      ],
+      "additional_services": [
+        "Undermount / Vessel Sink Setup",
+        "Vessel Sink Setup"
+      ]
+    }
+    
+  ],
+
+  "requested": [
+    {
+      "quote_id": "Q2015",
+      "status": "Pending From Admin",
+      "category": "Plumbing",
+      "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
+      "cost": 149,
+      "services": [
+        {
+          "category": "Installation",
+          "service": "Sink Installation",
+          "sub_service": "Replace Existing Sink"
+        }
+      ],
+      "additional_services": [
+        "Undermount / Vessel Sink Setup",
+        "Vessel Sink Setup"
+      ]
+    }
+   
+  ],
+
+  "accepted": [
+    {
+      "quote_id": "Q3015",
+      "category": "Plumbing",
+      "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
+      "cost": 149,
+      "pdf_url": "/pdfs/Q3015.pdf",
+      "services": [
+        {
+          "category": "Installation",
+          "service": "Sink Installation",
+          "sub_service": "Replace Existing Sink"
+        }
+      ],
+      "additional_services": [
+        "Undermount / Vessel Sink Setup",
+        "Vessel Sink Setup"
+      ]
+    }
+   
+  ]
+  }
+}
