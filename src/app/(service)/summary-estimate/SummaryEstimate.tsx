@@ -29,7 +29,7 @@ const SummaryEstimate = () => {
 
   const [showReschedule, setShowReschedule] = useState<boolean>(false);
   const [isOpenModal, setIsOpenModal] = useState<boolean>(false);
-  const [availabilitySlots, setAvailabilitySlots] = useState<unknown[]>([]);
+  const [availabilitySlots, setAvailabilitySlots] = useState<any[]>([]);
 
   // 1. Get the Redux Store fallback data
   const reduxData = useSelector(
@@ -278,7 +278,8 @@ const SummaryEstimate = () => {
       <DatePopup
         isOpen={showReschedule}
         setIsOpen={setShowReschedule}
-        onConfirm={(data) => {
+        onConfirm={(data: any) => {
+          console.log("data****", data);
           const slots = data?.availabilitySlots || [];
           setAvailabilitySlots(slots);
           if (slots.length > 0) {

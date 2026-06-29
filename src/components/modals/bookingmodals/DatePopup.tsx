@@ -24,10 +24,18 @@ interface DatePopupProps {
   setIsOpen: (isOpen: boolean) => void;
   // Callback now receives your exact array payload format
   onConfirm?: (data: {
-    availabilitySlots: SelectedSlotPayload[];
+    availabilitySlots: { date: string; slotIds: string }[];
     address: string;
   }) => void;
 }
+
+const getTodayString = () => {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
 
 const DatePopup: React.FC<DatePopupProps> = ({
   isOpen,
@@ -35,7 +43,7 @@ const DatePopup: React.FC<DatePopupProps> = ({
   onConfirm,
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
-  const [selectedDate, setSelectedDate] = useState<string>("");
+  const [selectedDate, setSelectedDate] = useState<string>(getTodayString());
   const [address, setAddress] = useState<string>(
     "123, Street, Anywhere, 11001"
   );
@@ -99,6 +107,8 @@ const DatePopup: React.FC<DatePopupProps> = ({
       });
 
     if (isOpen) {
+      setSelectedSlots([]); // Clear slots on open
+      setSelectedDate(getTodayString()); // Set date to today on open
       modalInstance.show();
     } else {
       modalInstance.hide();
@@ -126,13 +136,16 @@ const DatePopup: React.FC<DatePopupProps> = ({
           $("#datepicker-2").datepicker("destroy");
         }
 
-        ($("#datepicker-2") as any).datepicker({
+        const datepicker = ($("#datepicker-2") as any).datepicker({
           minDate: 0,
           dateFormat: "yy-mm-dd", // Changed to match your JSON payload format (YYYY-MM-DD)
           onSelect: (dateText: string) => {
             setSelectedDate(dateText);
           },
         });
+
+        // Set today's date selected in the UI calendar
+        datepicker.datepicker("setDate", new Date());
       }
     };
 
@@ -181,10 +194,18 @@ const DatePopup: React.FC<DatePopupProps> = ({
       return;
     }
 
-    // Map to your exact required API structure
-    const cleanedSlots = selectedSlots.map((item) => ({
-      date: item.date,
-      slotId: item.slotId,
+    // Group selected slots by date to format as [{"date":"YYYY-MM-DD","slotIds":"id1,id2,..."}, ...]
+    const grouped: { [date: string]: number[] } = {};
+    selectedSlots.forEach((item) => {
+      if (!grouped[item.date]) {
+        grouped[item.date] = [];
+      }
+      grouped[item.date].push(item.slotId);
+    });
+
+    const cleanedSlots = Object.keys(grouped).map((date) => ({
+      date,
+      slotIds: grouped[date].join(","),
     }));
 
     console.log("Output Array sent to callback:", cleanedSlots);
@@ -286,7 +307,17 @@ const DatePopup: React.FC<DatePopupProps> = ({
                       {selectedDate && ` for ${formatDateLabel(selectedDate)}`}
                     </h2>
 
-                    <div className="select-time-btn-grp">
+                    <div
+                      className="select-time-btn-grp"
+                      style={{
+                        maxHeight: "220px",
+                        overflowY: "auto",
+                        paddingRight: "5px",
+                        display: "grid",
+                        gridTemplateColumns: "1fr 1fr",
+                        gap: "10px",
+                      }}
+                    >
                       {loadingSlots ? (
                         <p>Loading available slots...</p>
                       ) : timeSlots.length === 0 ? (
@@ -313,6 +344,7 @@ const DatePopup: React.FC<DatePopupProps> = ({
                               <label
                                 htmlFor={`time-${slot.id}`}
                                 style={{
+                                  width: "100%",
                                   border: isChecked
                                     ? "1px solid #b30000"
                                     : "1px solid #ccc",
