@@ -10,14 +10,24 @@ import RescheduleRequestSubmit from "@/components/modals/bookingmodals/Reschedul
 import ServiceAccepted from "@/components/modals/bookingmodals/ServiceAccepted";
 import ServiceRejected from "@/components/modals/bookingmodals/ServiceRejected";
 import Link from "next/link";
-import { bookingData } from "../../../json/booking.json";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { bookingData } from "../../../json/booking.json";
 
-export default function Booking() {
+interface BookingProps {
+  initialBookingData?: {
+    upcoming: any[];
+    previous: any[];
+    cancelled: any[];
+  };
+}
+
+export default function Booking({ initialBookingData }: BookingProps) {
   const router = useRouter();
 
-  const [myBookingData, setMyBookingData] = useState<any>(bookingData);
+  const [myBookingData, setMyBookingData] = useState<any>(
+    initialBookingData || bookingData
+  );
   const [activeTab, setActiveTab] = useState("upcoming");
 
   let booking = myBookingData?.[activeTab] || [];
@@ -69,11 +79,10 @@ export default function Booking() {
                                 key={index}
                               >
                                 <button
-                                  className={`nav-link ${
-                                    activeTab === item.toLowerCase()
+                                  className={`nav-link ${activeTab === item.toLowerCase()
                                       ? "active"
                                       : ""
-                                  }`}
+                                    }`}
                                   type="button"
                                   onClick={() =>
                                     setActiveTab(item.toLowerCase())
@@ -330,13 +339,13 @@ export default function Booking() {
                                       </p>
                                       {(item.status === "Cancelled" ||
                                         item?.status === "Completed") && (
-                                        <p className="service-cost">
-                                          Amount :
-                                          <span>
-                                            {`$ ${item?.amount}` || "$0"}
-                                          </span>
-                                        </p>
-                                      )}
+                                          <p className="service-cost">
+                                            Amount :
+                                            <span>
+                                              {`$ ${item?.amount}` || "$0"}
+                                            </span>
+                                          </p>
+                                        )}
                                       <p className="sub-cate">
                                         Services Selected
                                       </p>
@@ -374,13 +383,13 @@ export default function Booking() {
                                         <div className="service-quotes">
                                           {(item.status === "In Progress" ||
                                             item.status === "Pending") && (
-                                            <p className="service-cost">
-                                              Amount :
-                                              <span>
-                                                {`$ ${item?.amount}` || "$0"}
-                                              </span>
-                                            </p>
-                                          )}
+                                              <p className="service-cost">
+                                                Amount :
+                                                <span>
+                                                  {`$ ${item?.amount}` || "$0"}
+                                                </span>
+                                              </p>
+                                            )}
                                           {item.status === "In Progress" && (
                                             <div className="home-quotes-cta">
                                               <Link
@@ -460,7 +469,7 @@ export default function Booking() {
                                               <button
                                                 className="primary-cta rgt"
 
-                                                // data-bs-target="#rescheduleRequest" data-bs-toggle="modal"
+                                              // data-bs-target="#rescheduleRequest" data-bs-toggle="modal"
                                               >
                                                 <img
                                                   src="images/inner-page/download-icon.svg"
