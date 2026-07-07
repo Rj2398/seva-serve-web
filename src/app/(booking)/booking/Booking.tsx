@@ -641,7 +641,7 @@ export default function Booking({ initialBookingData }: BookingProps) {
       <ContractorRequest booking={selectedBooking} />
       <RescheduleRequestSubmit />
       <PaymentRemainingPopup bookingPaymentInfo={bookingPaymentInfo}
-        bookingId={bookingId}
+        bookingId={bookingId !== null ? String(bookingId) : ""}
       />
       <CancelBooking />
       <ConfirmCancelBooking />

@@ -1,12 +1,5 @@
 "use client"
-import CancelBooking from '@/components/modals/bookingmodals/CancelBooking'
-import ConfirmCancelBooking from '@/components/modals/bookingmodals/ConfirmCancelBooking'
-import ContractorRequest from '@/components/modals/bookingmodals/ContractorRequest'
 import DatePopup from '@/components/modals/bookingmodals/DatePopup'
-import NewServiceRejectionModal from '@/components/modals/bookingmodals/NewServiceRejectionModal'
-import PaymentRemainingPopup from '@/components/modals/bookingmodals/PaymentRemainingPopup'
-import RateContractorPopup from '@/components/modals/bookingmodals/RateContractorPopup'
-import RescheduleRequestSubmit from '@/components/modals/bookingmodals/RescheduleRequestSubmit'
 import Link from 'next/link'
 import React, { useState } from 'react'
 
@@ -83,15 +76,6 @@ const BookingUpdate = () => {
     </main>
 
     <DatePopup isOpen={showDatePicker} setIsOpen={setShowDatePicker} />
-
-      
-            <ContractorRequest/>
-            <RescheduleRequestSubmit/>
-            <PaymentRemainingPopup/>
-            <CancelBooking/>
-            <ConfirmCancelBooking/>
-            <RateContractorPopup/>
-            <NewServiceRejectionModal />
     </>
   )
 }

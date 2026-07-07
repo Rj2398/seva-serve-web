@@ -2,14 +2,14 @@ import React from 'react'
 
 interface DeleteMyAccountModalProps {
 
-  accountData: {
+  accountData?: {
     data?: string;
   } | null;
 
 }
 
 
-export default function DeleteMyAccountModal({ accountData }: DeleteMyAccountModalProps) {
+export default function DeleteMyAccountModal({ accountData = null }: DeleteMyAccountModalProps) {
 
 
   console.log("accountData", accountData)

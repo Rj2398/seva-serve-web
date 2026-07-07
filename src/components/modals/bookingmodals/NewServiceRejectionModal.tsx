@@ -6,11 +6,11 @@ import toast from 'react-hot-toast';
 import { globalServerRequest } from '@/actions/globalApi';
 
 interface ServiceAcceptedProps {
-  serviceId: string;
+  serviceId?: string;
 }
 
 
-export default function NewServiceRejectionModal({ serviceId }: ServiceAcceptedProps) {
+export default function NewServiceRejectionModal({ serviceId = "" }: ServiceAcceptedProps) {
 
   const [reason, setReason] = React.useState<string>("");
 
