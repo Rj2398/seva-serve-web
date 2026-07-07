@@ -10,6 +10,9 @@ import RescheduleRequestSubmit from "@/components/modals/bookingmodals/Reschedul
 import CancelBooking from "@/components/modals/bookingmodals/CancelBooking";
 import ServiceRejected from "@/components/modals/bookingmodals/ServiceRejected";
 import ServiceAccepted from "@/components/modals/bookingmodals/ServiceAccepted";
+import NewServiceRejectionModal from "@/components/modals/bookingmodals/NewServiceRejectionModal";
+import { globalServerRequest } from "@/actions/globalApi";
+import toast from "react-hot-toast";
 
 interface homeprops {
   data: any;
@@ -19,6 +22,7 @@ const ClientComponent = ({ data }: homeprops) => {
   const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
   const [showWelcomeModal, setShowWelcomeModal] = useState<boolean>(false);
   const [showAddCardModal, setShowAddCardModal] = useState<boolean>(false);
+  const [serviceId, setServiceId] = useState<string>("");
 
   const user =
     typeof window !== "undefined" ? localStorage.getItem("user") : null;
@@ -30,6 +34,10 @@ const ClientComponent = ({ data }: homeprops) => {
   const router = useRouter();
 
   useEffect(() => {
+    if (typeof window !== "undefined" && data?.user?.address) {
+      localStorage.setItem("homeUserData", JSON.stringify(data.user.address));
+    }
+
     const checkModalFlags = () => {
       if (typeof window !== "undefined") {
         if (sessionStorage.getItem("showWelcomeModal") === "true") {
@@ -102,7 +110,7 @@ const ClientComponent = ({ data }: homeprops) => {
           infinite: true,
           speed: 300,
           slidesToShow: 1,
-          centerMode: true,
+          // centerMode: true,
           autoplay: true,
           arrows: false,
           variableWidth: true,
@@ -191,6 +199,9 @@ const ClientComponent = ({ data }: homeprops) => {
     });
     return `${dateStr} • ${timeStr}`;
   };
+
+
+
 
   return (
     <>
@@ -430,23 +441,23 @@ const ClientComponent = ({ data }: homeprops) => {
                           </Link>
                         </p>
                       </div>
-                      {data?.quotes?.map((item: any, index: number) => (
+                      {data?.quotes?.slice(0, 1).map((item: any, index: number) => (
                         <div className="my-quotes-inner" key={index}>
                           <div className="add-user">
                             <p className="left">#{item?.quoteId}</p>
                             <p className="right">Additional Services</p>
                           </div>
                           <div className="plumbing">
-                            <a href="service-details.html" className="plm">
+                            <Link href={`/serviceDetails?serviceId=${item?.id}`} className="plm">
                               {item?.title || "Plumbing"}{" "}
                               <img
                                 src="images/home/up-right-arrow.svg"
                                 alt=""
                               />
-                            </a>
-                            <p className="sub-cate">Sub categories Selected</p>
+                            </Link>
+                            {/* <p className="sub-cate">Sub categories Selected</p> */}
                             <div className="service-list-type">
-                              <ol className="main-category">
+                              {/* <ol className="main-category">
                                 <li>
                                   Installation
                                   <ul>
@@ -501,7 +512,24 @@ const ClientComponent = ({ data }: homeprops) => {
                                   <li>Undermount / Vessel Sink Setup</li>
                                   <li>Vessel Sink Setup</li>
                                 </ul>
+                              </div> */}
+
+                              <div className="booking-schedule-container" style={{ padding: "15px", fontFamily: "'Segoe UI', Roboto, Helvetica, Arial, sans-serif", color: "#333", fontSize: "16px", maxWidth: "400px" }}>
+                                {/* {item?.schedule?.map((scheduleItem: any, schedIndex: number) => ( */}
+                                <div style={{ display: "flex", alignItems: "center", marginBottom: "12px", lineHeight: "1.4" }}>
+                                  <div style={{ width: "70px", fontWeight: "500", color: "#222222" }}>
+                                    Date :
+                                  </div>
+                                  <div style={{ width: "140px", letterSpacing: "0.3px", color: "#222" }}>
+                                    {item?.date}
+                                  </div>
+                                  <div style={{ letterSpacing: "0.5px", color: "#222", paddingLeft: "10px" }}>
+                                    {item?.time}
+                                  </div>
+                                </div>
+                                {/* ))} */}
                               </div>
+
                               <div className="service-quotes">
                                 <p className="service-cost">
                                   Cost:<span>${item?.quotedPrice}</span>
@@ -511,6 +539,7 @@ const ClientComponent = ({ data }: homeprops) => {
                                     className="reject-btn"
                                     data-bs-target="#servicesRejection"
                                     data-bs-toggle="modal"
+                                    onClick={() => setServiceId(item?.id)}
                                   >
                                     Reject
                                   </button>
@@ -518,6 +547,7 @@ const ClientComponent = ({ data }: homeprops) => {
                                     className="primary-cta rgt"
                                     data-bs-target="#servicesAccepted"
                                     data-bs-toggle="modal"
+                                    onClick={() => setServiceId(item?.id)}
                                   >
                                     Accept{" "}
                                     <img
@@ -563,7 +593,7 @@ const ClientComponent = ({ data }: homeprops) => {
                           const slide = target.closest("[data-route]");
                           if (slide) {
                             e.stopPropagation();
-                            router.push("/quotes");
+                            // router.push(`/serviceDetails?serviceId=${item?.id}`);
                           }
                         }}
                       >
@@ -571,8 +601,8 @@ const ClientComponent = ({ data }: homeprops) => {
                           (item: any, index: number) => (
                             <div
                               className="upcoming-my-slide"
-                              key={index}
-                              data-route="/quotes"
+                              key={item?.id}
+                              onClick={() => router.push(`/serviceDetails?serviceId=${item?.id}`)}
                               style={{
                                 cursor: "pointer",
                                 position: "relative",
@@ -581,19 +611,19 @@ const ClientComponent = ({ data }: homeprops) => {
                             >
                               <div className="upcoming-img">
                                 <img
-                                  src="images/home/home-slider/1.svg"
+                                  src={`${item?.imageUrl}`}
                                   alt=""
+                                  style={{ width: '308px' }}
                                 />
                               </div>
                               <div className="upcoming-data">
                                 <p className="up-text">
-                                  Plumbing - Pipe Leakage Repair
+                                  {item?.name}
                                 </p>
                                 <div className="upcm-slider-btn pop-srv">
                                   <button
                                     className="primary-cta upcm-btn pop-srv-btn"
-                                    style={{ pointerEvents: "none" }}
-                                    tabIndex={-1}
+
                                   >
                                     Request Exact Quote
                                   </button>
@@ -622,7 +652,8 @@ const ClientComponent = ({ data }: homeprops) => {
       <DatePopup isOpen={showDatePicker} setIsOpen={setShowDatePicker} />
       <RescheduleRequestSubmit />
       <ServiceRejected />
-      <ServiceAccepted />
+      <NewServiceRejectionModal serviceId={serviceId} />
+      <ServiceAccepted serviceId={serviceId} />
       <CancelBooking />
     </>
   );

@@ -93,9 +93,22 @@ function Cart() {
     };
   }, [loginStatus]);
 
-  const handleRemoveCartItem = (id: number) => {
-    setCartData((prev: any[]) => prev.filter((item) => (item.cart_item_id || item.requestId || item.id) !== id));
-    setTotalCount((prev) => Math.max(0, prev - 1));
+  const handleRemoveCartItem = async (id: number) => {
+    if (loginStatus === "true") {
+      const [response] = await Promise.all([
+        globalServerRequest({
+          endpoint: `cart/delete`,
+          method: "POST",
+          payload: { cart_item_id: id },
+        }),
+      ]);
+      if (response.success) {
+        fetchCartData(1);
+        toast.success("Item removed from cart successfully!");
+      } else {
+        toast.error(response.error || "Failed to remove item from cart");
+      }
+    }
   };
 
   return (
@@ -371,9 +384,9 @@ function Cart() {
                       >
                         {loading ? (
                           <>
-                            <span 
-                              className="spinner-border spinner-border-sm me-2" 
-                              role="status" 
+                            <span
+                              className="spinner-border spinner-border-sm me-2"
+                              role="status"
                               aria-hidden="true"
                               style={{ width: "12px", height: "12px" }}
                             ></span>

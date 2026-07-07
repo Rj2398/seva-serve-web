@@ -1,8 +1,11 @@
 'use client'
+import { globalServerRequest } from '@/actions/globalApi'
 import DeleteAddressModal from '@/components/modals/Address/DeleteAddressModal'
 import NewAddressModal from '@/components/modals/Address/NewAddressModal'
+import { MdOutlineShareLocation } from "react-icons/md";
 import { useRouter } from 'next/navigation'
 import React, { useState, useEffect } from 'react'
+import toast from 'react-hot-toast'
 
 const INITIAL_ADDRESSES = [
   {
@@ -72,6 +75,43 @@ const SavedAddress = ({ addressData }: addressprops) => {
     setSelectedAddress(null);
   };
 
+  const makeDefaultAddress = async (id: any) => {
+
+    const response = await globalServerRequest({
+      endpoint: `profile/address/default/${id}`,
+      method: "PUT",
+    })
+    console.log(response, "resssss")
+    if (response?.success) {
+      toast.success("Address marked as default successfully");
+
+      // Update the header instantly via local storage
+      const item = addresses.find((a: any) => a.id === id);
+      if (item && typeof window !== 'undefined') {
+        const displayFlat = item.flat || item.flat_house_building || '';
+        const displayFloor = item.floor || '';
+        const displayArea = item.area || item.area_sector_locality || '';
+        const formattedAddress = `${displayFlat}${displayFloor ? ', ' + displayFloor : ''}, ${displayArea}`;
+
+        localStorage.setItem('homeUserData', formattedAddress);
+        window.dispatchEvent(new Event("loginStatusChanged"));
+      }
+
+      const getResponse = await globalServerRequest({
+        endpoint: "profile/address",
+        method: "GET",
+      });
+      if (getResponse?.success) {
+        const data = getResponse?.data?.data || getResponse?.data;
+        setAddresses(Array.isArray(data) ? data : []);
+      }
+    } else {
+      toast.error("Failed to set address as default");
+    }
+  };
+
+
+
   return (
     <>
       <main>
@@ -93,31 +133,47 @@ const SavedAddress = ({ addressData }: addressprops) => {
                     <div className="saved-addresses-wrp">
                       <h3>Your Saved Addresses</h3>
                       {addresses.map((item: any) => {
-                          const displayType = item.type || item.label || 'Home';
-                          const displayFlat = item.flat || item.flat_house_building || '';
-                          const displayFloor = item.floor || '';
-                          const displayArea = item.area || item.area_sector_locality || '';
-                          const displayLandmark = item.landmark || item.nearby_landmark || '';
-                          const displayIcon = item.icon || (
-                            displayType?.toLowerCase() === 'home' ? 'images/saved-addresses/1.svg' :
-                            displayType?.toLowerCase() === 'office' ? 'images/saved-addresses/2.svg' :
-                            'images/saved-addresses/3.svg'
+                        const displayType = item.type || item.label || "Home";
+                        const displayFlat = item.flat || item.flat_house_building || "";
+                        const displayFloor = item.floor || "";
+                        const displayArea = item.area || item.area_sector_locality || "";
+                        const displayLandmark = item.landmark || item.nearby_landmark || "";
+
+                        const displayIcon =
+                          displayType?.toLowerCase() === "home" ? (
+                            <img
+                              src="/images/saved-addresses/1.svg"
+                              alt="Home"
+                              width={24}
+                              height={24}
+                            />
+                          ) : displayType?.toLowerCase() === "office" ? (
+                            <img
+                              src="/images/saved-addresses/2.svg"
+                              alt="Office"
+                              width={24}
+                              height={24}
+                            />
+                          ) : (
+                            <MdOutlineShareLocation size={24} />
                           );
-                          return (
-                        <div className="saved-addresses-in" key={item.id}>
-                          <div className="saved-addresses-icon">
-                            <img src={displayIcon} alt={displayType} />
-                          </div>
-                          <div className="saved-addresses-data">
-                            <h4>{displayType}</h4>
-                            <p style={{ lineHeight: '1.4' }}>
-                              <strong>{displayFlat}</strong>{displayFloor ? `, ${displayFloor}` : ''} <br />
-                              <span style={{ fontSize: '0.9em', opacity: '0.8' }}>
-                                {displayArea} {displayLandmark && `(Near ${displayLandmark})`}
-                              </span>
-                            </p>
-                          </div>
-                          {/* <div className="saved-addresses-cta">
+
+
+                        return (
+                          <div className="saved-addresses-in" key={item.id}>
+                            <div className="saved-addresses-icon">
+                              {displayIcon}
+                            </div>
+                            <div className="saved-addresses-data">
+                              <h4>{displayType}</h4>
+                              <p style={{ lineHeight: '1.4' }}>
+                                <strong>{displayFlat}</strong>{displayFloor ? `, ${displayFloor}` : ''} <br />
+                                <span style={{ fontSize: '0.9em', opacity: '0.8' }}>
+                                  {displayArea} {displayLandmark && `(Near ${displayLandmark})`}
+                                </span>
+                              </p>
+                            </div>
+                            {/* <div className="saved-addresses-cta">
                             <button
                               type="button"
                               data-bs-target="#add-address-popup"
@@ -138,30 +194,38 @@ const SavedAddress = ({ addressData }: addressprops) => {
 
 
 
-                          <div className="saved-addresses-cta">
-                            {/* Edit Button */}
-                            <button
-                              type="button"
-                              data-bs-target="#add-address-popup"
-                              data-bs-toggle="modal"
-                              onClick={() => setSelectedAddress(item)}
-                            >
-                              <img src="images/saved-addresses/edit.svg" alt="Edit" />
-                            </button>
+                            <div className="saved-addresses-cta">
 
-                            {/* Delete Button */}
-                            <button
-                              type="button"
-                              data-bs-target="#delete-address-popup"
-                              data-bs-toggle="modal"
-                              onClick={() => setSelectedAddress(item)}
-                            >
-                              <img src="images/saved-addresses/delete.svg" alt="Delete" />
-                            </button>
+                              {!item.is_default ? <a type="button" className="primary-cta" onClick={() => makeDefaultAddress(item.id)}><i
+                              ></i> Set as default</a> :
+                                <a type="button" style={{ background: '#363636', border: "1px solid    #363636", color: "#fff", cursor: "not-allowed", borderRadius: '20px', width: 'fit-content', padding: '3px 15px' }}><i
+                                ></i> Default</a>
+                              }
+
+
+                              {/* Edit Button */}
+                              <button
+                                type="button"
+                                data-bs-target="#add-address-popup"
+                                data-bs-toggle="modal"
+                                onClick={() => setSelectedAddress(item)}
+                              >
+                                <img src="images/saved-addresses/edit.svg" alt="Edit" />
+                              </button>
+
+                              {/* Delete Button */}
+                              <button
+                                type="button"
+                                data-bs-target="#delete-address-popup"
+                                data-bs-toggle="modal"
+                                onClick={() => setSelectedAddress(item)}
+                              >
+                                <img src="images/saved-addresses/delete.svg" alt="Delete" />
+                              </button>
+                            </div>
                           </div>
-                        </div>
-                          );
-                        })}
+                        );
+                      })}
                       {addresses.length === 0 && <p className="text-center py-4">No saved addresses found.</p>}
                     </div>
                   </div>

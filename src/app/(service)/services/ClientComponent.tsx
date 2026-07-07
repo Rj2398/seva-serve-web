@@ -96,6 +96,10 @@ export default function ClientComponent({ serviceData }: serviceProp) {
     }
   };
 
+  const truncateWords = (text: string, n: number) => {
+    return text.split(" ").slice(0, n).join(" ") + "...";
+  };
+
   // Persistent reference trackers to stop infinite teardown/init loops
   const topSliderInitialized = useRef(false);
   const featuredSliderInitialized = useRef(false);
@@ -347,73 +351,87 @@ export default function ClientComponent({ serviceData }: serviceProp) {
                       </div>
                     </div>
 
-                    <div className="services-sec-wrp">
-                      <h3>Top Services</h3>
-                      <div className="top-services-slider" >
-                        {filterTopServices?.map((item) => (
-                          <div className="top-services-slider-item" key={item.id} >
-                            <div className="upcoming-my-slide">
-                              <Link href={`/serviceDetails?serviceId=${item.id}&categoryId=${item.category_id || (selectedCategory !== "0" && selectedCategory !== "All Category" ? selectedCategory : "")}`}>
-                                <div className="upcoming-img">
-                                  {/* Fixed: Uses item.imageUrl dynamically matching your payload */}
-                                  <img src={item?.imageUrl || "images/home/home-slider/1.svg"} alt="" />
+                    {!filterTopServices?.length && !filterfeaturedCategory?.length && !filertallServices?.length ? (
+                      <div className="text-center" style={{ padding: "50px 0" }}>
+                        <h4 className="text-muted" style={{ color: "#999" }}>No data available</h4>
+                      </div>
+                    ) : (
+                      <>
+                        {filterTopServices?.length > 0 && (
+                          <div className="services-sec-wrp">
+                            <h3>Top Services</h3>
+                            <div className="top-services-slider" >
+                              {filterTopServices.map((item) => (
+                                <div className="top-services-slider-item" key={item.id} >
+                                  <div className="upcoming-my-slide">
+                                    <Link href={`/serviceDetails?serviceId=${item.id}&categoryId=${item.category_id || (selectedCategory !== "0" && selectedCategory !== "All Category" ? selectedCategory : "")}`}>
+                                      <div className="upcoming-img">
+                                        {/* Fixed: Uses item.imageUrl dynamically matching your payload */}
+                                        <img src={item?.imageUrl || "images/home/home-slider/1.svg"} alt="" />
+                                      </div>
+                                      <div className="upcoming-data ser">
+                                        {/* Fixed: Uses item.name dynamically matching your payload */}
+                                        <p className="up-text">{item?.name}</p>
+                                        <p className="up-date">{truncateWords(item.description, 5)}</p>
+                                      </div>
+                                    </Link>
+                                  </div>
                                 </div>
-                                <div className="upcoming-data ser">
-                                  {/* Fixed: Uses item.name dynamically matching your payload */}
-                                  <p className="up-text">{item?.name}</p>
-                                  <p className="up-date">{item?.description}</p>
-                                </div>
-                              </Link>
+                              ))}
                             </div>
                           </div>
-                        ))}
-                      </div>
-                    </div>
+                        )}
 
-                    <div className="services-sec-wrp">
-                      <h3>Featured Category</h3>
-                      <div className="featured-category-slider">
-                        {filterfeaturedCategory.map((item) => (
-                          <div className="featured-category-slider-item" key={`${item.id}_featured`}>
-                            <div className="browse-inner">
-                              <ul>
-                                <li>
-                                  <Link href={`/serviceDetails?categoryId=${item.id}`} className="wrp-img">
-                                    <div className="c-img">
-                                      {/* Fixed: Uses item.iconUrl dynamically matching your payload */}
-                                      <img src={item?.iconUrl} alt={item?.name} />
+                        {filterfeaturedCategory?.length > 0 && (
+                          <div className="services-sec-wrp">
+                            <h3>Featured Category</h3>
+                            <div className="featured-category-slider">
+                              {filterfeaturedCategory.map((item) => (
+                                <div className="featured-category-slider-item" key={`${item.id}_featured`}>
+                                  <div className="browse-inner">
+                                    <ul>
+                                      <li>
+                                        <Link href={`/serviceDetails?categoryId=${item.id}`} className="wrp-img">
+                                          <div className="c-img">
+                                            {/* Fixed: Uses item.iconUrl dynamically matching your payload */}
+                                            <img src={item?.iconUrl} alt={item?.name} />
+                                          </div>
+                                          {/* Fixed: Uses item.name dynamically matching your payload */}
+                                          <span>{item?.name}</span>
+                                        </Link>
+                                      </li>
+                                    </ul>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {filertallServices?.length > 0 && (
+                          <div className="services-sec-wrp">
+                            <h3 style={{ padding: '10px' }}>All Services</h3>
+                            <div className="services-sec-in">
+                              {filertallServices.map((item) => (
+                                <div className="upcoming-my-slide" key={`${item.id}_all`}>
+                                  <Link href={`/serviceDetails?serviceId=${item.id}&categoryId=${item.category_id || (selectedCategory !== "0" && selectedCategory !== "All Category" ? selectedCategory : "")}`}>
+                                    <div className="upcoming-img">
+                                      {/* Fixed: Uses item.imageUrl dynamically matching your payload */}
+                                      <img src={item?.imageUrl || "images/home/home-slider/1.svg"} alt="" />
                                     </div>
-                                    {/* Fixed: Uses item.name dynamically matching your payload */}
-                                    <span>{item?.name}</span>
+                                    <div className="upcoming-data ser">
+                                      {/* Fixed: Uses item.name dynamically matching your payload */}
+                                      <p className="up-text">{item?.name}</p>
+                                      <p className="up-date">{truncateWords(item.description, 5)}.</p>
+                                    </div>
                                   </Link>
-                                </li>
-                              </ul>
+                                </div>
+                              ))}
                             </div>
                           </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="services-sec-wrp">
-                      <h3 style={{ padding: '10px' }}>All Services</h3>
-                      <div className="services-sec-in">
-                        {filertallServices.map((item) => (
-                          <div className="upcoming-my-slide" key={`${item.id}_all`}>
-                            <Link href={`/serviceDetails?serviceId=${item.id}&categoryId=${item.category_id || (selectedCategory !== "0" && selectedCategory !== "All Category" ? selectedCategory : "")}`}>
-                              <div className="upcoming-img">
-                                {/* Fixed: Uses item.imageUrl dynamically matching your payload */}
-                                <img src={item?.imageUrl || "images/home/home-slider/1.svg"} alt="" />
-                              </div>
-                              <div className="upcoming-data ser">
-                                {/* Fixed: Uses item.name dynamically matching your payload */}
-                                <p className="up-text">{item?.name}</p>
-                                <p className="up-date">{item?.description}.</p>
-                              </div>
-                            </Link>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+                        )}
+                      </>
+                    )}
 
                   </div>
                 </div>

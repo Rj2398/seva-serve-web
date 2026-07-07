@@ -19,14 +19,27 @@ interface SelectedSlotPayload {
   label?: string; // Stored locally to render text in the UI list cleanly
 }
 
+export interface ReschedulePayload {
+  availabilitySlots: { date: string; slotId: string }[];
+  address: string;
+}
+
+// interface DatePopupProps {
+//   isOpen: boolean;
+//   setIsOpen: (isOpen: boolean) => void;
+//   // Callback now receives your exact array payload format
+// onConfirm?: (data: {
+//   // availabilitySlots: { date: string; slotIds: string }[];
+//   availabilitySlots: { date: string; slotId: string }[];
+//   address: string;
+// }) => void;
+// }
 interface DatePopupProps {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
   // Callback now receives your exact array payload format
-  onConfirm?: (data: {
-    availabilitySlots: { date: string; slotIds: string }[];
-    address: string;
-  }) => void;
+  onConfirm?: (data: ReschedulePayload) => void;
+  getAddressIdCallback?: (addressId: string) => void;
 }
 
 const getTodayString = () => {
@@ -41,12 +54,18 @@ const DatePopup: React.FC<DatePopupProps> = ({
   isOpen,
   setIsOpen,
   onConfirm,
+  getAddressIdCallback,
 }) => {
+  // console.log("onConfirm up", onConfirm)
+  // console.log("isOpen up", isOpen)
+  // console.log("setIsOpen up", setIsOpen)
   const modalRef = useRef<HTMLDivElement>(null);
   const [selectedDate, setSelectedDate] = useState<string>(getTodayString());
-  const [address, setAddress] = useState<string>(
-    "123, Street, Anywhere, 11001"
-  );
+  const [address, setAddress] = useState<string>("");
+  const [selectedAddressId, setSelectedAddressId] = useState<string>("");
+  const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
+
+  console.log(selectedAddressId, "saved *****");
 
   // Holds all selected slots across different dates
   const [selectedSlots, setSelectedSlots] = useState<SelectedSlotPayload[]>([]);
@@ -56,6 +75,35 @@ const DatePopup: React.FC<DatePopupProps> = ({
 
   // 2. Safely parse out the data array inside the fetch effect
   useEffect(() => {
+    const fetchAddresses = async () => {
+      try {
+        const response = await globalServerRequest({
+          endpoint: "profile/address",
+          method: "GET",
+        });
+        if (response.success) {
+          const data = response?.data?.data || response?.data;
+          const addressArray = Array.isArray(data) ? data : [];
+          setSavedAddresses(addressArray);
+          if (addressArray.length > 0) {
+            const firstAddr = addressArray[0];
+            const addrString = [
+              firstAddr.type ? `${firstAddr.type} -` : "",
+              firstAddr.flat_house_building,
+              firstAddr.area_sector_locality,
+              firstAddr.city,
+            ]
+              .filter(Boolean)
+              .join(" ");
+            setAddress(addrString);
+            setSelectedAddressId(String(firstAddr.id));
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch addresses:", error);
+      }
+    };
+
     const fetchSlots = async () => {
       setLoadingSlots(true);
       try {
@@ -88,6 +136,7 @@ const DatePopup: React.FC<DatePopupProps> = ({
 
     if (isOpen) {
       fetchSlots();
+      fetchAddresses();
     }
   }, [isOpen]);
 
@@ -175,6 +224,15 @@ const DatePopup: React.FC<DatePopupProps> = ({
       );
     } else {
       // Add slot to array
+      const slotsForSameDate = selectedSlots.filter(
+        (item) => item.date === selectedDate
+      );
+
+      if (slotsForSameDate.length >= 3) {
+        toast.error("You can select a maximum of 3 slots for the same date");
+        return;
+      }
+
       setSelectedSlots((prev) => [
         ...prev,
         { date: selectedDate, slotId, label },
@@ -194,6 +252,11 @@ const DatePopup: React.FC<DatePopupProps> = ({
       return;
     }
 
+    if (!address) {
+      toast.error("Please select a service address");
+      return;
+    }
+
     // Group selected slots by date to format as [{"date":"YYYY-MM-DD","slotIds":"id1,id2,..."}, ...]
     const grouped: { [date: string]: number[] } = {};
     selectedSlots.forEach((item) => {
@@ -205,15 +268,19 @@ const DatePopup: React.FC<DatePopupProps> = ({
 
     const cleanedSlots = Object.keys(grouped).map((date) => ({
       date,
-      slotIds: grouped[date].join(","),
+      // slotIds: grouped[date].join(","),
+      slotId: grouped[date].join(","),
     }));
 
     console.log("Output Array sent to callback:", cleanedSlots);
 
+    // Send selectedAddressId or fallback to the typed address
+    const payloadAddress = selectedAddressId || address;
+    console.log(" onConfirm datepopup:", onConfirm);
     if (onConfirm) {
       onConfirm({
         availabilitySlots: cleanedSlots,
-        address,
+        address: payloadAddress,
       });
     }
 
@@ -364,14 +431,58 @@ const DatePopup: React.FC<DatePopupProps> = ({
                   </div>
                 </div>
 
-                <div className="service-address">
+                <div className="service-address position-relative dropdown">
                   <p>Service Address</p>
                   <input
                     type="text"
                     placeholder="Enter full address"
                     value={address}
-                    onChange={(e) => setAddress(e.target.value)}
+                    onChange={(e) => {
+                      setAddress(e.target.value);
+                      setSelectedAddressId(""); // Reset ID if user types custom address
+                    }}
+                    className="dropdown-toggle"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
                   />
+                  {savedAddresses.length > 0 && (
+                    <ul
+                      className="dropdown-menu"
+                      style={{
+                        width: "100%",
+                        maxHeight: "200px",
+                        overflowY: "auto",
+                      }}
+                    >
+                      {savedAddresses.map((addr) => {
+                        const addrString = [
+                          addr.type ? `${addr.type} -` : "",
+                          addr.flat_house_building,
+                          addr.area_sector_locality,
+                          addr.city,
+                        ]
+                          .filter(Boolean)
+                          .join(" ");
+
+                        return (
+                          <li key={addr.id}>
+                            <a
+                              className="dropdown-item"
+                              href="#"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setAddress(addrString);
+                                setSelectedAddressId(String(addr.id));
+                                getAddressIdCallback?.(String(addr.id));
+                              }}
+                            >
+                              {addrString}
+                            </a>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
                 </div>
 
                 <div className="select-date-time-foot">

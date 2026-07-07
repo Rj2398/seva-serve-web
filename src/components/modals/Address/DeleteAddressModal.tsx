@@ -10,6 +10,8 @@ interface DeleteAddressModalProps {
 }
 
 const DeleteAddressModal: React.FC<DeleteAddressModalProps> = ({ selectedAddress, onDelete, onClose }) => {
+
+  console.log(selectedAddress)
   const [loading, setLoading] = useState(false);
   const addressId = selectedAddress?.id;
 
@@ -60,7 +62,7 @@ const DeleteAddressModal: React.FC<DeleteAddressModalProps> = ({ selectedAddress
                 <p><b>Are you sure you want to delete this address?</b></p>
                 {selectedAddress && (
                   <p className="small text-muted">
-                    Deleting: {selectedAddress.type} ({selectedAddress.flat})
+                    Deleting: {selectedAddress.label} ({selectedAddress.flat_house_building})
                   </p>
                 )}
                 <a

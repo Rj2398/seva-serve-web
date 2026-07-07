@@ -8,6 +8,20 @@ interface ApiOptions {
 }
 
 /**
+ * Helper to force logout the user immediately
+ */
+// const forceLogoutClient = () => {
+//   if (typeof window !== "undefined") {
+//     sessionStorage.clear();
+//     localStorage.clear();
+//     document.cookie =
+//       "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax; Secure";
+//     window.dispatchEvent(new Event("loginStatusChanged"));
+//     window.location.href = "/";
+//   }
+// };
+
+/**
  * Global API request handler that automatically manages Authorization headers.
  * Works on both client-side (using localStorage) and server-side (using cookies).
  */
@@ -18,8 +32,22 @@ export async function globalServerRequest({
   isFormData = false,
 }: ApiOptions) {
   try {
-    const targetUrl = `${BASE_URL}${endpoint}`;
+    let targetUrl = `${BASE_URL}${endpoint}`;
     const headers = new Headers();
+
+    // 0. Append payload to URL for GET requests
+    if (payload && method === "GET") {
+      const searchParams = new URLSearchParams();
+      Object.entries(payload).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          searchParams.append(key, String(value));
+        }
+      });
+      const queryString = searchParams.toString();
+      if (queryString) {
+        targetUrl += targetUrl.includes("?") ? `&${queryString}` : `?${queryString}`;
+      }
+    }
 
     let token: string | null | undefined = null;
 
@@ -88,10 +116,20 @@ export async function globalServerRequest({
     if (contentType && contentType.includes("application/json")) {
       responseData = await response.json();
     } else {
-      responseData = await response.text();
+      // responseData = await response.text();
+      const rawText = await response.text();
+      try {
+        responseData = JSON.parse(rawText);
+      } catch (e) {
+        responseData = rawText;
+      }
     }
 
     if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        // forceLogoutClient();
+      }
+
       return {
         success: false,
         status: response.status,
@@ -107,6 +145,7 @@ export async function globalServerRequest({
     return { success: true, status: response.status, data: responseData };
   } catch (error) {
     console.error(`Global API Error on [${endpoint}]:`, error);
+    // forceLogoutClient();
     return { success: false, error: "Network connection to backend failed." };
   }
 }

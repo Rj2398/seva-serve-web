@@ -7,9 +7,13 @@ import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import toast from "react-hot-toast";
 import RateSevaServe from "./RateSevaServe";
+import { globalServerRequest } from "@/actions/globalApi";
 
+interface BookingProps {
+  bookingId: number | null;
+}
 
-const RateContractorPopup = () => {
+const RateContractorPopup = ({ bookingId }: BookingProps) => {
 
   const router = useRouter();
 
@@ -19,42 +23,53 @@ const RateContractorPopup = () => {
   console.log("Rating:", rating);
   console.log("Feedback:", feedback);
 
- const handleSubmit = () => {
-  if (rating === 0 || feedback.trim() === "") {
-    toast.error("Please provide a rating and feedback before submitting.");
-    return;
-  }
-
-  // Rating 1-3 => Submit directly
-  if (rating <= 3) {
-    // Call your API here
-    // await submitRating({ rating, feedback });
-
-    toast.success("Thank you for your feedback!");
-    return;
-  }
-
-  // Rating 4-5 => Open next popup
-  const nextModal = document.getElementById("rateSevaServe");
-
-  if (nextModal) {
-    const bootstrap = (window as any).bootstrap;
-
-    // Optional: close current modal
-    const currentModal = document.getElementById("rate-contractor-popup");
-
-    if (currentModal) {
-      const currentInstance =
-        bootstrap.Modal.getInstance(currentModal) ||
-        new bootstrap.Modal(currentModal);
-
-      currentInstance.hide();
+  const handleSubmit = async () => {
+    if (rating === 0 || feedback.trim() === "") {
+      toast.error("Please provide a rating and feedback before submitting.");
+      return;
     }
 
-    const nextInstance = new bootstrap.Modal(nextModal);
-    nextInstance.show();
-  }
-};
+    // Rating 1-3 => Submit directly
+    if (rating <= 3) {
+      // Call your API here
+      // await submitRating({ rating, feedback });
+
+      const res = await globalServerRequest({
+        endpoint: `review/contractor?rating=${rating}&bookingId=${bookingId}&feedback=${feedback}`,
+        method: "POST",
+      })
+
+      if (res.success === true) {
+        toast.success(res?.data?.message);
+        // router.push('/booking');
+        return;
+      } else {
+        toast.error(res?.data?.message);
+        return;
+      }
+    }
+
+    // Rating 4-5 => Open next popup
+    const nextModal = document.getElementById("rateSevaServe");
+
+    if (nextModal) {
+      const bootstrap = (window as any).bootstrap;
+
+      // Optional: close current modal
+      const currentModal = document.getElementById("rate-contractor-popup");
+
+      if (currentModal) {
+        const currentInstance =
+          bootstrap.Modal.getInstance(currentModal) ||
+          new bootstrap.Modal(currentModal);
+
+        currentInstance.hide();
+      }
+
+      const nextInstance = new bootstrap.Modal(nextModal);
+      nextInstance.show();
+    }
+  };
   return (
     <>
       <div
@@ -162,7 +177,7 @@ const RateContractorPopup = () => {
           </div>
         </div>
       </div>
-      <RateSevaServe  feedback={feedback} />
+      <RateSevaServe feedback={feedback} />
     </>
   );
 };

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { globalServerRequest } from "@/actions/globalApi";
 import toast from "react-hot-toast";
+import VerifyProfile from "@/components/modals/verifyProfile";
 
 interface MyProfileProps {
   initialData: any;
@@ -13,6 +14,7 @@ const MyProfile = ({ initialData }: MyProfileProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
+  const [verifyMode, setVerifyMode] = useState<"email" | "phone">("phone");
 
   const [profileData, setProfileData] = useState({
     name: initialData ? initialData.name ?? "" : "Rogar Walker",
@@ -83,6 +85,21 @@ const MyProfile = ({ initialData }: MyProfileProps) => {
       });
     } catch (e) {
       return "Oct 2026";
+    }
+  };
+
+  const handleOpenVerifyModal = (mode: "email" | "phone") => {
+    if (isEditing) {
+      setVerifyMode(mode);
+      if (typeof window !== "undefined" && (window as any).bootstrap) {
+        const modal = document.getElementById("verify-profile-screen-1");
+        if (modal) {
+          const bootstrapModal =
+            (window as any).bootstrap.Modal.getInstance(modal) ||
+            new (window as any).bootstrap.Modal(modal);
+          bootstrapModal.show();
+        }
+      }
     }
   };
 
@@ -254,6 +271,8 @@ const MyProfile = ({ initialData }: MyProfileProps) => {
                                 value={profileData.phone}
                                 onChange={handleChange}
                                 disabled={!isEditing || loading}
+                                readOnly={isEditing}
+                                onClick={() => handleOpenVerifyModal("phone")}
                                 className={!isEditing ? "readonly-input" : ""}
                               />
                             </div>
@@ -269,6 +288,8 @@ const MyProfile = ({ initialData }: MyProfileProps) => {
                                 value={profileData.email}
                                 onChange={handleChange}
                                 disabled={!isEditing || loading}
+                                readOnly={isEditing}
+                                onClick={() => handleOpenVerifyModal("email")}
                                 className={!isEditing ? "readonly-input" : ""}
                               />
                             </div>
@@ -320,6 +341,7 @@ const MyProfile = ({ initialData }: MyProfileProps) => {
           </div>
         </section>
       </div>
+      <VerifyProfile initialMode={verifyMode} />
     </main>
   );
 };

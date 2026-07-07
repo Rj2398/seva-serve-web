@@ -10,7 +10,7 @@ import { useDispatch } from "react-redux";
 import { setSummaryestimate } from "@/store/slices/userSlice";
 
 const normalizeData = (data: any) => {
-  if (!data) return null;
+  if (!data || Object.keys(data).length === 0) return null;
 
   // If it's already in the new format
   if (data.subCategories) {
@@ -21,7 +21,7 @@ const normalizeData = (data: any) => {
   return {
     category: {
       id: data.category?.id || 1,
-      name: data.service?.category || "Plumbing",
+      name: data.service?.category || "",
       bannerImageUrl:
         data.service?.banner_image ||
         "images/service-details/service-banner.svg",
@@ -38,14 +38,14 @@ const normalizeData = (data: any) => {
             typeof issue.id === "string" && issue.id.startsWith("issue_")
               ? parseInt(issue.id.replace("issue_", ""), 10)
               : issue.id,
-          title: issue.issue_type?.title || "Issue Title",
-          description: issue.issue_type?.description || "Issue Description",
+          title: issue.issue_type?.title || "",
+          description: issue.issue_type?.description || "",
           imageUrl:
             issue.issue_type?.imageUrl ||
             "images/service-details/service-issue.svg",
           specificIssues: (issue.issue_options || []).map((opt: any) => ({
             id: opt.id,
-            name: opt.title || "Option Title",
+            name: opt.title || "",
           })),
         })),
     })),
@@ -65,8 +65,8 @@ export default function ServiceViewDetail({
 
   // FIX: Unified selectedOptionId with selectedSpecificIssueId so state flows down to the API payload correctly
   const [selectedSpecificIssueId, setSelectedSpecificIssueId] = useState<
-    number | null
-  >(null);
+    Record<string, number | null>
+  >({});
 
   const isLoggedIn =
     typeof window !== "undefined"
@@ -75,7 +75,9 @@ export default function ServiceViewDetail({
 
   const router = useRouter();
 
-  const initialNormalized = normalizeData(initialData || serviceDetails);
+  const initialNormalized = normalizeData(
+    initialData && Object.keys(initialData).length > 0 ? initialData : null
+  );
 
   const [serviceDetailss, setServiceDetails] = useState<any>(initialNormalized);
   const [subCategories, setSubCategories] = useState<any[]>(
@@ -85,14 +87,10 @@ export default function ServiceViewDetail({
   const [selectSubCategories, setSelectSubCategories] = useState<any>(
     initialNormalized?.subCategories?.[0]?.id
   );
-  const [problemDesc, setProblemDesc] = useState<string>(
-    serviceDetailss?.problemDesc || ""
-  );
-  const [uploadedImg, setUploadedImage] = useState<string[]>(
-    serviceDetailss?.uploadedImg || []
-  );
+  const [problemDesc, setProblemDesc] = useState<Record<string, string>>({});
+  const [uploadedImg, setUploadedImage] = useState<Record<string, string[]>>({});
   const [activeIssueId, setActiveIssueId] = useState<string | null>(null);
-  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [uploadedFiles, setUploadedFiles] = useState<Record<string, File[]>>({});
   const [loadedData, setLoadedData] = useState<{
     subCategoryId: number | null;
     issueId: number | null;
@@ -128,20 +126,31 @@ export default function ServiceViewDetail({
             }
             // 2. Select the issue
             if (savedData.issue?.[0]?.id) {
-              setActiveIssueId(String(savedData.issue[0].id));
+              const savedIssueId = String(savedData.issue[0].id);
+              setActiveIssueId(savedIssueId);
               setAddedCategory(true);
-            }
-            // 3. Select the specific issue
-            if (savedData.specificIssue?.[0]?.id) {
-              setSelectedSpecificIssueId(Number(savedData.specificIssue[0].id));
-            }
-            // 4. Pre-fill problem description
-            if (savedData.description) {
-              setProblemDesc(savedData.description);
-            }
-            // 5. Pre-fill uploaded images
-            if (savedData.mediaUrls && Array.isArray(savedData.mediaUrls)) {
-              setUploadedImage(savedData.mediaUrls);
+
+              // 3. Select the specific issue
+              if (savedData.specificIssue?.[0]?.id) {
+                setSelectedSpecificIssueId((prev) => ({
+                  ...prev,
+                  [savedIssueId]: Number(savedData.specificIssue[0].id),
+                }));
+              }
+              // 4. Pre-fill problem description
+              if (savedData.description) {
+                setProblemDesc((prev) => ({
+                  ...prev,
+                  [savedIssueId]: savedData.description,
+                }));
+              }
+              // 5. Pre-fill uploaded images
+              if (savedData.mediaUrls && Array.isArray(savedData.mediaUrls)) {
+                setUploadedImage((prev) => ({
+                  ...prev,
+                  [savedIssueId]: savedData.mediaUrls,
+                }));
+              }
             }
           }
         }
@@ -165,17 +174,22 @@ export default function ServiceViewDetail({
     const cleanLoadedIssueId = loadedData.issueId ? Number(loadedData.issueId) : null;
     if (cleanActiveIssueId !== cleanLoadedIssueId) return true;
 
+    const currentSpecificIssueId = activeIssueId ? selectedSpecificIssueId[activeIssueId] : null;
+    const currentProblemDesc = activeIssueId ? problemDesc[activeIssueId] || "" : "";
+    const currentUploadedFiles = activeIssueId ? uploadedFiles[activeIssueId] || [] : [];
+    const currentUploadedImg = activeIssueId ? uploadedImg[activeIssueId] || [] : [];
+
     // Compare specific issue
-    if (Number(selectedSpecificIssueId || 0) !== Number(loadedData.specificIssueId || 0)) return true;
+    if (Number(currentSpecificIssueId || 0) !== Number(loadedData.specificIssueId || 0)) return true;
 
     // Compare description
-    if ((problemDesc || "") !== (loadedData.description || "")) return true;
+    if ((currentProblemDesc || "") !== (loadedData.description || "")) return true;
 
     // Compare uploaded files (if any new files are selected, it's changed)
-    if (uploadedFiles.length > 0) return true;
+    if (currentUploadedFiles.length > 0) return true;
 
     // Compare uploadedImg remote URLs
-    const currentRemoteUrls = uploadedImg.filter((url) => url.startsWith("http"));
+    const currentRemoteUrls = currentUploadedImg.filter((url) => url.startsWith("http"));
     if (currentRemoteUrls.length !== loadedData.mediaUrls.length) return true;
 
     for (let i = 0; i < currentRemoteUrls.length; i++) {
@@ -187,7 +201,9 @@ export default function ServiceViewDetail({
 
   // Sync state if initialData changes via route update
   useEffect(() => {
-    const normalized = normalizeData(initialData || serviceDetails);
+    const normalized = normalizeData(
+      initialData && Object.keys(initialData).length > 0 ? initialData : null
+    );
     if (normalized) {
       setServiceDetails(normalized);
       setSubCategories(normalized.subCategories || []);
@@ -199,21 +215,33 @@ export default function ServiceViewDetail({
     }
   }, [initialData]);
 
-  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>, issueIdStr: string) => {
     const files = e.target.files;
 
     if (files) {
       const fileArray = Array.from(files);
       const imageUrls = fileArray.map((file) => URL.createObjectURL(file));
 
-      setUploadedImage((prev) => [...prev, ...imageUrls]);
-      setUploadedFiles((prev) => [...prev, ...fileArray]);
+      setUploadedImage((prev) => ({
+        ...prev,
+        [issueIdStr]: [...(prev[issueIdStr] || []), ...imageUrls],
+      }));
+      setUploadedFiles((prev) => ({
+        ...prev,
+        [issueIdStr]: [...(prev[issueIdStr] || []), ...fileArray],
+      }));
     }
   };
 
-  const handleRemoveImage = (index: number) => {
-    setUploadedImage((prev) => prev.filter((_, i) => i !== index));
-    setUploadedFiles((prev) => prev.filter((_, i) => i !== index));
+  const handleRemoveImage = (index: number, issueIdStr: string) => {
+    setUploadedImage((prev) => ({
+      ...prev,
+      [issueIdStr]: (prev[issueIdStr] || []).filter((_, i) => i !== index),
+    }));
+    setUploadedFiles((prev) => ({
+      ...prev,
+      [issueIdStr]: (prev[issueIdStr] || []).filter((_, i) => i !== index),
+    }));
   };
 
   const handleServiceCart = async (
@@ -237,11 +265,14 @@ export default function ServiceViewDetail({
       return;
     }
 
+    const currentUploadedImg = activeIssueId ? uploadedImg[activeIssueId] || [] : [];
+    const currentProblemDesc = activeIssueId ? problemDesc[activeIssueId] || "" : "";
+
     if (!addedCategory) {
       toast.error("please select sub Category");
-    } else if (uploadedImg.length === 0) {
+    } else if (currentUploadedImg.length === 0) {
       toast.error("please upload at least one video/image");
-    } else if (!problemDesc) {
+    } else if (!currentProblemDesc) {
       toast.error("please enter the description");
     } else {
       // Direct redirect if editing and form was not changed
@@ -278,21 +309,24 @@ export default function ServiceViewDetail({
           formData.append("issueId", cleanIssueId);
         }
 
+        const currentSpecificIssueId = activeIssueId ? selectedSpecificIssueId[activeIssueId] : null;
+        const currentUploadedFiles = activeIssueId ? uploadedFiles[activeIssueId] || [] : [];
+
         // specificIssueId
-        if (selectedSpecificIssueId) {
-          formData.append("specificIssueId", String(selectedSpecificIssueId));
+        if (currentSpecificIssueId) {
+          formData.append("specificIssueId", String(currentSpecificIssueId));
         }
 
         // description
-        formData.append("description", problemDesc);
+        formData.append("description", currentProblemDesc);
 
         // mediaUrls (only new file uploads)
-        uploadedFiles.forEach((file, index) => {
+        currentUploadedFiles.forEach((file, index) => {
           formData.append(`mediaUrls[${index}]`, file);
         });
 
         // Pass existing remote URLs in a separate existingMediaUrls parameter
-        const existingRemoteUrls = uploadedImg.filter((url) => url.startsWith("http"));
+        const existingRemoteUrls = currentUploadedImg.filter((url) => url.startsWith("http"));
         existingRemoteUrls.forEach((url, index) => {
           formData.append(`existingMediaUrls[index]`, url);
         });
@@ -313,6 +347,12 @@ export default function ServiceViewDetail({
         if (!response.success) {
           throw new Error(response.error || "Failed to add service to cart");
         }
+
+        // Instantly trigger cart update so the counter and offcanvas fetch the new data
+        if (actionType === "addtocart") {
+          window.dispatchEvent(new Event("cartUpdated"));
+        }
+
         const apiNavigateData = response.data;
         const newRequestedId = response?.data?.data?.requestId || requestedId;
 
@@ -328,11 +368,13 @@ export default function ServiceViewDetail({
         if (actionType === "addtocart") router.push(`/`);
 
         setAddedCategory(false);
-        setProblemDesc("");
-        setUploadedImage([]);
-        setUploadedFiles([]);
+        if (activeIssueId) {
+          setProblemDesc((prev) => ({ ...prev, [activeIssueId]: "" }));
+          setUploadedImage((prev) => ({ ...prev, [activeIssueId]: [] }));
+          setUploadedFiles((prev) => ({ ...prev, [activeIssueId]: [] }));
+          setSelectedSpecificIssueId((prev) => ({ ...prev, [activeIssueId]: null }));
+        }
         setActiveIssueId(null);
-        setSelectedSpecificIssueId(null);
       } catch (error: any) {
         console.error("Failed to add to cart:", error);
         toast.error(
@@ -415,7 +457,6 @@ export default function ServiceViewDetail({
                               setSelectSubCategories(item?.id);
                               setActiveIssueId(null);
                               setAddedCategory(false);
-                              setSelectedSpecificIssueId(null);
                             }}
                             className={
                               String(selectSubCategories) === String(item?.id)
@@ -431,214 +472,205 @@ export default function ServiceViewDetail({
                     </div>
 
                     <div className="service-details-issues">
-                      <h3>What issues are you facing?</h3>
+                      <h3>What services are you looking for ?</h3>
 
-                      {activeIssues?.map((item: any, index: number) => {
-                        const issueIdStr = String(item?.id);
-                        const isOpen = activeIssueId === issueIdStr;
+                      {activeIssues && activeIssues.length > 0 ? (
+                        activeIssues.map((item: any, index: number) => {
+                          const issueIdStr = String(item?.id);
+                          const isOpen = activeIssueId === issueIdStr;
 
-                        return (
-                          <div
-                            key={item?.id || index}
-                            className={`service-issues-in ${
-                              isOpen ? "active" : ""
-                            }`}
-                          >
+                          return (
                             <div
-                              className="service-issues-tab"
-                              style={{ cursor: "pointer" }}
-                              onClick={() => {
-                                if (!isOpen) {
-                                  setActiveIssueId(issueIdStr);
-                                  setAddedCategory(true);
-                                } else {
-                                  setActiveIssueId(null);
-                                  setAddedCategory(false);
-                                }
-                              }}
+                              key={item?.id || index}
+                              className={`service-issues-in ${isOpen ? "active" : ""
+                                }`}
                             >
-                              <img
-                                src={
-                                  item?.imageUrl ||
-                                  "images/service-details/service-issue.svg"
-                                }
-                                alt=""
-                              />
-                              <div className="service-issues-tab-data">
-                                <h4>
-                                  {item?.title || "NA"}
-                                  {/* <input
-                                    type="checkbox"
-                                    className="tab-check"
-                                    checked={isOpen}
-                                    onChange={(e) => {
-                                      if (e.target.checked) {
-                                        setActiveIssueId(currentKey);
-                                        setAddedCategory(true);
-                                        setSelectedSpecificIssueId(null);
-                                      } else {
-                                        setActiveIssueId(null);
-                                        setAddedCategory(false);
-                                        setSelectedSpecificIssueId(null);
-                                      }
-                                    }}
-                                  /> */}
-                                </h4>
-                                <p>
-                                  {item?.description ||
-                                    "Fix or install new taps in kitchen, bathroom, or wash area."}
-                                </p>
+                              <div
+                                className="service-issues-tab"
+                                style={{ cursor: "pointer" }}
+                                onClick={() => {
+                                  if (!isOpen) {
+                                    setActiveIssueId(issueIdStr);
+                                    setAddedCategory(true);
+                                  } else {
+                                    setActiveIssueId(null);
+                                    setAddedCategory(false);
+                                  }
+                                }}
+                              >
+                                <img
+                                  src={
+                                    item?.imageUrl ||
+                                    "images/service-details/service-issue.svg"
+                                  }
+                                  alt=""
+                                />
+                                <div className="service-issues-tab-data">
+                                  <h4>
+                                    {item?.title || "NA"}
+                                  </h4>
+                                  <p>
+                                    {item?.description || ""}
+                                  </p>
+                                </div>
                               </div>
-                            </div>
 
-                            <div
-                              className="service-issues-content"
-                              style={{ display: isOpen ? "block" : "none" }}
-                            >
-                              <hr />
-                              <p>
-                                Select specific issue for{" "}
-                                {item?.title || "Service"}
-                              </p>
-                              <ul>
-                                {item?.specificIssues?.map((option: any) => {
-                                  const isSelected =
-                                    selectedSpecificIssueId !== null &&
-                                    String(selectedSpecificIssueId) ===
+                              <div
+                                className="service-issues-content"
+                                style={{ display: isOpen ? "block" : "none" }}
+                              >
+                                <hr />
+                                <p>
+                                  Select specific issue for{" "}
+                                  {item?.title || "Service"}
+                                </p>
+                                <ul>
+                                  {item?.specificIssues?.map((option: any) => {
+                                    const currentSpecificIssueId = selectedSpecificIssueId[issueIdStr]
+                                    const isSelected =
+                                      currentSpecificIssueId !== null &&
+                                      currentSpecificIssueId !== undefined &&
+                                      String(currentSpecificIssueId) ===
                                       String(option?.id);
-                                  return (
-                                    <li
-                                      key={option?.id}
-                                      onClick={() =>
-                                        setSelectedSpecificIssueId(option?.id)
-                                      }
-                                      style={{
-                                        cursor: "pointer",
-                                        transition: "all 0.2s ease-in-out",
-                                        border: isSelected
-                                          ? "1px solid #b30000"
-                                          : "1px solid transparent",
-                                        borderRadius: "8px",
-                                        padding: "4px",
-                                      }}
-                                    >
-                                      <label
+                                    return (
+                                      <li
+                                        key={option?.id}
+                                        onClick={() =>
+                                          setSelectedSpecificIssueId((prev) => ({
+                                            ...prev,
+                                            [issueIdStr]: option?.id,
+                                          }))
+                                        }
                                         style={{
                                           cursor: "pointer",
-                                          width: "100%",
-                                          height: "100%",
-                                          margin: 0,
+                                          transition: "all 0.2s ease-in-out",
+                                          border: isSelected
+                                            ? "1px solid #b30000"
+                                            : "1px solid transparent",
+                                          borderRadius: "8px",
+                                          padding: "4px",
                                         }}
                                       >
-                                        <img
-                                          src="images/service-details/issues/1.jpg"
-                                          alt=""
-                                        />
-                                        {option?.name}{" "}
-                                        {/* <input
-                                        type="checkbox"
-                                        checked={
-                                          selectedSpecificIssueId === option?.id
-                                        }
-                                        onChange={(e) => {
-                                          if (e.target.checked) {
-                                            setSelectedSpecificIssueId(
-                                              option?.id
-                                            );
-                                          } else {
-                                            setSelectedSpecificIssueId(null);
+                                        <label
+                                          style={{
+                                            cursor: "pointer",
+                                            width: "100%",
+                                            height: "100%",
+                                            margin: 0,
+                                          }}
+                                        >
+                                          <img
+                                            src="images/service-details/issues/1.jpg"
+                                            alt=""
+                                          />
+                                          {option?.name}
+                                        </label>
+                                        <div className="hover-data">
+                                          Upgrade your space with a new sink
+                                          installation. We handle removal,
+                                          fitting, and leak-proof connections for
+                                          a hassle-free experience.
+                                        </div>
+                                      </li>
+                                    );
+                                  })}
+                                </ul>
+
+                                <div className="service-issues-content-problem">
+                                  <h3>Problem Description</h3>
+                                  <textarea
+                                    value={problemDesc[issueIdStr] || ""}
+                                    onChange={(
+                                      e: React.ChangeEvent<HTMLTextAreaElement>
+                                    ) =>
+                                      setProblemDesc((prev) => ({
+                                        ...prev,
+                                        [issueIdStr]: e.target.value,
+                                      }))
+                                    }
+                                    placeholder="Describe the specific issue..."
+                                  ></textarea>
+
+                                  <h3>Uploaded Image/Video</h3>
+                                  <label>
+                                    <img
+                                      src="images/service-details/upload-icon.svg"
+                                      alt=""
+                                    />
+                                    Drag and drop files here, or click to browse
+                                    <input
+                                      type="file"
+                                      multiple
+                                      accept="image/*,video/*"
+                                      onChange={(e) => handleFile(e, issueIdStr)}
+                                      hidden
+                                    />
+                                  </label>
+
+                                  <div className="service-issues-content-problem-thumbs">
+                                    {(uploadedImg[issueIdStr] || []).map((imgUrl, imgIndex) => (
+                                      <div
+                                        key={imgIndex}
+                                        className="service-issues-content-problem-thumbs-image"
+                                      >
+                                        <button
+                                          type="button"
+                                          onClick={() =>
+                                            handleRemoveImage(imgIndex, issueIdStr)
                                           }
-                                        }}
-                                      /> */}
-                                      </label>
-                                      <div className="hover-data">
-                                        Upgrade your space with a new sink
-                                        installation. We handle removal,
-                                        fitting, and leak-proof connections for
-                                        a hassle-free experience.
-                                      </div>
-                                    </li>
-                                  );
-                                })}
-                              </ul>
+                                        >
+                                          <img
+                                            src="/images/service-details/cancel-icon.svg"
+                                            alt=""
+                                          />
+                                        </button>
 
-                              <div className="service-issues-content-problem">
-                                <h3>Problem Description</h3>
-                                <textarea
-                                  value={problemDesc}
-                                  onChange={(
-                                    e: React.ChangeEvent<HTMLTextAreaElement>
-                                  ) => setProblemDesc(e.target.value)}
-                                  placeholder="Describe the specific issue..."
-                                ></textarea>
-
-                                <h3>Uploaded Image/Video</h3>
-                                <label>
-                                  <img
-                                    src="images/service-details/upload-icon.svg"
-                                    alt=""
-                                  />
-                                  Drag and drop files here, or click to browse
-                                  <input
-                                    type="file"
-                                    multiple
-                                    accept="image/*,video/*"
-                                    onChange={handleFile}
-                                    hidden
-                                  />
-                                </label>
-
-                                <div className="service-issues-content-problem-thumbs">
-                                  {uploadedImg.map((imgUrl, imgIndex) => (
-                                    <div
-                                      key={imgIndex}
-                                      className="service-issues-content-problem-thumbs-image"
-                                    >
-                                      <button
-                                        type="button"
-                                        onClick={() =>
-                                          handleRemoveImage(imgIndex)
-                                        }
-                                      >
                                         <img
-                                          src="/images/service-details/cancel-icon.svg"
+                                          src={
+                                            imgUrl ||
+                                            "/images/service-details/thumb-image.svg"
+                                          }
                                           alt=""
+                                          width={100}
                                         />
-                                      </button>
-
-                                      <img
-                                        src={
-                                          imgUrl ||
-                                          "/images/service-details/thumb-image.svg"
-                                        }
-                                        alt=""
-                                        width={100}
-                                      />
-                                    </div>
-                                  ))}
+                                      </div>
+                                    ))}
+                                  </div>
                                 </div>
                               </div>
                             </div>
-                          </div>
-                        );
-                      })}
+                          );
+                        })
+                      ) : (
+                        <div className="no-issues-message" style={{ padding: "20px", textAlign: "center", color: "#666", background: "#f9f9f9", borderRadius: "8px", marginTop: "20px" }}>
+                          No issues available.
+                        </div>
+                      )}
                     </div>
 
-                    <Link
-                      href=""
-                      onClick={(e) => handleServiceCart("addtocart", e)}
-                      className="primary-cta"
-                    >
-                      Add to Cart
-                    </Link>
-                    <Link
-                      href=""
-                      onClick={(e) => handleServiceCart("checkout", e)}
-                      className="primary-cta"
-                      style={{ marginRight: "10px" }}
-                    >
-                      Checkout
-                    </Link>
+                    {(activeIssues && activeIssues.length > 0) &&
+                      (
+                        <>
+                          <Link
+                            href=""
+                            onClick={(e) => handleServiceCart("addtocart", e)}
+                            className="primary-cta"
+                          >
+                            Add to Cart
+                          </Link>
+                          <Link
+                            href=""
+                            onClick={(e) => handleServiceCart("checkout", e)}
+                            className="primary-cta"
+                            style={{ marginRight: "10px" }}
+                          >
+                            Checkout
+                          </Link>
+
+                        </>
+                      )
+
+                    }
                   </div>
                 </div>
               </div>

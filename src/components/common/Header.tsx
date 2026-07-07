@@ -66,9 +66,20 @@ const Header = () => {
   };
 
   // Safe variables based on common API setups (fallback if nested inside .user or flat)
-  const profileImage = userData?.user?.profile_image || userData?.profile_image;
+  const profileImage = userData?.user?.profileImage || userData?.profileImage;
   const userName = userData?.user?.name || userData?.name || "User Account";
   const userPhone = userData?.user?.phone || userData?.phone || "";
+  let Address = null;
+  if (typeof window !== "undefined") {
+    const rawAddress = userData?.user?.address || userData?.address || null;
+    if (rawAddress) {
+      try {
+        Address = JSON.parse(rawAddress);
+      } catch (e) {
+        Address = rawAddress;
+      }
+    }
+  }
 
   return (
     <>
@@ -78,57 +89,77 @@ const Header = () => {
             <img src="/images/header/logo.svg" alt="Logo" className="logo" />
           </Link>
 
-          <div className="dropdown location">
-            <div
-              className="dropdown-toggle location-toggle"
-              data-bs-toggle="modal"
-              data-bs-target="#your-location-popup"
-            >
-              <img
-                src="/images/header/location-icon.svg"
-                alt="location"
-                className="loca"
-              />
-              <span>123, Street, Anywhere, 11001</span>
-              <img
-                src="/images/header/down-icon.svg"
-                alt="down-icon"
-                className="down-icon"
-              />
-            </div>
-          </div>
+          {loginStatus === "true" ?
+            (<div className="dropdown location">
+              <div
+                className="dropdown-toggle location-toggle"
+                data-bs-toggle="modal"
+                data-bs-target="#your-location-popup"
+                style={{ whiteSpace: "wrap" }}
+              >
+                <img
+                  src="/images/header/location-icon.svg"
+                  alt="location"
+                  className="loca"
+                />
+                <span>{Address ? Address : "Current location not available"}</span>
+                <img
+                  src="/images/header/down-icon.svg"
+                  alt="down-icon"
+                  className="down-icon"
+                />
+              </div>
+            </div>) : (
+              <div className="dropdown location">
+                <Link href="/">
+                  <span style={{ color: "black", marginLeft: "25px", fontWeight: "500" }}>Home</span>
+                </Link>
+                <Link href="/about">
+                  <span style={{ color: "black", marginLeft: "25px", fontWeight: "500" }}>About us</span>
+                </Link>
+                <Link href="/services">
+                  <span style={{ color: "black", marginLeft: "25px", fontWeight: "500" }}>Services</span>
+                </Link>
+                <Link href="/contact">
+                  <span style={{ color: "black", marginLeft: "25px", fontWeight: "500" }}>Contact us</span>
+                </Link>
+
+              </div>
+            )}
         </div>
 
         {/* Dynamically controlled by React state to avoid freeze bugs */}
         <div className={`right-section ${isMobileMenuOpen ? "showData" : ""}`}>
-          <div
-            className="search-bar"
-            data-bs-toggle="offcanvas"
-            data-bs-target="#agent-msg-offcanvasRight"
-            aria-controls="offcanvasRight"
-          >
-            <img
-              src="/images/header/search-left-icon.svg"
-              alt="Search"
-              className="search-icon"
-            />
-            <input
-              type="text"
-              placeholder="Explain the issue you are facing?"
-            />
-          </div>
+
+          {loginStatus === "true" && (
+            <div
+              className="search-bar"
+              data-bs-toggle="offcanvas"
+              data-bs-target="#agent-msg-offcanvasRight"
+              aria-controls="offcanvasRight"
+            >
+              <img
+                src="/images/header/search-left-icon.svg"
+                alt="Search"
+                className="search-icon"
+              />
+              <input
+                type="text"
+                placeholder="Explain the issue you are facing?"
+              />
+            </div>)}
 
           <SevaServeAgentPanel />
           <Cart />
-          <NotificationDropdown />
+          {loginStatus === "true" && <NotificationDropdown />}
 
-          <div
+          {loginStatus === "true" && <div
             className="icon"
             data-bs-target="#SevaServeWorkpopup"
             data-bs-toggle="modal"
           >
             <img src="/images/header/i-icon.svg" alt="Logo" className="logo" />
-          </div>
+          </div>}
 
           {loginStatus !== "true" ? (
             <div className="profile login">
@@ -287,18 +318,18 @@ const Header = () => {
             </div>
           )}
 
-          <button
+          {loginStatus === "true" && <button
             className="menu-btn"
             type="button"
             data-bs-toggle="offcanvas"
             data-bs-target="#home-end-offcanvasRight"
             aria-controls="offcanvasRight"
           >
-            <span className="frist">Menu</span>
+            {/* <span className="frist">Menu</span> */}
             <span className="sec">
               <img src="/images/header/hamburger.svg" alt="Profile" />
             </span>
-          </button>
+          </button>}
 
           <SidebarMenu />
         </div>
@@ -309,9 +340,8 @@ const Header = () => {
         >
           <i
             id="bar-cross"
-            className={`fa-solid ${
-              isMobileMenuOpen ? "fa-circle-xmark" : "fa-bars"
-            }`}
+            className={`fa-solid ${isMobileMenuOpen ? "fa-circle-xmark" : "fa-bars"
+              }`}
           ></i>
         </div>
       </header>

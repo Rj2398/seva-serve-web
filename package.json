@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.12.0",
+    "@stripe/react-stripe-js": "^6.7.0",
+    "@stripe/stripe-js": "^9.9.0",
     "@tanstack/react-query": "^5.100.11",
     "@types/bootstrap": "^5.2.10",
     "axios": "^1.16.1",
@@ -21,6 +23,7 @@
     "react-day-picker": "^10.0.1",
     "react-dom": "19.2.4",
     "react-hot-toast": "^2.6.0",
+    "react-icons": "^5.7.0",
     "react-redux": "^9.3.0",
     "yup": "^1.7.1"
   },

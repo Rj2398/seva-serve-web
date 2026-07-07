@@ -1,86 +1,171 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import cardData from "../../../json/card.json";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { globalServerRequest } from "@/actions/globalApi";
+import toast from "react-hot-toast";
 
 interface Card {
   id: string | number;
-  bankName: string;
-  cardNumber: string;
-  holderName: string;
-  expiry: string;
-  image?: string;
+  card_id?: string | number;
+  payment_method_id?: string;
+  bankName?: string;
+  card_last_four_digit?: string | number;
+  card_holder_name?: string;
+  expiry_month?: string | number;
+  expiry_year?: string | number;
+  brand?: string;
+  last4?: string;
+  exp_month?: number;
+  exp_year?: number;
+  billing_details?: {
+    name?: string;
+  };
+  card?: {
+    brand?: string;
+    last4?: string;
+    exp_month?: number;
+    exp_year?: number;
+  };
 }
 
-const PaymentMethod = () => {
+interface CardProps {
+  initialCardsData: {
+    cards: Card[];
+  };
+}
+
+export default function PaymentMethod({ initialCardsData }: CardProps) {
+
+  const searchParams = useSearchParams();
+  const bookingId = searchParams.get("booking_id");
+  const remainingAmount = searchParams.get("remaining_amount");
   const router = useRouter();
-  const [cards, setCards] = useState<Card[]>([...cardData.cards]);
+  const [cards, setCards] = useState<Card[]>(initialCardsData.cards);
 
-  const [selectedCard, setSelectedCard] = useState<string | number | null>(1);
+  const [selectedCard, setSelectedCard] = useState<string | number | null>(
+    initialCardsData.cards && initialCardsData.cards.length > 0
+      ? (initialCardsData.cards[0].card_id || initialCardsData.cards[0].id)
+      : null
+  );
 
-  const handleDeleteCard = (id: any) => {
-    // 1. Pehle list update karo
-    const updatedCards = cards.filter((card) => card.id !== id);
+  const [isPaying, setIsPaying] = useState(false);
+
+  const handlePayment = async () => {
+    if (!selectedCard) {
+      toast.error("Please select a card to pay.");
+      return;
+    }
+
+    const selectedCardObj = cards.find((c) => (c.card_id || c.id) === selectedCard);
+    const paymentMethodId = selectedCardObj?.payment_method_id || selectedCard;
+
+    setIsPaying(true);
+    const toastId = toast.loading("Processing payment...");
+
+    try {
+      const response = await globalServerRequest({
+        endpoint: "payment/card/add",
+        method: "POST",
+        payload: {
+          card_id: selectedCard,
+          booking_id: bookingId,
+          payment_method_id: paymentMethodId,
+        },
+      });
+
+      if (response.success) {
+        toast.success("Payment completed successfully!", { id: toastId });
+        router.push("/booking");
+      } else {
+        toast.error(response.error || "Failed to process payment.", { id: toastId });
+      }
+    } catch (error) {
+      console.error("Payment API Error:", error);
+      toast.error("Something went wrong. Please try again.", { id: toastId });
+    } finally {
+      setIsPaying(false);
+    }
+  };
+
+  console.log("cards list:", cards);
+
+  const fetchCards = async () => {
+    try {
+      const response = await globalServerRequest({
+        endpoint: "payment/card/fetch-cards",
+        method: "GET",
+      });
+      if (response.success) {
+        const fetchedCards = response.data?.data || response.data || [];
+        setCards(fetchedCards);
+        if (fetchedCards.length > 0) {
+          setSelectedCard((prev) => {
+            const exists = fetchedCards.some((c: any) => (c.card_id || c.id) === prev);
+            return exists ? prev : (fetchedCards[0].card_id || fetchedCards[0].id);
+          });
+        } else {
+          setSelectedCard(null);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch cards on mount:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchCards();
+  }, []);
+
+  const handleDeleteCard = async (id: any) => {
+    // 1. Update local list instantly
+    const updatedCards = cards.filter((card) => (card.card_id || card.id) !== id);
     setCards(updatedCards);
     if (selectedCard === id) {
       if (updatedCards.length > 0) {
-        setSelectedCard(updatedCards[0].id);
+        setSelectedCard(updatedCards[0].card_id || updatedCards[0].id);
       } else {
         setSelectedCard(null);
       }
     }
+
+    const toastId = toast.loading("Deleting card...");
+    try {
+      // 2. Call backend delete-card POST endpoint
+      const response = await globalServerRequest({
+        endpoint: "payment/card/delete-card",
+        method: "POST",
+        payload: {
+          card_id: id,
+        },
+      });
+
+      if (response.success) {
+        toast.success("Card deleted successfully!", { id: toastId });
+      } else {
+        toast.error(response.error || "Failed to delete card.", { id: toastId });
+        // Revert local state on failure
+        fetchCards();
+      }
+    } catch (error) {
+      console.error("Failed to delete card on server:", error);
+      toast.error("Something went wrong. Please try again.", { id: toastId });
+      // Revert local state on failure
+      fetchCards();
+    }
   };
 
-  const cardCSS = {
-    wrapper: {
-      display: "grid",
-      gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
-      gap: "25px",
-      padding: "20px 0",
-    },
-    // Dynamic function for selection styling
-    cardBody: (isSelected: boolean) => ({
-      background: "linear-gradient(135deg, #2b2b2b 0%, #111111 100%)",
-      height: "200px",
-      borderRadius: "16px",
-      padding: "20px",
-      position: "relative",
-      color: "#fff",
-      cursor: "pointer",
-      boxShadow: isSelected
-        ? "0 0 0 3px #8B0000, 0 10px 25px rgba(0,0,0,0.5)"
-        : "0 10px 20px rgba(0,0,0,0.3)",
-      transition: "all 0.3s ease",
-      overflow: "hidden",
-      fontFamily: "Arial, sans-serif",
-    }),
-    shine: {
-      position: "absolute",
-      top: "-50%",
-      left: "-20%",
-      width: "100%",
-      height: "200%",
-      background: "rgba(255, 255, 255, 0.04)",
-      transform: "rotate(25deg)",
-      pointerEvents: "none",
-    },
-    chip: {
-      width: "40px",
-      filter: "brightness(1.2)",
-      marginBottom: "15px",
-    },
-    number: {
-      fontSize: "20px",
-      letterSpacing: "3px",
-      fontFamily: '"Courier New", Courier, monospace',
-      margin: "10px 0",
-    },
+  // Helper to safely format Expiry Date
+  const formatExpiry = (card: Card) => {
+    const month = card?.expiry_month || card?.card?.exp_month || card?.exp_month;
+    const year = card?.expiry_year || card?.card?.exp_year || card?.exp_year;
+    if (!month || !year) return "MM/YY";
+    const paddedMonth = String(month).padStart(2, "0");
+    const shortYear = String(year).slice(-2);
+    return `${paddedMonth}/${shortYear}`;
   };
 
   return (
-    // <div class="seva-serv-container">
-    // <main>
     <div className="container home-wraper my-profile">
       <section>
         <div className="container">
@@ -89,10 +174,10 @@ const PaymentMethod = () => {
               <div className="browse-wrp">
                 <div className="browse-ctg-head my-con-head">
                   <h2 className="sub-cate-page">
-                    {" "}
                     <button
                       onClick={() => router.back()}
                       className="btn p-0 m-0"
+                      style={{ border: "none", background: "none" }}
                     >
                       <img src="images/home/left-arrow.svg" alt="" />
                     </button>
@@ -107,163 +192,79 @@ const PaymentMethod = () => {
                 </div>
                 <div className="card-wrp-surname">
                   <div className="card-wrp">
-                    {/* <div className="single-card">
-                    <div className="form-check">
-                      <input className="form-check-input" type="radio" name="flexRadioDefault" id="radio1" defaultChecked />
-                    </div>
-                    <button type="button"><img className="cross-card" src="images/inner-page/card-cross.svg" alt="" /></button>
-                    <img className="card" src="images/inner-page/payment-method-cart.svg" alt="" />
-                  </div>
-                  <div className="single-card">
-                    <div className="form-check">
-                      <input className="form-check-input" type="radio" name="flexRadioDefault" id="radio2" />
-                    </div>
-                    <button type="button"><img className="cross-card" src="images/inner-page/card-cross.svg" alt="" /></button>
-                    <img className="card" src="images/inner-page/payment-method-cart.svg" alt="" />
-                  </div>
-                  <div className="single-card">
-                    <div className="form-check">
-                      <input className="form-check-input" type="radio" name="flexRadioDefault" id="radio3" />
-                    </div>
-                    <button type="button"><img className="cross-card" src="images/inner-page/card-cross.svg" alt="" /></button>
-                    <img className="card" src="images/inner-page/payment-method-cart.svg" alt="" />
-                  </div>
-                  <div className="single-card">
-                    <div className="form-check">
-                      <input className="form-check-input" type="radio" name="flexRadioDefault" id="radio4" />
-                    </div>
-                    <button type="button"><img className="cross-card" src="images/inner-page/card-cross.svg" alt="" /></button>
-                    <img className="card" src="images/inner-page/payment-method-cart.svg" alt="" />
-                  </div> */}
+                    {cards?.length > 0 ? (
+                      cards?.map((card, index) => {
+                        const cardId = card?.card_id || card?.id || index;
+                        const isSelected = selectedCard === cardId;
+                        const lastFour = card?.card_last_four_digit || card?.card?.last4 || card?.last4 || "****";
+                        const holderName = card?.card_holder_name || card?.billing_details?.name || card?.bankName || "Card Holder";
+                        const cardBrand = card?.brand || card?.card?.brand || "Credit Card";
 
-                    {/* 
-                    {cards.map((card) => (
-                      <div className={`single-card ${selectedCard === card.id ? 'active-card' : ''}`} key={card.id}>
-                        <div className="form-check">
-                          <input
-                            className="form-check-input"
-                            type="radio"
-                            name="flexRadioDefault"
-                            id={card.id}
-                            checked={selectedCard === card.id}
-                            onChange={() => setSelectedCard(card.id)}
-                          />
-                        </div>
-
-                        
-                        <button type="button" onClick={() => handleDeleteCard(card.id)}>
-                          <img className="cross-card" src="images/inner-page/card-cross.svg" alt="Remove" />
-                        </button>
-
-                        <img className="card" src={card.image} alt="Card Image" />
-
-                       
-                        <p style={{ fontSize: '12px', marginTop: '10px', textAlign: 'center' }}>
-                          {card.cardNumber}
-                        </p>
-                      </div>
-                    ))} */}
-
-                    {cards.map((card, index) => (
-                      <div
-                        key={card.id || index}
-                        style={
-                          cardCSS.cardBody(
-                            selectedCard === card.id
-                          ) as React.CSSProperties
-                        }
-                        onClick={() => setSelectedCard(card.id)}
-                      >
-                        <div style={cardCSS.shine as React.CSSProperties}></div>
-
-                        {/* Top Section */}
-                        <div className="d-flex justify-content-between align-items-start">
-                          <div className="form-check">
-                            <input
-                              className="form-check-input"
-                              type="radio"
-                              checked={selectedCard === card.id}
-                              onChange={() => setSelectedCard(card.id)}
-                              style={{
-                                accentColor: "#8B0000",
-                                cursor: "pointer",
-                              }}
-                            />
-                          </div>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation(); // Yeh zaroori hai! Taaki card select na ho jaye delete karte waqt
-                              handleDeleteCard(card.id);
-                            }}
-                            style={{
-                              background: "none",
-                              border: "none",
-                              cursor: "pointer",
-                              zIndex: 2,
-                            }}
+                        return (
+                          <div
+                            className={`single-card ${isSelected ? "active-card" : ""}`}
+                            key={cardId}
+                            onClick={() => setSelectedCard(cardId)}
+                            style={{ cursor: "pointer" }}
                           >
-                            <img
-                              src="images/inner-page/card-cross.svg"
-                              alt="Delete"
-                            />
-                          </button>
-                        </div>
+                            {/* Checkbox selector */}
+                            <div className="form-check">
+                              <input
+                                className="form-check-input"
+                                type="radio"
+                                name="flexRadioDefault"
+                                checked={isSelected}
+                                onChange={() => setSelectedCard(cardId)}
+                                style={{ cursor: "pointer" }}
+                              />
+                            </div>
 
-                        {/* Card Content */}
-                        <div style={{ zIndex: 1, position: "relative" }}>
-                          <div className="d-flex justify-content-between align-items-center">
-                            <span style={{ fontSize: "12px", opacity: 0.7 }}>
-                              Credit Card
-                            </span>
-                            <span
-                              style={{ fontSize: "14px", fontWeight: "bold" }}
-                            >
-                              {card.bankName}
-                            </span>
-                          </div>
-
-                          <img
-                            src="https://cdn-icons-png.flaticon.com/512/6404/6404078.png"
-                            alt="chip"
-                            style={cardCSS.chip}
-                          />
-
-                          <div style={cardCSS.number}>{card.cardNumber}</div>
-
-                          <div className="d-flex justify-content-between align-items-end mt-2">
-                            <div
-                              style={{
-                                fontSize: "14px",
-                                textTransform: "uppercase",
+                            {/* Delete button */}
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteCard(cardId);
                               }}
+                              style={{ zIndex: 10 }}
                             >
-                              {card.holderName}
-                            </div>
-                            <div className="d-flex align-items-center gap-2">
-                              <span style={{ fontSize: "6px", lineHeight: 1 }}>
-                                VALID
-                                <br />
-                                THRU
-                              </span>
-                              <span style={{ fontSize: "14px" }}>
-                                {card.expiry}
-                              </span>
+                              <img className="cross-card" src="images/inner-page/card-cross.svg" alt="Remove" />
+                            </button>
+
+                            {/* Custom CSS Blank Card Background (No pre-rendered clashing text) */}
+                            <div className="custom-blank-card">
+                              {/* Details Overlay */}
+                              <div className="card-details-overlay">
+                                <div className="card-brand-label">{cardBrand}</div>
+                                <div className="card-chip-img">
+                                  <img
+                                    src="https://cdn-icons-png.flaticon.com/512/6404/6404078.png"
+                                    alt="chip"
+                                  />
+                                </div>
+                                <div className="card-number-label">
+                                  **** **** **** {lastFour}
+                                </div>
+                                <div className="card-footer-row">
+                                  <div className="card-holder-label">
+                                    {holderName}
+                                  </div>
+                                  <div className="card-expiry-label">
+                                    <span className="valid-thru-text">VALID THRU</span>
+                                    <span className="expiry-val">{formatExpiry(card)}</span>
+                                  </div>
+                                </div>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </div>
-                    ))}
-
-                    {cards.length === 0 && (
+                        );
+                      })
+                    ) : (
                       <div className="text-center w-100 p-5">
                         <p>No cards saved. Please add a new card.</p>
                       </div>
                     )}
                   </div>
-                  {/* <div className="card-help">
-                    <button type="button" className="secondary-cta">Help & Support</button>
-                    <button type="button" className="primary-cta">Pay Now <span>$70</span></button>
-                  </div> */}
 
                   <div className="card-help">
                     <button
@@ -276,12 +277,10 @@ const PaymentMethod = () => {
                     <button
                       type="button"
                       className="primary-cta"
-                      disabled={cards.length === 0}
-                      onClick={() =>
-                        alert(`Paying using card: ${selectedCard}`)
-                      }
+                      disabled={cards.length === 0 || isPaying}
+                      onClick={handlePayment}
                     >
-                      Pay Now <span>$70</span>
+                      {isPaying ? "Processing..." : <>Pay Now <span>${remainingAmount}</span></>}
                     </button>
                   </div>
                 </div>
@@ -290,10 +289,117 @@ const PaymentMethod = () => {
           </div>
         </div>
       </section>
-    </div>
-    // </main>
-    // </div>
-  );
-};
 
-export default PaymentMethod;
+      <style jsx>{`
+        .single-card {
+          position: relative;
+          transition: transform 0.2s ease;
+        }
+        .single-card:hover {
+          transform: translateY(-2px);
+        }
+        .single-card.active-card .custom-blank-card {
+          box-shadow: 0 0 0 3px #991318, 0 10px 25px rgba(0,0,0,0.5);
+        }
+        .custom-blank-card {
+          width: 304px;
+          height: 192px;
+          border-radius: 20px;
+          background: linear-gradient(135deg, #2b2b2b 0%, #111111 100%);
+          position: relative;
+          overflow: hidden;
+          box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+          transition: all 0.3s ease;
+        }
+        .custom-blank-card::before {
+          content: '';
+          position: absolute;
+          top: -50%;
+          left: -20%;
+          width: 100%;
+          height: 200%;
+          background: rgba(255, 255, 255, 0.04);
+          transform: rotate(25deg);
+          pointer-events: none;
+        }
+        .card-details-overlay {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 304px;
+          height: 192px;
+          padding: 22px 20px;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          color: #ffffff;
+          font-family: 'Inter', sans-serif;
+          box-sizing: border-box;
+          pointer-events: none;
+        }
+        .card-brand-label {
+          font-size: 13px;
+          font-weight: 600;
+          text-transform: uppercase;
+          align-self: flex-end;
+          margin-right: 10px;
+          margin-top: -2px;
+          opacity: 0.9;
+          letter-spacing: 1px;
+        }
+        .card-chip-img {
+          margin-top: -5px;
+          margin-left: 10px;
+          align-self: flex-start;
+        }
+        .card-chip-img img {
+          width: 32px;
+          height: auto;
+          filter: brightness(1.2);
+        }
+        .card-number-label {
+          font-size: 17px;
+          letter-spacing: 2px;
+          font-family: monospace;
+          margin-left: 10px;
+          margin-top: 10px;
+          font-weight: 500;
+        }
+        .card-footer-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-end;
+          padding-left: 10px;
+          padding-bottom: 2px;
+        }
+        .card-holder-label {
+          font-size: 12px;
+          text-transform: uppercase;
+          font-weight: 500;
+          letter-spacing: 1px;
+          max-width: 170px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .card-expiry-label {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+        .valid-thru-text {
+          font-size: 6px;
+          line-height: 1;
+          text-align: right;
+          opacity: 0.8;
+          line-height: 1.1;
+        }
+        .expiry-val {
+          font-size: 13px;
+          font-weight: 500;
+          font-family: monospace;
+        }
+      `}</style>
+    </div>
+  );
+}

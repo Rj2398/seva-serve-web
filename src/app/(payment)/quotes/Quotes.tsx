@@ -5,24 +5,74 @@ import ServiceAccepted from "@/components/modals/bookingmodals/ServiceAccepted";
 import ServiceRejected from "@/components/modals/bookingmodals/ServiceRejected";
 import { quotesData } from "../../../json/quotes.json";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { globalServerRequest } from "@/actions/globalApi";
+import Link from "next/link";
 
 export default function Quotes() {
   const router = useRouter();
 
   const [activeTab, setActiveTab] = useState("received");
-  const [quotesDataAll, setQuotesData] = useState<any>(quotesData);
+  const [quotes, setQuotes] = useState<any[]>([]);
+
+  console.log(quotes, "quotes****************");
+
+
+  const [loading, setLoading] = useState<boolean>(false);
+  const [pageNo, setPageNo] = useState<number>(1);
+  const [limit, setLimit] = useState<number>(10);
+  const [hasMore, setHasMore] = useState<boolean>(true);
+  const [serviceId, setServiceId] = useState<string>("");
 
   const [expandService, setExpandService] = useState<boolean>(false);
 
-  // const toggleExpand = (index: number) => {
-  //     setExpandedQuotes((prev) => ({
-  //         ...prev,
-  //         [index]: !prev[index], // Flip the true/false value for this specific item index
-  //     }));
-  // };
+  useEffect(() => {
+    const fetchQuotes = async () => {
+      setLoading(true);
+      try {
+        const response = await globalServerRequest({
+          endpoint: "quotes/get-quote",
+          method: "POST",
+          payload: { type: activeTab, pageNo, limit },
+        });
+        if (response.success) {
+          const data = response?.data?.data?.quotes || response?.data?.data || response?.data || [];
+          const pagination = response?.data?.data?.pagination;
+          const newQuotes = Array.isArray(data) ? data : [];
 
-  let quotes = quotesDataAll?.[activeTab] || [];
+          if (pageNo === 1) {
+            setQuotes(newQuotes);
+          } else {
+            setQuotes(prev => [...prev, ...newQuotes]);
+          }
+
+          if (pagination) {
+            setHasMore(pagination.has_next_page);
+          } else {
+            setHasMore(newQuotes.length === limit);
+          }
+        } else {
+          if (pageNo === 1) setQuotes([]);
+          setHasMore(false);
+        }
+      } catch (error) {
+        console.error("Failed to fetch quotes:", error);
+        if (pageNo === 1) setQuotes([]);
+        setHasMore(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchQuotes();
+  }, [activeTab, pageNo, limit]);
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+    if (scrollHeight - scrollTop <= clientHeight + 50 && !loading && hasMore) {
+      setPageNo(prev => prev + 1);
+    }
+  };
 
   // Put this inside your component, right above your return statement
   const [expandedQuotes, setExpandedQuotes] = useState<Record<number, boolean>>(
@@ -70,15 +120,18 @@ export default function Quotes() {
                                 key={index}
                               >
                                 <button
-                                  className={`nav-link ${
-                                    activeTab === item.toLowerCase()
-                                      ? "active"
-                                      : ""
-                                  }`}
+                                  className={`nav-link ${activeTab === item.toLowerCase()
+                                    ? "active"
+                                    : ""
+                                    }`}
                                   type="button"
-                                  onClick={() =>
-                                    setActiveTab(item.toLowerCase())
-                                  }
+                                  onClick={() => {
+                                    if (activeTab !== item.toLowerCase()) {
+                                      setActiveTab(item.toLowerCase());
+                                      setPageNo(1);
+                                      setQuotes([]);
+                                    }
+                                  }}
                                 >
                                   {item}
                                 </button>
@@ -369,225 +422,295 @@ export default function Quotes() {
                                                 </div>
 
                                             </div> */}
-                      <div className="tab-content" id="customTabs-tabContent">
-                        {quotes?.map((item: any, index: number) => {
-                          const isServicesOpen = !!expandedQuotes[index];
-                          const isAdditionalOpen = !!expandedAdditional[index];
+                      <div
+                        className="tab-content custom-scroll"
+                        id="customTabs-tabContent"
+                        style={{ maxHeight: "calc(100vh - 250px)", overflowY: "auto", overflowX: "hidden" }}
+                        onScroll={handleScroll}
+                      >
+                        {quotes?.length === 0 ? (
+                          <div style={{ padding: "50px 0", textAlign: "center", color: "#777" }}>
+                            {activeTab === "received" && <h5>No received quotes available.</h5>}
+                            {activeTab === "requested" && <h5>No requested quotes found.</h5>}
+                            {activeTab === "accepted" && <h5>No accepted quotes yet.</h5>}
+                          </div>
+                        ) : (
+                          quotes?.map((item: any, index: number) => {
+                            const isServicesOpen = !!expandedQuotes[index];
+                            const isAdditionalOpen = !!expandedAdditional[index];
 
-                          return (
-                            <div className="my-quotes-inner" key={index}>
-                              <div className="add-user">
-                                <p className="left">#{item.quote_id}</p>
+                            return (
+                              <div className="my-quotes-inner" key={index}>
+                                <div className="add-user">
+                                  <p className="left">{item.quote_number || `#${item.quote_id}`}</p>
 
-                                {item.status && (
-                                  <p className="right">{item.status}</p>
-                                )}
-                              </div>
+                                  {activeTab === "received" && (
+                                    <p className="right">Additional Services</p>
+                                  )}
+                                  {activeTab === "requested" && (
+                                    <p className="right">Pending From Admin</p>
+                                  )}
+                                </div>
 
-                              <div className="plumbing">
-                                <p className="plm">
-                                  {item.category}
-                                  <img
-                                    src="images/home/up-right-arrow.svg"
-                                    alt=""
-                                  />
-                                </p>
+                                <div className="plumbing">
+                                  {/* <p className="plm">
+                                    {item.category?.name || item.category}
+                                    <img
+                                      src="images/home/up-right-arrow.svg"
+                                      alt=""
+                                    />
+                                  </p> */}
 
-                                <p className="sub-cate">
-                                  Sub categories Selected
-                                </p>
+                                  <Link href={`/serviceDetails?serviceId=${item?.quote_id}`} className="plm">
+                                    {item?.category?.name || item.category}{" "}
+                                    <img
+                                      src="images/home/up-right-arrow.svg"
+                                      alt=""
+                                    />
+                                  </Link>
 
-                                <div className="service-list-type">
-                                  {/* MAIN SERVICES */}
-                                  <ol className="main-category">
-                                    {item.services?.map(
-                                      (srv: any, i: number) => (
-                                        <li key={i}>
-                                          {srv.category}
-                                          <ul>
-                                            <li>
-                                              {srv.service}
-                                              <ul>
-                                                <li>{srv.sub_service}</li>
-                                              </ul>
+                                  <p className="sub-cate">
+                                    Sub categories Selected
+                                  </p>
+
+                                  <div className="service-list-type">
+                                    {/* MAIN SERVICES */}
+                                    <ol className="main-category">
+                                      {item.sub_categories?.slice(0, 1).map(
+                                        (subCat: any, i: number) => (
+                                          <li key={i}>
+                                            {subCat.name}
+                                            <ul>
+                                              {subCat.services?.map((srv: any, j: number) => (
+                                                <li key={j}>
+                                                  {srv.name}
+                                                  <ul>
+                                                    {srv.issues?.map((issue: any, k: number) => (
+                                                      <li key={k}>{issue.name}</li>
+                                                    ))}
+                                                  </ul>
+                                                </li>
+                                              ))}
+                                            </ul>
+                                          </li>
+                                        )
+                                      )}
+                                    </ol>
+
+                                    {/* MORE / LESS SERVICES BLOCK */}
+                                    {item.sub_categories?.length > 1 && (
+                                      <ol className="main-category">
+                                        {/* 1. Toggle Button Option */}
+                                        {!isServicesOpen && (
+                                          <li
+                                            className="more-service"
+                                            style={{ cursor: "pointer" }}
+                                            onClick={() =>
+                                              setExpandedQuotes((prev) => ({
+                                                ...prev,
+                                                [index]: true,
+                                              }))
+                                            }
+                                          >
+                                            + {item.sub_categories.length - 1} more category
+                                          </li>
+                                        )}
+
+                                        {/* 2. Expanded Content Block */}
+                                        {isServicesOpen && (
+                                          <div
+                                            className="service-data"
+                                            style={{
+                                              display: "block",
+                                              marginTop: "10px",
+                                            }}
+                                          >
+                                            {item.sub_categories?.slice(1).map(
+                                              (subCat: any, i: number) => (
+                                                <li key={i}>
+                                                  {subCat.name}
+                                                  <ul>
+                                                    {subCat.services?.map((srv: any, j: number) => (
+                                                      <li key={j}>
+                                                        {srv.name}
+                                                        <ul>
+                                                          {srv.issues?.map((issue: any, k: number) => (
+                                                            <li key={k}>{issue.name}</li>
+                                                          ))}
+                                                        </ul>
+                                                      </li>
+                                                    ))}
+                                                  </ul>
+                                                </li>
+                                              )
+                                            )}
+
+                                            <li
+                                              style={{
+                                                cursor: "pointer",
+                                                fontWeight: "bold",
+                                              }}
+                                              onClick={() =>
+                                                setExpandedQuotes((prev) => ({
+                                                  ...prev,
+                                                  [index]: false,
+                                                }))
+                                              }
+                                            >
+                                              Less service
                                             </li>
-                                          </ul>
-                                        </li>
-                                      )
+                                          </div>
+                                        )}
+                                      </ol>
                                     )}
-                                  </ol>
 
-                                  {/* MORE / LESS SERVICES BLOCK */}
-                                  <ol className="main-category">
-                                    {/* 1. Toggle Button Option */}
-                                    {!isServicesOpen && (
-                                      <li
-                                        className="more-service"
+
+                                    <div className="booking-schedule-container" style={{ padding: "15px", fontFamily: "'Segoe UI', Roboto, Helvetica, Arial, sans-serif", color: "#333", fontSize: "16px", maxWidth: "400px" }}>
+                                      {item?.schedule?.map((scheduleItem: any, schedIndex: number) => (
+                                        <div key={schedIndex} style={{ display: "flex", alignItems: "center", marginBottom: "12px", lineHeight: "1.4" }}>
+                                          <div style={{ width: "70px", fontWeight: "500", color: "#222222" }}>
+                                            {schedIndex === 0 ? "Date :" : ""}
+                                          </div>
+                                          <div style={{ width: "140px", letterSpacing: "0.3px", color: "#222" }}>
+                                            {scheduleItem?.date}
+                                          </div>
+                                          <div style={{ letterSpacing: "0.5px", color: "#222", paddingLeft: "10px" }}>
+                                            {scheduleItem?.time}
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+
+                                    {/* ADDITIONAL SERVICES TOGGLE BLOCK */}
+                                    <div className="additional-services">
+                                      <p
+                                        className="additional-text"
                                         style={{ cursor: "pointer" }}
                                         onClick={() =>
-                                          setExpandedQuotes((prev) => ({
+                                          setExpandedAdditional((prev) => ({
                                             ...prev,
-                                            [index]: true,
+                                            [index]: !isAdditionalOpen,
                                           }))
                                         }
                                       >
-                                        + 1 more service
-                                      </li>
-                                    )}
+                                        Additional Services {!isAdditionalOpen}
+                                        <img
+                                          src="images/home/additional-service.svg"
+                                          alt=""
+                                        />
+                                      </p>
 
-                                    {/* 2. Expanded Content Block (Keeps your exact UI classes) */}
-                                    {isServicesOpen && (
-                                      <div
-                                        className="service-data"
+                                      <ul
+                                        className="service-list"
                                         style={{
-                                          display: "block",
-                                          marginTop: "10px",
+                                          display: isAdditionalOpen
+                                            ? "block"
+                                            : "none",
                                         }}
                                       >
-                                        <li>
-                                          {item.services?.[0]?.category}
-                                          <ul>
-                                            <li>
-                                              {item.services?.[0]?.service}
-                                              <ul>
-                                                <li>
-                                                  {
-                                                    item.services?.[0]
-                                                      ?.sub_service
-                                                  }
-                                                </li>
-                                              </ul>
-                                            </li>
-                                          </ul>
-                                        </li>
-
-                                        <li
-                                          // className="less-service"
-                                          style={{
-                                            cursor: "pointer",
-                                            fontWeight: "bold",
-                                          }}
-                                          onClick={() =>
-                                            setExpandedQuotes((prev) => ({
-                                              ...prev,
-                                              [index]: false,
-                                            }))
+                                        {(() => {
+                                          const addSrvs = item.additional_services?.items || item.additional_services;
+                                          if (Array.isArray(addSrvs) && addSrvs.length > 0) {
+                                            return addSrvs.map((srv: any, i: number) => (
+                                              <li key={i}>{typeof srv === 'object' ? srv?.name : srv}</li>
+                                            ));
+                                          } else if (typeof addSrvs === 'string' && addSrvs.trim() !== '') {
+                                            return addSrvs.split(',').map((srv: string, i: number) => (
+                                              <li key={i}>{srv.trim()}</li>
+                                            ));
                                           }
-                                        >
-                                          Less service
-                                        </li>
-                                      </div>
-                                    )}
-                                  </ol>
+                                          return <li>No additional services</li>;
+                                        })()}
+                                      </ul>
+                                    </div>
 
-                                  {/* ADDITIONAL SERVICES TOGGLE BLOCK */}
-                                  <div className="additional-services">
-                                    <p
-                                      className="additional-text"
-                                      style={{ cursor: "pointer" }}
-                                      onClick={() =>
-                                        setExpandedAdditional((prev) => ({
-                                          ...prev,
-                                          [index]: !isAdditionalOpen,
-                                        }))
-                                      }
-                                    >
-                                      Additional Services {!isAdditionalOpen}
-                                      <img
-                                        src="images/home/additional-service.svg"
-                                        alt=""
-                                      />
-                                    </p>
+                                    <p>{item.description}</p>
 
-                                    <ul
-                                      className="service-list"
-                                      style={{
-                                        display: isAdditionalOpen
-                                          ? "block"
-                                          : "none",
-                                      }}
-                                    >
-                                      {item.additional_services?.map(
-                                        (srv: string, i: number) => (
-                                          <li key={i}>{srv}</li>
-                                        )
-                                      )}
-                                    </ul>
-                                  </div>
+                                    <div className="service-quotes">
+                                      <p className="service-cost">
+                                        Cost:<span>${typeof item.cost === 'object' ? (item.cost?.totalAmount || item.cost?.amount || "") : item.cost}</span>
+                                      </p>
 
-                                  <p>{item.description}</p>
+                                      <div className="home-quotes-cta">
+                                        {/* RECEIVED */}
+                                        {activeTab === "received" && (
+                                          <>
+                                            <button
+                                              className="reject-btn"
+                                              data-bs-target="#servicesRejection"
+                                              data-bs-toggle="modal"
+                                              onClick={() => setServiceId(item.quote_id)}
+                                              style={{ cursor: 'pointer' }}
+                                            >
+                                              Reject
+                                            </button>
 
-                                  <div className="service-quotes">
-                                    <p className="service-cost">
-                                      Cost:<span>${item.cost}</span>
-                                    </p>
+                                            <a
+                                              className="primary-cta rgt"
+                                              data-bs-target="#servicesAccepted"
+                                              data-bs-toggle="modal"
+                                              onClick={() => setServiceId(item.quote_id)}
+                                              style={{ cursor: 'pointer' }}
+                                            >
+                                              Accept
+                                              <img
+                                                src="images/home/right-img.svg"
+                                                alt=""
+                                              />
+                                            </a>
+                                          </>
+                                        )}
 
-                                    <div className="home-quotes-cta">
-                                      {/* RECEIVED */}
-                                      {activeTab === "received" && (
-                                        <>
-                                          <button
-                                            className="reject-btn"
-                                            data-bs-target="#servicesRejection"
-                                            data-bs-toggle="modal"
-                                          >
-                                            Reject
-                                          </button>
+                                        {/* REQUESTED */}
+                                        {activeTab === "requested" && (
+                                          <>
+                                            <button
+                                              className="reject-btn"
+                                              data-bs-target="#servicesRejection"
+                                              data-bs-toggle="modal"
+                                              onClick={() => setServiceId(item?.quote_id)}
+                                            >
+                                              Reject
+                                            </button>
 
-                                          <a
-                                            className="primary-cta rgt"
-                                            data-bs-target="#servicesAccepted"
-                                            data-bs-toggle="modal"
-                                          >
-                                            Accept
+                                            <button
+                                              className="primary-cta rgt"
+                                              // onClick={() =>
+                                              //   router.push("/serviceDetails")
+                                              // }
+                                              onClick={() =>
+                                                router.push(`/serviceDetails?serviceId=${item?.quote_id}`)
+                                              }
+                                            >
+                                              Edit Req.
+                                            </button>
+                                          </>
+                                        )}
+
+                                        {/* ACCEPTED */}
+                                        {activeTab === "accepted" && (
+                                          <button className="primary-cta rgt" onClick={() => window.open(item?.download_url, "_blank")} >
                                             <img
-                                              src="images/home/right-img.svg"
+                                              className="download"
+                                              src="images/inner-page/download-down-arrow.svg"
                                               alt=""
                                             />
-                                          </a>
-                                        </>
-                                      )}
-
-                                      {/* REQUESTED */}
-                                      {activeTab === "requested" && (
-                                        <>
-                                          <button
-                                            className="reject-btn"
-                                            data-bs-target="#servicesRejection"
-                                            data-bs-toggle="modal"
-                                          >
-                                            Reject
+                                            Download PDF
                                           </button>
-
-                                          <button
-                                            className="primary-cta rgt"
-                                            onClick={() =>
-                                              router.push("/serviceDetails")
-                                            }
-                                          >
-                                            Edit Req.
-                                          </button>
-                                        </>
-                                      )}
-
-                                      {/* ACCEPTED */}
-                                      {activeTab === "accepted" && (
-                                        <button className="primary-cta rgt">
-                                          <img
-                                            className="download"
-                                            src="images/inner-page/download-down-arrow.svg"
-                                            alt=""
-                                          />
-                                          Download PDF
-                                        </button>
-                                      )}
+                                        )}
+                                      </div>
                                     </div>
                                   </div>
                                 </div>
                               </div>
-                            </div>
-                          );
-                        })}
+                            );
+                          })
+                        )}
+                        {loading && (
+                          <div style={{ textAlign: 'center', padding: '15px', color: '#666' }}>
+                            Loading more quotes...
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -598,9 +721,9 @@ export default function Quotes() {
         </div>
       </main>
 
-      <ServiceAccepted />
+      <ServiceAccepted serviceId={serviceId} />
       <ServiceRejected />
-      <NewServiceRejectionModal />
+      <NewServiceRejectionModal serviceId={serviceId} />
     </>
   );
 }

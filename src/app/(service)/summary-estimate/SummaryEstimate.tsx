@@ -30,6 +30,8 @@ const SummaryEstimate = () => {
   const [showReschedule, setShowReschedule] = useState<boolean>(false);
   const [isOpenModal, setIsOpenModal] = useState<boolean>(false);
   const [availabilitySlots, setAvailabilitySlots] = useState<any[]>([]);
+  const [addressId, setAddressId] = useState("");
+  console.log(addressId, "address id of the file");
 
   // 1. Get the Redux Store fallback data
   const reduxData = useSelector(
@@ -70,7 +72,10 @@ const SummaryEstimate = () => {
     fetchQuote();
   }, [activeRequestId]);
 
-  const requestQuote = async (incomingSlots?: typeof availabilitySlots) => {
+  const requestQuote = async (
+    incomingSlots?: typeof availabilitySlots,
+    incomingAddressId?: string
+  ) => {
     if (!summary_estimate) {
       toast.error("Estimation details are not available");
       return;
@@ -86,7 +91,7 @@ const SummaryEstimate = () => {
     try {
       const payload = {
         requestId: summary_estimate.requestId,
-        addressId: 23,
+        addressId: incomingAddressId !== undefined ? incomingAddressId : addressId,
         availabilitySlots: targetSlots,
       };
 
@@ -138,7 +143,10 @@ const SummaryEstimate = () => {
                       <div className="selected-category">
                         <div className="category">
                           <p>Selected Category</p>
-                          <Link href={`/serviceDetails?categoryId=${summary_estimate?.category?.id || ""}&requestedId=${activeRequestId || ""}`}>
+                          <Link
+                            href={`/serviceDetails?categoryId=${summary_estimate?.category?.id || ""
+                              }&requestedId=${activeRequestId || ""}`}
+                          >
                             <img
                               src="images/inner-page/edit-icon-c.svg"
                               alt="Edit"
@@ -152,7 +160,10 @@ const SummaryEstimate = () => {
                       <div className="selected-category">
                         <div className="category">
                           <p>Selected Subcategory</p>
-                          <Link href={`/serviceDetails?categoryId=${summary_estimate?.category?.id || ""}&requestedId=${activeRequestId || ""}`}>
+                          <Link
+                            href={`/serviceDetails?categoryId=${summary_estimate?.category?.id || ""
+                              }&requestedId=${activeRequestId || ""}`}
+                          >
                             <img
                               src="images/inner-page/edit-icon-c.svg"
                               alt="Edit"
@@ -166,22 +177,29 @@ const SummaryEstimate = () => {
                       <div className="selected-category">
                         <div className="category">
                           <p>Selected Issue</p>
-                          <Link href={`/serviceDetails?categoryId=${summary_estimate?.category?.id || ""}&requestedId=${activeRequestId || ""}`}>
+                          <Link
+                            href={`/serviceDetails?categoryId=${summary_estimate?.category?.id || ""
+                              }&requestedId=${activeRequestId || ""}`}
+                          >
                             <img
                               src="images/inner-page/edit-icon-c.svg"
                               alt="Edit"
                             />
                           </Link>
                         </div>
-                        <h4>{summary_estimate?.issue?.[0]?.name || "N/A"}</h4>
+                        <h4>
+                          {typeof summary_estimate?.issue?.[0] === "object"
+                            ? summary_estimate?.issue?.[0]?.name
+                            : summary_estimate?.issue?.[0] || "N/A"}
+                        </h4>
                         <div className="mt-2 d-flex flex-wrap gap-1">
                           {summary_estimate?.issue?.map(
                             (item: any, index: any) => (
                               <span
                                 className="primary-cta tap"
-                                key={item.id || index}
+                                key={item?.id || index}
                               >
-                                {item.name}
+                                {typeof item === "object" ? item?.name : item}
                               </span>
                             )
                           )}
@@ -189,9 +207,9 @@ const SummaryEstimate = () => {
                             (item: any, index: any) => (
                               <span
                                 className="primary-cta tap bg-secondary text-white"
-                                key={item.id || index}
+                                key={item?.id || index}
                               >
-                                {item.name}
+                                {typeof item === "object" ? item?.name : item}
                               </span>
                             )
                           )}
@@ -202,7 +220,10 @@ const SummaryEstimate = () => {
                       <div className="selected-category">
                         <div className="category">
                           <p>Problem Description</p>
-                          <Link href={`/serviceDetails?categoryId=${summary_estimate?.category?.id || ""}&requestedId=${activeRequestId || ""}`}>
+                          <Link
+                            href={`/serviceDetails?categoryId=${summary_estimate?.category?.id || ""
+                              }&requestedId=${activeRequestId || ""}`}
+                          >
                             <img
                               src="images/inner-page/edit-icon-c.svg"
                               alt="Edit"
@@ -253,7 +274,12 @@ const SummaryEstimate = () => {
                         <button
                           type="button"
                           className="secondary-cta"
-                          onClick={() => router.push(`/serviceDetails?categoryId=${summary_estimate?.category?.id || ""}&requestedId=${activeRequestId || ""}`)}
+                          onClick={() =>
+                            router.push(
+                              `/serviceDetails?categoryId=${summary_estimate?.category?.id || ""
+                              }&requestedId=${activeRequestId || ""}`
+                            )
+                          }
                         >
                           Save & Add More
                         </button>
@@ -282,10 +308,13 @@ const SummaryEstimate = () => {
           console.log("data****", data);
           const slots = data?.availabilitySlots || [];
           setAvailabilitySlots(slots);
+          const selectedAddrId = data?.address || "";
+          setAddressId(selectedAddrId);
           if (slots.length > 0) {
-            requestQuote(slots);
+            requestQuote(slots, selectedAddrId);
           }
         }}
+        getAddressIdCallback={setAddressId}
       />
     </>
   );

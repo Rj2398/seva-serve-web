@@ -30,13 +30,13 @@ const Category = ({ initialData }: categoryProps) => {
                   </div>
                   <div className="browse-inner">
                     {
-                      featuredCategory?.length === 0 ? (
-                        <div className="text-center">
+                      !featuredCategory?.length ? (
+                        <div className="text-center" style={{ padding: "50px 0" }}>
                           <p className="text-muted">No category found</p>
                         </div>
                       ) : (
                         <ul>
-                          {featuredCategory.map((item: any) => (
+                          {featuredCategory?.map((item: any) => (
                             <li key={item?.id}  >
                               <Link href={`/serviceDetails?categoryId=${item?.id}`} className="wrp-img">
                                 <div className="c-img">

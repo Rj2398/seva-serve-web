@@ -10,7 +10,7 @@ export default async function BookingPage() {
     previous: [],
     cancelled: [],
   };
-
+  
   try {
     const [upcomingRes, previousRes, cancelledRes] = await Promise.all([
       globalServerRequest({
