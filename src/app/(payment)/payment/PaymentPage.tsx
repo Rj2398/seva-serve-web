@@ -8,9 +8,6 @@ const PaymentPage = () => {
   const searchParams = useSearchParams();
   const bookingId = searchParams.get("booking_id");
   const [checkoutData, setCheckoutData] = useState<any>();
-  console.log(checkoutData?.hasCard, "checkout*****");
-
-
 
   useEffect(() => {
     if (!bookingId) return;
@@ -69,21 +66,28 @@ const PaymentPage = () => {
                         <h5>JOB SUMMARY {checkoutData?.quote_code}</h5>
 
                         <h6>
-                          Initial Deposit Paid <b>-${checkoutData?.job_summary
-                            ?.initial_deposit?.amount
-                          }</b>
+                          Initial Deposit Paid{" "}
+                          <b>
+                            -$
+                            {checkoutData?.job_summary?.initial_deposit?.amount}
+                          </b>
                         </h6>
 
                         <h6>
                           Subscription Offer
-                          <span className="offer-tag">{checkoutData?.job_summary?.subscription_discount?.discount_percentage}% OFF</span>{" "}
+                          <span className="offer-tag">
+                            {
+                              checkoutData?.job_summary?.subscription_discount
+                                ?.discount_percentage
+                            }
+                            % OFF
+                          </span>{" "}
                           <b>
-
-
-
-
                             -$
-                            {checkoutData?.job_summary?.subscription_discount?.discount_amount}
+                            {
+                              checkoutData?.job_summary?.subscription_discount
+                                ?.discount_amount
+                            }
                           </b>
                         </h6>
 
@@ -92,20 +96,17 @@ const PaymentPage = () => {
                         <h6 className="text-black">
                           Total Service Cost
                           <b style={{ color: "#991318" }}>
-                            <del className="text-black"></del> ${checkoutData?.job_summary?.total_service_cost}
+                            <del className="text-black"></del> $
+                            {checkoutData?.job_summary?.total_service_cost}
                           </b>
                         </h6>
 
                         <h6>
-                          Coupon Offer{" "}
-                          <span className="offer-tag">SEVA10</span>
+                          Coupon Offer <span className="offer-tag">SEVA10</span>
                           <b>$0</b>
                         </h6>
 
-                        <h6
-                          className="mb-0"
-                          style={{ fontSize: "larger" }}
-                        >
+                        <h6 className="mb-0" style={{ fontSize: "larger" }}>
                           Remaining Cost
                           <b
                             style={{
@@ -134,20 +135,12 @@ const PaymentPage = () => {
                         </li>
 
                         <li>
-                          <input
-                            type="radio"
-                            value="2"
-                            name="payment-method"
-                          />{" "}
+                          <input type="radio" value="2" name="payment-method" />{" "}
                           Zelle
                         </li>
 
                         <li>
-                          <input
-                            type="radio"
-                            value="3"
-                            name="payment-method"
-                          />{" "}
+                          <input type="radio" value="3" name="payment-method" />{" "}
                           Venmo
                         </li>
                       </ul>
@@ -174,7 +167,7 @@ const PaymentPage = () => {
 
                   <br />
 
-                  <div className="smart-analysis">
+                  {/* <div className="smart-analysis">
                     <h5>Important</h5>
 
                     <p>
@@ -194,36 +187,39 @@ const PaymentPage = () => {
                       automatically deducted from your added credit card with a
                       3% additional charge.
                     </p>
-                  </div>
+                  </div> */}
 
-                  <div className="upload-screenshot">
+                  {/* <div className="upload-screenshot">
                     <h4>Upload Payment Screenshot</h4>
                     <input type="file" />
-                  </div>
+                  </div> */}
 
                   <div className="payment-btom">
-                    <p>
+                    {/* <p>
                       Your payment will be securely processed and automatically
                       released to the contractor once the job is approved.
-                    </p>
+                    </p> */}
 
                     <div className="card-help">
                       <Link
                         href={
                           checkoutData?.hasCard
                             ? {
-                              pathname: "/payment-method",
-                              query: {
-                                booking_id: bookingId || "",
-                                remaining_amount: checkoutData?.job_summary?.remaining_amount || "",
-                              },
-                            }
+                                pathname: "/payment-method",
+                                query: {
+                                  booking_id: bookingId || "",
+                                  initialpayment:
+                                    checkoutData?.job_summary?.initial_deposit
+                                      ?.amount,
+                                  paymenttype: "initial",
+                                },
+                              }
                             : {
-                              pathname: "/add-new-card",
-                              query: {
-                                booking_id: bookingId || "",
-                              },
-                            }
+                                pathname: "/add-new-card",
+                                query: {
+                                  booking_id: bookingId || "",
+                                },
+                              }
                         }
                         className="primary-cta"
                       >

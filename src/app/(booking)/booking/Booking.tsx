@@ -4,7 +4,9 @@ import { globalServerRequest } from "@/actions/globalApi";
 import CancelBooking from "@/components/modals/bookingmodals/CancelBooking";
 import ConfirmCancelBooking from "@/components/modals/bookingmodals/ConfirmCancelBooking";
 import ContractorRequest from "@/components/modals/bookingmodals/ContractorRequest";
-import DatePopup, { ReschedulePayload } from "@/components/modals/bookingmodals/DatePopup";
+import DatePopup, {
+  ReschedulePayload,
+} from "@/components/modals/bookingmodals/DatePopup";
 import NewServiceRejectionModal from "@/components/modals/bookingmodals/NewServiceRejectionModal";
 import PaymentRemainingPopup from "@/components/modals/bookingmodals/PaymentRemainingPopup";
 import RateContractorPopup from "@/components/modals/bookingmodals/RateContractorPopup";
@@ -16,7 +18,9 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import toast from "react-hot-toast";
 
-export const isMoreThan24Hours = (bookingDateTime: string | Date | null | undefined): boolean => {
+export const isMoreThan24Hours = (
+  bookingDateTime: string | Date | null | undefined
+): boolean => {
   if (!bookingDateTime) return false;
 
   const bookingDate = new Date(bookingDateTime);
@@ -27,8 +31,6 @@ export const isMoreThan24Hours = (bookingDateTime: string | Date | null | undefi
 
   return diffInMs > twentyFourHoursInMs;
 };
-
-
 
 interface BookingProps {
   initialBookingData?: {
@@ -41,24 +43,22 @@ interface BookingProps {
 export default function Booking({ initialBookingData }: BookingProps) {
   const router = useRouter();
   // console.log("initialBookingData", initialBookingData)
-  const [myBookingData, setMyBookingData] = useState<any>(
-    initialBookingData
-  );
+  const [myBookingData, setMyBookingData] = useState<any>(initialBookingData);
   const [activeTab, setActiveTab] = useState("upcoming");
   const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
   const [bookingId, setbookingId] = useState<number | null>(null);
+
+  const [quote_id, setQuoteId] = useState<any>();
   const [bookingPaymentInfo, setBookingPaymentInfo] = useState<any>(null);
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
 
-  console.log("myBookingData", myBookingData)
+  console.log("myBookingData", myBookingData);
 
   const bookingData = myBookingData?.[activeTab] || [];
-  const booking = bookingData?.bookings
-  const services = booking?.services
-  console.log("booking leatest", booking)
-  console.log("services", services)
-
-
+  const booking = bookingData?.bookings;
+  const services = booking?.services;
+  console.log("booking leatest", booking);
+  console.log("services", services);
 
   const handleRescheduleBooking = async (payload: ReschedulePayload) => {
     try {
@@ -72,7 +72,7 @@ export default function Booking({ initialBookingData }: BookingProps) {
           payload: {
             bookingId: bookingId,
             addressId: payload.address,
-            availabilitySlots: payload.availabilitySlots
+            availabilitySlots: payload.availabilitySlots,
           },
         }),
       ]);
@@ -81,14 +81,11 @@ export default function Booking({ initialBookingData }: BookingProps) {
         toast.success("Booking rescheduled successfully!");
         setShowDatePicker(false);
       }
-
     } catch (error) {
       console.error("Error rescheduling booking:", error);
       toast.error("Failed to reschedule booking. Please try again.");
     }
   };
-
-
 
   return (
     <>
@@ -121,10 +118,11 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                 key={index}
                               >
                                 <button
-                                  className={`nav-link ${activeTab === item.toLowerCase()
-                                    ? "active"
-                                    : ""
-                                    }`}
+                                  className={`nav-link ${
+                                    activeTab === item.toLowerCase()
+                                      ? "active"
+                                      : ""
+                                  }`}
                                   type="button"
                                   onClick={() =>
                                     setActiveTab(item.toLowerCase())
@@ -179,7 +177,8 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                           </p>
                                         )}
 
-                                        {item?.status == "customer_cancel" && (
+                                        {item?.status ==
+                                          "contractor_cancel" && (
                                           <p className="plm cmp">
                                             {item?.categoryName}
                                             <img
@@ -197,7 +196,8 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                         )}
                                       </div>
 
-                                      {item?.status == "upcoming" || item?.status == "ongoing" ? (
+                                      {item?.status == "upcoming" ||
+                                      item?.status == "ongoing" ? (
                                         <div className="plumbing-top">
                                           <p className="plm">
                                             {item?.categoryName}
@@ -217,21 +217,42 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                             </p>
                                           </div>
                                         </div>
-                                      ) : ("")}
+                                      ) : (
+                                        ""
+                                      )}
 
                                       <p className="sub-cate">
-                                        {item?.bookingDateTime ? `${new Date(item.bookingDateTime.split('T')[1].replace(/-/g, '/')).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} •  ${new Date(item.bookingDateTime.split('T')[1].replace(/-/g, '/')).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}` : '-'}
+                                        {item?.bookingDateTime
+                                          ? `${new Date(
+                                              item.bookingDateTime
+                                                .split("T")[1]
+                                                .replace(/-/g, "/")
+                                            ).toLocaleDateString("en-US", {
+                                              month: "short",
+                                              day: "numeric",
+                                              year: "numeric",
+                                            })} •  ${new Date(
+                                              item.bookingDateTime
+                                                .split("T")[1]
+                                                .replace(/-/g, "/")
+                                            ).toLocaleTimeString("en-US", {
+                                              hour: "2-digit",
+                                              minute: "2-digit",
+                                              hour12: true,
+                                            })}`
+                                          : "-"}
                                         {/* {item.booking_time} */}
                                       </p>
-                                      {(item?.status === "customer_cancel" ||
+                                      {(item?.status === "contractor_cancel" ||
                                         item?.status == "completed") && (
-                                          <p className="service-cost">
-                                            Amount :
-                                            <span>
-                                              {`$ ${item?.payment.totalAmount}` || "$0"}
-                                            </span>
-                                          </p>
-                                        )}
+                                        <p className="service-cost">
+                                          Amount :
+                                          <span>
+                                            {`$ ${item?.payment.totalAmount}` ||
+                                              "$0"}
+                                          </span>
+                                        </p>
+                                      )}
                                       <p className="sub-cate">
                                         Services Selected
                                       </p>
@@ -249,11 +270,15 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                         </ol> */}
 
                                         <ol className="main-category">
-                                          {item?.services?.map((service: any, index: number) => (
-                                            <li key={index}>
-                                              {service?.name || service?.serviceName || "Service"}
-                                            </li>
-                                          ))}
+                                          {item?.services?.map(
+                                            (service: any, index: number) => (
+                                              <li key={index}>
+                                                {service?.name ||
+                                                  service?.serviceName ||
+                                                  "Service"}
+                                              </li>
+                                            )
+                                          )}
                                         </ol>
 
                                         {/* {item?.status === "upcoming" ||
@@ -276,78 +301,87 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                           ))} */}
 
                                         <div className="service-quotes">
-                                          {(item?.status === "upcoming" || item?.status == "ongoing") && (
+                                          {(item?.status === "upcoming" ||
+                                            item?.status == "ongoing") && (
                                             <p className="service-cost">
                                               Amount :
                                               <span>
-                                                {`$ ${item?.payment?.totalAmount}` || "$0"}
+                                                {`$ ${item?.payment?.totalAmount}` ||
+                                                  "$0"}
                                               </span>
                                             </p>
                                           )}
-                                          {
-                                            (item?.contractorTimeRequest && Object.keys(item?.contractorTimeRequest).length > 0) ? (
-                                              item?.status === "upcoming" && (
-                                                <div className="home-quotes-cta">
+                                          {item?.contractorTimeRequest &&
+                                          Object.keys(
+                                            item?.contractorTimeRequest
+                                          ).length > 0 ? (
+                                            item?.status === "upcoming" && (
+                                              <div className="home-quotes-cta">
+                                                <Link
+                                                  href="/view-booking-detail"
+                                                  className="reject-btn"
+                                                >
+                                                  View Details
+                                                </Link>
+                                                <button
+                                                  className="primary-cta rgt"
+                                                  data-bs-target="#contractorTime"
+                                                  data-bs-toggle="modal"
+                                                  onClick={() =>
+                                                    setSelectedBooking(item)
+                                                  }
+                                                >
+                                                  View Contractor Request
+                                                </button>
+                                              </div>
+                                            )
+                                          ) : item?.status === "upcoming" ||
+                                            item?.status === "ongoing" ? (
+                                            <div className="service-quotes my-booking">
+                                              <div className="home-quotes-cta">
+                                                <button
+                                                  className="reject-btn"
+                                                  data-bs-target="#cancelBookingPopup"
+                                                  data-bs-toggle="modal"
+                                                >
+                                                  Cancel
+                                                </button>
+
+                                                {isMoreThan24Hours(
+                                                  item?.bookingDateTime
+                                                ) ? (
+                                                  <button
+                                                    className="primary-cta rgt"
+                                                    onClick={() => {
+                                                      setShowDatePicker(true),
+                                                        setbookingId(
+                                                          item?.bookingId
+                                                        );
+                                                      setQuoteId(item?.quoteId);
+                                                    }}
+                                                    data-bs-target="#select-date-time-popup"
+                                                    data-bs-toggle="modal"
+                                                  >
+                                                    <img
+                                                      src="images/inner-page/clock-booking.svg"
+                                                      className="img-left"
+                                                      alt=""
+                                                    />{" "}
+                                                    Reschedule
+                                                  </button>
+                                                ) : (
                                                   <Link
                                                     href="/view-booking-detail"
                                                     className="reject-btn"
                                                   >
                                                     View Details
                                                   </Link>
-                                                  <button
-                                                    className="primary-cta rgt"
-                                                    data-bs-target="#contractorTime"
-                                                    data-bs-toggle="modal"
-                                                    onClick={() => setSelectedBooking(item)}
-                                                  >
-                                                    View Contractor Request
-                                                  </button>
-                                                </div>
-                                              )
-
-                                            ) : (
-
-                                              item?.status === "upcoming" ||
-                                                item?.status === "ongoing" ?
-                                                (
-                                                  <div className="service-quotes my-booking">
-                                                    <div className="home-quotes-cta">
-                                                      <button
-                                                        className="reject-btn"
-                                                        data-bs-target="#cancelBookingPopup"
-                                                        data-bs-toggle="modal"
-                                                      >
-                                                        Cancel
-                                                      </button>
-
-                                                      {isMoreThan24Hours(item?.bookingDateTime) ? (
-                                                        <button
-                                                          className="primary-cta rgt"
-                                                          onClick={() => { setShowDatePicker(true), setbookingId(item?.bookingId) }}
-
-                                                          data-bs-target="#select-date-time-popup"
-                                                          data-bs-toggle="modal"
-                                                        >
-                                                          <img
-                                                            src="images/inner-page/clock-booking.svg"
-                                                            className="img-left"
-                                                            alt=""
-                                                          />{" "}
-                                                          Reschedule
-                                                        </button>
-                                                      ) : (
-                                                        <Link
-                                                          href="/view-booking-detail"
-                                                          className="reject-btn"
-                                                        >
-                                                          View Details
-                                                        </Link>
-                                                      )}
-                                                    </div>
-                                                  </div>
-                                                ) : ('')
-                                            )
-                                          }
+                                                )}
+                                              </div>
+                                            </div>
+                                          ) : (
+                                            ""
+                                          )}
                                         </div>
                                         {item?.payment?.isPaid === false ? (
                                           item?.status === "completed" && (
@@ -358,7 +392,12 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                                   className="reject-btn"
                                                   data-bs-toggle="modal"
                                                   data-bs-target="#rate-contractor-popup"
-                                                  onClick={() => { setbookingId(item?.bookingId) }}
+                                                  onClick={() => {
+                                                    setbookingId(
+                                                      item?.bookingId
+                                                    );
+                                                    setQuoteId(item?.quoteId);
+                                                  }}
                                                 >
                                                   Add Feedback
                                                 </button>
@@ -366,7 +405,15 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                                   href="#pay-remaining-popup"
                                                   data-bs-toggle="modal"
                                                   className="primary-cta rgt"
-                                                  onClick={() => { setbookingId(item?.bookingId), setBookingPaymentInfo(item?.payment) }}
+                                                  onClick={() => {
+                                                    setbookingId(
+                                                      item?.bookingId
+                                                    ),
+                                                      setBookingPaymentInfo(
+                                                        item?.payment
+                                                      );
+                                                    setQuoteId(item?.quoteId);
+                                                  }}
                                                 >
                                                   Confirm & Pay
                                                   <img
@@ -384,7 +431,7 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                             <div className="home-quotes-cta">
                                               <button
                                                 className="primary-cta rgt"
-                                              // data-bs-target="#rescheduleRequest" data-bs-toggle="modal"
+                                                // data-bs-target="#rescheduleRequest" data-bs-toggle="modal"
                                               >
                                                 <img
                                                   src="images/inner-page/download-icon.svg"
@@ -403,7 +450,10 @@ export default function Booking({ initialBookingData }: BookingProps) {
                               </div>
                             ))
                           ) : (
-                            <p className="no-data" style={{ textAlign: "center" }}>
+                            <p
+                              className="no-data"
+                              style={{ textAlign: "center" }}
+                            >
                               No Booking Data Available
                             </p>
                           )}
@@ -640,8 +690,10 @@ export default function Booking({ initialBookingData }: BookingProps) {
       <ServiceRejected /> */}
       <ContractorRequest booking={selectedBooking} />
       <RescheduleRequestSubmit />
-      <PaymentRemainingPopup bookingPaymentInfo={bookingPaymentInfo}
+      <PaymentRemainingPopup
+        bookingPaymentInfo={bookingPaymentInfo}
         bookingId={bookingId !== null ? String(bookingId) : ""}
+        quote_id={quote_id}
       />
       <CancelBooking />
       <ConfirmCancelBooking />

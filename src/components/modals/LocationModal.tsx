@@ -1,9 +1,9 @@
-'use client'
-import React, { useEffect, useRef, useState } from 'react'
-import NewAddressModal from './Address/NewAddressModal';
-import { globalServerRequest } from '@/actions/globalApi';
-import toast from 'react-hot-toast';
-import { MdOutlineShareLocation } from 'react-icons/md';
+"use client";
+import React, { useEffect, useRef, useState } from "react";
+import NewAddressModal from "./Address/NewAddressModal";
+import { globalServerRequest } from "@/actions/globalApi";
+import toast from "react-hot-toast";
+import { MdOutlineShareLocation } from "react-icons/md";
 
 const LocationModal = () => {
   const dummyPlaces = [
@@ -14,45 +14,62 @@ const LocationModal = () => {
     "Salt Lake Sector V, Kolkata, West Bengal, India",
     "Hitech City, Hyderabad, Telangana, India",
     "2118 Thornridge Cir. Syracuse, Connecticut 35624",
-    "4517 Washington Ave. Manchester, Kentucky 39495"
+    "4517 Washington Ave. Manchester, Kentucky 39495",
   ];
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
   const [filteredPlaces, setFilteredPlaces] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [currentLocationText, setCurrentLocationText] = useState('Enable your current location for better services');
+  const [currentLocationText, setCurrentLocationText] = useState(
+    "Enable your current location for better services"
+  );
   const dropdownRef = useRef(null);
   const [isAutoEnabled, setIsAutoEnabled] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('autoLocation') === 'true';
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("autoLocation") === "true";
     }
     return false;
   });
-
   const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
+
+  const isLoggedIn =
+    typeof window !== "undefined" ? localStorage.getItem("isLoggedIn") : null;
+
+  const fetchAddresses = async () => {
+    if (localStorage.getItem("isLoggedIn") !== "true") return;
+    const response = await globalServerRequest({
+      endpoint: "profile/address",
+      method: "GET",
+    });
+
+    if (response?.success) {
+      setSavedAddresses(response?.data?.data || []);
+    }
+  };
 
   // Fetch saved addresses from API on mount (if logged in)
   useEffect(() => {
-    const fetchAddresses = async () => {
-      const isLoggedIn = typeof window !== 'undefined' ? localStorage.getItem("isLoggedIn") : null;
+    const modal = document.getElementById("your-location-popup");
+
+    const handleModalOpen = () => {
+      const isLoggedIn = localStorage.getItem("isLoggedIn");
+
       if (isLoggedIn === "true") {
-        const response = await globalServerRequest({
-          endpoint: "profile/address",
-          method: "GET",
-        });
-        if (response?.success) {
-          const data = response?.data?.data || response?.data;
-          setSavedAddresses(Array.isArray(data) ? data : []);
-        }
+        fetchAddresses();
       }
     };
-    fetchAddresses();
+
+    modal?.addEventListener("show.bs.modal", handleModalOpen);
+
+    return () => {
+      modal?.removeEventListener("show.bs.modal", handleModalOpen);
+    };
   }, []);
 
   const handleSelectDefault = async (item: any, formattedAddress: string) => {
     // 1. Mark as default in the backend if it has an id
 
-    console.log("i am calling", item, formattedAddress)
+    console.log("i am calling", item, formattedAddress);
     // if (item.id) {
     //   await globalServerRequest({
     //     endpoint: `profile/address/default/${item.id}`,
@@ -64,8 +81,8 @@ const LocationModal = () => {
       const response = await globalServerRequest({
         endpoint: `profile/address/default/${item.id}`,
         method: "PUT",
-      })
-      console.log(response, "resssss")
+      });
+      console.log(response, "resssss");
       if (response?.success) {
         toast.success("Address marked as default successfully");
         const getResponse = await globalServerRequest({
@@ -82,8 +99,8 @@ const LocationModal = () => {
     }
 
     // 2. Update local storage for Header
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('homeUserData', formattedAddress);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("homeUserData", formattedAddress);
       // 3. Trigger header update event
       window.dispatchEvent(new Event("loginStatusChanged"));
     }
@@ -91,18 +108,20 @@ const LocationModal = () => {
     // 4. Hide Modal
     const currentModal = document.getElementById("your-location-popup");
     if (currentModal) {
-      const bootstrapModal = (window as any).bootstrap?.Modal.getInstance(currentModal);
+      const bootstrapModal = (window as any).bootstrap?.Modal.getInstance(
+        currentModal
+      );
       bootstrapModal?.hide();
     }
   };
 
   useEffect(() => {
-    if (searchTerm.trim() === '') {
+    if (searchTerm.trim() === "") {
       setFilteredPlaces([]);
       return;
     }
 
-    const results: any = dummyPlaces.filter(place =>
+    const results: any = dummyPlaces.filter((place) =>
       place.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setFilteredPlaces(results);
@@ -126,14 +145,18 @@ const LocationModal = () => {
     // Close Location Modal
     const locationModalEl = document.getElementById("your-location-popup");
     if (locationModalEl) {
-      const locationModal = (window as any).bootstrap?.Modal.getInstance(locationModalEl);
+      const locationModal = (window as any).bootstrap?.Modal.getInstance(
+        locationModalEl
+      );
       locationModal?.hide();
     }
 
     // Open New Address Modal
     const addAddressModalEl = document.getElementById("add-address-popup");
     if (addAddressModalEl) {
-      const addAddressModal = (window as any).bootstrap?.Modal.getOrCreateInstance(addAddressModalEl);
+      const addAddressModal = (
+        window as any
+      ).bootstrap?.Modal.getOrCreateInstance(addAddressModalEl);
       addAddressModal?.show();
     }
   };
@@ -152,22 +175,31 @@ const LocationModal = () => {
         console.log("Actual Lat/Lng Captured:", latitude, longitude);
 
         try {
-          const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "AIzaSyALi3glNPQSOD1n4mnjK0RmfGCws8-4nIg";
-          const res = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${apiKey}`);
+          const apiKey =
+            process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ||
+            "AIzaSyALi3glNPQSOD1n4mnjK0RmfGCws8-4nIg";
+          const res = await fetch(
+            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${apiKey}`
+          );
           const data = await res.json();
-          
+
           if (data.status === "OK" && data.results && data.results.length > 0) {
             const place = data.results[0];
             const fullAddr = place.formatted_address;
-            
+
             let area = "";
             for (const result of data.results) {
-               result.address_components.forEach((component: any) => {
-                  const types = component.types;
-                  if (!area && (types.includes("sublocality") || types.includes("neighborhood") || types.includes("locality"))) {
-                     area = component.long_name;
-                  }
-               });
+              result.address_components.forEach((component: any) => {
+                const types = component.types;
+                if (
+                  !area &&
+                  (types.includes("sublocality") ||
+                    types.includes("neighborhood") ||
+                    types.includes("locality"))
+                ) {
+                  area = component.long_name;
+                }
+              });
             }
             if (!area) area = "Detected Location";
 
@@ -175,8 +207,8 @@ const LocationModal = () => {
             setSearchTerm(fullAddr);
 
             // Set in header by default
-            if (typeof window !== 'undefined') {
-              localStorage.setItem('homeUserData', fullAddr);
+            if (typeof window !== "undefined") {
+              localStorage.setItem("homeUserData", fullAddr);
               window.dispatchEvent(new Event("loginStatusChanged"));
             }
 
@@ -185,33 +217,45 @@ const LocationModal = () => {
             // Hide Modal
             const currentModal = document.getElementById("your-location-popup");
             if (currentModal) {
-              const bootstrapModal = (window as any).bootstrap?.Modal.getInstance(currentModal);
+              const bootstrapModal = (
+                window as any
+              ).bootstrap?.Modal.getInstance(currentModal);
               bootstrapModal?.hide();
             }
           }
         } catch (err) {
           console.error("Error fetching address details", err);
-          setCurrentLocationText(`Detected (Lat: ${latitude.toFixed(2)}, Lng: ${longitude.toFixed(2)})`);
+          setCurrentLocationText(
+            `Detected (Lat: ${latitude.toFixed(2)}, Lng: ${longitude.toFixed(
+              2
+            )})`
+          );
 
           // Fallback if fetch fails
-          if (typeof window !== 'undefined') {
-            localStorage.setItem('homeUserData', `Lat ${latitude.toFixed(2)}, Lng ${longitude.toFixed(2)}`);
+          if (typeof window !== "undefined") {
+            localStorage.setItem(
+              "homeUserData",
+              `Lat ${latitude.toFixed(2)}, Lng ${longitude.toFixed(2)}`
+            );
             window.dispatchEvent(new Event("loginStatusChanged"));
           }
           const currentModal = document.getElementById("your-location-popup");
           if (currentModal) {
-            const bootstrapModal = (window as any).bootstrap?.Modal.getInstance(currentModal);
+            const bootstrapModal = (window as any).bootstrap?.Modal.getInstance(
+              currentModal
+            );
             bootstrapModal?.hide();
           }
         }
       },
       (error) => {
         console.error(error);
-        setCurrentLocationText("Location access denied. Please enable permissions.");
+        setCurrentLocationText(
+          "Location access denied. Please enable permissions."
+        );
       }
     );
   };
-
 
   // --- Logic: Reverse Geocoding & Fetch ---
   const fetchAddress = async () => {
@@ -224,22 +268,31 @@ const LocationModal = () => {
       async (position) => {
         try {
           const { latitude, longitude } = position.coords;
-          const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "AIzaSyALi3glNPQSOD1n4mnjK0RmfGCws8-4nIg";
-          const res = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${apiKey}`);
+          const apiKey =
+            process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ||
+            "AIzaSyALi3glNPQSOD1n4mnjK0RmfGCws8-4nIg";
+          const res = await fetch(
+            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${apiKey}`
+          );
           const data = await res.json();
 
           if (data.status === "OK" && data.results && data.results.length > 0) {
             const place = data.results[0];
             const fullAddr = place.formatted_address;
-            
+
             let area = "";
             for (const result of data.results) {
-               result.address_components.forEach((component: any) => {
-                  const types = component.types;
-                  if (!area && (types.includes("sublocality") || types.includes("neighborhood") || types.includes("locality"))) {
-                     area = component.long_name;
-                  }
-               });
+              result.address_components.forEach((component: any) => {
+                const types = component.types;
+                if (
+                  !area &&
+                  (types.includes("sublocality") ||
+                    types.includes("neighborhood") ||
+                    types.includes("locality"))
+                ) {
+                  area = component.long_name;
+                }
+              });
             }
             if (!area) area = "Detected Location";
 
@@ -262,37 +315,11 @@ const LocationModal = () => {
 
   // --- Logic: Auto-trigger on Load or Toggle ---
   useEffect(() => {
-    localStorage.setItem('autoLocation', isAutoEnabled.toString());
+    localStorage.setItem("autoLocation", isAutoEnabled.toString());
     if (isAutoEnabled) {
       fetchAddress();
     }
   }, [isAutoEnabled]);
-
-
-  // const makeDefaultAddress = async (id: any) => {
-
-  //   const response = await globalServerRequest({
-  //     endpoint: `profile/address/default/${id}`,
-  //     method: "PUT",
-  //   })
-  //   console.log(response, "resssss")
-  //   if (response?.success) {
-  //     toast.success("Address marked as default successfully");
-  //     const getResponse = await globalServerRequest({
-  //       endpoint: "profile/address",
-  //       method: "GET",
-  //     });
-  //     if (getResponse?.success) {
-  //       const data = getResponse?.data?.data || getResponse?.data;
-  //       setSavedAddresses(Array.isArray(data) ? data : []);
-  //     }
-  //   } else {
-  //     toast.error("Failed to set address as default");
-  //   }
-  // };
-
-
-
 
   return (
     <>
@@ -315,76 +342,13 @@ const LocationModal = () => {
             <div className="modal-body">
               <div className="select-date-time-wrp">
                 <h1>Your Location</h1>
-                {/* <form action="">
-                <div className="your-location-top">
-                  <input
-                    type="text"
-                    placeholder="Search a new address"
-                    className="top-srch"
-                  />
-                  <div className="your-location-top-in">
-                    <div className="use-location">
-                      <img src="images/saved-addresses/location.svg" alt="" />
-                      <div className="use-location-data">
-                        <h5>Use My Current Location</h5>
-                        <p>Enable your current location for better services</p>
-                      </div>
-                      <button type="button" className="reject-btn">Enable</button>
-                    </div>
-                    <hr />
-                    <button
-                      type="button"
-                      data-bs-target="#add-address-popup"
-                      data-bs-toggle="modal"
-                      className="add-address"
-                    >
-                      <i className="fa-solid fa-plus"></i> Add New Address
-                    </button>
-                  </div>
-                  <h5>Your Saved Addresses</h5>
-                  <div className="svd-add-wrp">
-                    <input
-                      type="radio"
-                      id="address-1"
-                      value="1"
-                      name="saved-addresses"
-                      hidden
-                      defaultChecked
-                    />
-                    <label htmlFor="address-1" className="saved-addresses-in">
-                      <div className="saved-addresses-icon">
-                        <img src="images/saved-addresses/1.svg" alt="" />
-                      </div>
-                      <div className="saved-addresses-data">
-                        <h4>Home</h4>
-                        <p>2118 Thornridge Cir. Syracuse, Connecticut 35624</p>
-                      </div>
-                    </label>
-                    <input
-                      type="radio"
-                      id="address-2"
-                      value="2"
-                      name="saved-addresses"
-                      hidden
-                    />
-                    <label htmlFor="address-2" className="saved-addresses-in">
-                      <div className="saved-addresses-icon">
-                        <img src="images/saved-addresses/2.svg" alt="" />
-                      </div>
-                      <div className="saved-addresses-data">
-                        <h4>Office</h4>
-                        <p>4517 Washington Ave. Manchester, Kentucky 39495</p>
-                      </div>
-                    </label>
-                  </div>
-                </div>
-              </form> */}
 
-
-
-                <form onSubmit={(e) => e.preventDefault()} >
-                  <div className="your-location-top" style={{ position: 'relative' }} ref={dropdownRef}>
-
+                <form onSubmit={(e) => e.preventDefault()}>
+                  <div
+                    className="your-location-top"
+                    style={{ position: "relative" }}
+                    ref={dropdownRef}
+                  >
                     {/* Search Input Field */}
                     <input
                       type="text"
@@ -400,26 +364,29 @@ const LocationModal = () => {
                       // type="button"
                       data-bs-target="#add-address-popup"
                       data-bs-toggle="modal"
-                    // className="add-address"
+                      // className="add-address"
                     />
 
                     {/* CUSTOM DUMMY DROPDOWN (Bina CSS disturbance ke inline setup) */}
                     {showDropdown && filteredPlaces.length > 0 && (
-                      <ul className="list-group" style={{
-                        position: 'absolute',
-                        top: '10%',
-                        left: 0,
-                        right: 0,
-                        zIndex: 1050,
-                        maxHeight: '200px',
-                        overflowY: 'auto',
-                        boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-                      }}>
+                      <ul
+                        className="list-group"
+                        style={{
+                          position: "absolute",
+                          top: "10%",
+                          left: 0,
+                          right: 0,
+                          zIndex: 1050,
+                          maxHeight: "200px",
+                          overflowY: "auto",
+                          boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+                        }}
+                      >
                         {filteredPlaces.map((place, index) => (
                           <li
                             key={index}
                             className="list-group-item list-group-item-action"
-                            style={{ cursor: 'pointer', fontSize: '14px' }}
+                            style={{ cursor: "pointer", fontSize: "14px" }}
                             onClick={() => handleSelectAddress(place)}
                           >
                             <i className="fa-solid fa-location-dot me-2 text-secondary"></i>
@@ -460,11 +427,15 @@ const LocationModal = () => {
                         <h5>Your Saved Addresses</h5>
                         <div className="svd-add-wrp">
                           {savedAddresses.map((item: any, idx: number) => {
-                            const displayType = item.type || item.label || 'Home';
-                            const displayFlat = item.flat || item.flat_house_building || '';
-                            const displayFloor = item.floor || '';
-                            const displayArea = item.area || item.area_sector_locality || '';
-                            const displayLandmark = item.landmark || item.nearby_landmark || '';
+                            const displayType =
+                              item.type || item.label || "Home";
+                            const displayFlat =
+                              item.flat || item.flat_house_building || "";
+                            const displayFloor = item.floor || "";
+                            const displayArea =
+                              item.area || item.area_sector_locality || "";
+                            const displayLandmark =
+                              item.landmark || item.nearby_landmark || "";
                             // const displayIcon = item.icon || (
                             //   displayType?.toLowerCase() === 'home' ? 'images/saved-addresses/1.svg' :
                             //     displayType?.toLowerCase() === 'office' ? 'images/saved-addresses/2.svg' :
@@ -489,7 +460,9 @@ const LocationModal = () => {
                               ) : (
                                 <MdOutlineShareLocation size={24} />
                               );
-                            const formattedAddress = `${displayFlat}${displayFloor ? ', ' + displayFloor : ''}, ${displayArea}`;
+                            const formattedAddress = `${displayFlat}${
+                              displayFloor ? ", " + displayFloor : ""
+                            }, ${displayArea}`;
 
                             return (
                               <React.Fragment key={item.id || idx}>
@@ -500,26 +473,54 @@ const LocationModal = () => {
                                   name="saved-addresses"
                                   hidden
                                   defaultChecked={item.is_default || idx === 0}
-
                                 />
-                                <label htmlFor={`address-${item.id || idx}`} className="saved-addresses-in">
+                                <label
+                                  htmlFor={`address-${item.id || idx}`}
+                                  className="saved-addresses-in"
+                                >
                                   <div className="saved-addresses-icon">
                                     {/* <img src={displayIcon} alt={displayType} /> */}
                                     {displayIcon}
                                   </div>
                                   <div className="saved-addresses-data">
-
-
                                     <h4>{displayType}</h4>
                                     <p>{formattedAddress}</p>
                                   </div>
-                                  <div className='last' >
-
-                                    {!item.is_default ? <a type="button" className="primary-cta" style={{ fontSize: '12px', padding: '3px 15px' }} onClick={() => handleSelectDefault(item, formattedAddress)}><i
-                                    ></i> Set as default</a> :
-                                      <a type="button" style={{ background: '#363636', border: "1px solid    #363636", color: "#fff", cursor: "not-allowed", borderRadius: '20px', width: 'fit-content', padding: '3px 15px', fontSize: '12px' }}><i
-                                      ></i> Default</a>
-                                    }
+                                  <div className="last">
+                                    {!item.is_default ? (
+                                      <a
+                                        type="button"
+                                        className="primary-cta"
+                                        style={{
+                                          fontSize: "12px",
+                                          padding: "3px 15px",
+                                        }}
+                                        onClick={() =>
+                                          handleSelectDefault(
+                                            item,
+                                            formattedAddress
+                                          )
+                                        }
+                                      >
+                                        <i></i> Set as default
+                                      </a>
+                                    ) : (
+                                      <a
+                                        type="button"
+                                        style={{
+                                          background: "#363636",
+                                          border: "1px solid    #363636",
+                                          color: "#fff",
+                                          cursor: "not-allowed",
+                                          borderRadius: "20px",
+                                          width: "fit-content",
+                                          padding: "3px 15px",
+                                          fontSize: "12px",
+                                        }}
+                                      >
+                                        <i></i> Default
+                                      </a>
+                                    )}
                                   </div>
                                 </label>
                               </React.Fragment>
@@ -540,7 +541,10 @@ const LocationModal = () => {
         selectedAddress={null}
         onSave={() => {
           // Re-fetch addresses so the new one appears in the list
-          const isLoggedIn = typeof window !== 'undefined' ? localStorage.getItem("isLoggedIn") : null;
+          const isLoggedIn =
+            typeof window !== "undefined"
+              ? localStorage.getItem("isLoggedIn")
+              : null;
           if (isLoggedIn === "true") {
             globalServerRequest({
               endpoint: "profile/address",
@@ -553,10 +557,10 @@ const LocationModal = () => {
             });
           }
         }}
-        onClose={() => { }}
+        onClose={() => {}}
       />
     </>
-  )
-}
+  );
+};
 
-export default LocationModal
+export default LocationModal;

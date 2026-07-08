@@ -1,6 +1,7 @@
 "use client";
 
 import { globalServerRequest } from "@/actions/globalApi";
+import { useRouter } from "next/navigation";
 import React, { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 
@@ -11,6 +12,8 @@ interface OtpModalProps {
 
 const OtpModal = ({ emailLogin = false, loginValue = "" }: OtpModalProps) => {
   // console.log(emailLogin, "emailLogin");
+
+  const router = useRouter();
 
   const [otp, setOtp] = useState(["", "", "", "", ""]);
   const [error, setError] = useState("");
@@ -122,6 +125,8 @@ const OtpModal = ({ emailLogin = false, loginValue = "" }: OtpModalProps) => {
           response?.data?.data?.access_token || response?.data?.data?.token;
         if (token) {
           document.cookie = `auth_token=${token}; path=/; max-age=86400; SameSite=Lax`;
+          router.replace("/");
+          router.refresh();
         }
 
         const currentModal = document.getElementById("login-screen-2");

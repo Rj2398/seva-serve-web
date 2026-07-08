@@ -1,13 +1,21 @@
 "use client";
-import { globalServerRequest } from '@/actions/globalApi';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import React, { useState } from 'react';
-import toast from 'react-hot-toast';
-import { loadStripe } from '@stripe/stripe-js';
-import { Elements, CardNumberElement, CardExpiryElement, CardCvcElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { globalServerRequest } from "@/actions/globalApi";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import React, { useState } from "react";
+import toast from "react-hot-toast";
+import { loadStripe } from "@stripe/stripe-js";
+import {
+  Elements,
+  CardNumberElement,
+  CardExpiryElement,
+  CardCvcElement,
+  useStripe,
+  useElements,
+} from "@stripe/react-stripe-js";
 
-const STRIPE_PUBLISHABLE_KEY = "pk_test_51TpBrKBkqSLQl482FRrfPuOnc3qyndMLw0DCDwOvpl708kbL7NlnZCTttOPAb6nBTYdPf5rfak5IB8Rvf6oWVSXJ00KN2ZUamw";
+const STRIPE_PUBLISHABLE_KEY =
+  "pk_test_51TpBrKBkqSLQl482FRrfPuOnc3qyndMLw0DCDwOvpl708kbL7NlnZCTttOPAb6nBTYdPf5rfak5IB8Rvf6oWVSXJ00KN2ZUamw";
 const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
 
 interface FormErrors {
@@ -18,14 +26,18 @@ function AddNewCardForm() {
   const router = useRouter();
   const stripe = useStripe();
   const elements = useElements();
-
-  const [holderName, setHolderName] = useState('');
+  const searchParams = useSearchParams();
+  const bookingId = searchParams.get("booking_id");
+  const initialpayment = searchParams.get("initialpayment");
+  const remainingPayment = searchParams.get("remaingPayment");
+  const paymenttype = searchParams.get("paymenttype");
+  const [holderName, setHolderName] = useState("");
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Front-end validation for Holder Name
     if (!holderName.trim()) {
       setErrors({ holderName: "Holder name is required" });
@@ -47,7 +59,7 @@ function AddNewCardForm() {
     try {
       // Tokenize / Create the Payment Method directly through Stripe Elements securely
       const { error, paymentMethod } = await stripe.createPaymentMethod({
-        type: 'card',
+        type: "card",
         card: cardNumberElement,
         billing_details: {
           name: holderName,
@@ -65,7 +77,7 @@ function AddNewCardForm() {
 
       const response = await globalServerRequest({
         endpoint: "payment/card/add",
-        method: "POST", 
+        method: "POST",
         payload: {
           payment_method_id: paymentMethod.id,
         },
@@ -74,15 +86,22 @@ function AddNewCardForm() {
       if (response.success) {
         console.log("Response from card add:", response);
         toast.success("Card added successfully!", { id: toastId });
-        router.push("/payment-method");
+        router.push(
+          `/payment-method?booking_id=${bookingId || ""}&initialpayment=${
+            initialpayment || ""
+          }&remaingPayment=${remainingPayment || ""}&paymenttype=${
+            paymenttype || ""
+          }`
+        );
       } else {
         toast.error(response.error || "Failed to add card.", { id: toastId });
         setIsSubmitting(false);
       }
-
     } catch (error) {
       console.error("An error occurred during card submission:", error);
-      toast.error("Something went wrong. Please try again later.", { id: toastId });
+      toast.error("Something went wrong. Please try again later.", {
+        id: toastId,
+      });
       setIsSubmitting(false);
     }
   };
@@ -90,15 +109,15 @@ function AddNewCardForm() {
   const elementOptions = {
     style: {
       base: {
-        fontSize: '16px',
-        color: '#363636',
-        fontFamily: 'Inter, sans-serif',
-        '::placeholder': {
-          color: '#3636364d',
+        fontSize: "16px",
+        color: "#363636",
+        fontFamily: "Inter, sans-serif",
+        "::placeholder": {
+          color: "#3636364d",
         },
       },
       invalid: {
-        color: '#dc3545',
+        color: "#dc3545",
       },
     },
   };
@@ -112,7 +131,10 @@ function AddNewCardForm() {
               <div className="browse-wrp">
                 <div className="browse-ctg-head my-con-head">
                   <h2 className="sub-cate-page">
-                    <span onClick={() => router.back()} style={{ cursor: 'pointer' }}>
+                    <span
+                      onClick={() => router.back()}
+                      style={{ cursor: "pointer" }}
+                    >
                       <img src="images/home/left-arrow.svg" alt="back" />
                     </span>
                     Add New Card
@@ -123,12 +145,15 @@ function AddNewCardForm() {
                   <div className="card-wrp form">
                     {/* Visual Card Preview */}
                     <div className="single-card">
-                      <img className="card" src="images/inner-page/payment-method-cart.svg" alt="" />
+                      <img
+                        className="card"
+                        src="images/inner-page/payment-method-cart.svg"
+                        alt=""
+                      />
                     </div>
 
                     <form className="Cardholder" onSubmit={handleSubmit}>
                       <div className="Cardholder-form">
-
                         {/* Holder Name */}
                         <label>Cardholder’s Name</label>
                         <input
@@ -138,7 +163,11 @@ function AddNewCardForm() {
                           onChange={(e) => setHolderName(e.target.value)}
                           className={errors.holderName ? "error-border" : ""}
                         />
-                        {errors.holderName && <span className="text-danger small">{errors.holderName}</span>}
+                        {errors.holderName && (
+                          <span className="text-danger small">
+                            {errors.holderName}
+                          </span>
+                        )}
 
                         {/* Card Number (Stripe Elements) */}
                         <label className="mt-3">Card Number</label>
@@ -164,9 +193,9 @@ function AddNewCardForm() {
                           </div>
                         </div>
 
-                        <button 
-                          type="submit" 
-                          className="primary-cta add-card mt-4" 
+                        <button
+                          type="submit"
+                          className="primary-cta add-card mt-4"
                           disabled={isSubmitting}
                         >
                           {isSubmitting ? "Processing..." : "Add Card"}
@@ -183,9 +212,17 @@ function AddNewCardForm() {
 
       {/* Basic Error Styling Inline */}
       <style jsx>{`
-        .text-danger { color: #dc3545; display: block; margin-top: 5px; }
-        .small { font-size: 12px; }
-        .error-border { border-color: #dc3545 !important; }
+        .text-danger {
+          color: #dc3545;
+          display: block;
+          margin-top: 5px;
+        }
+        .small {
+          font-size: 12px;
+        }
+        .error-border {
+          border-color: #dc3545 !important;
+        }
         .stripe-card-element-container {
           border: 1px solid #3636364d;
           border-radius: 10px;
@@ -209,7 +246,6 @@ export default function AddNewCard() {
     </Elements>
   );
 }
-
 
 //
 // "use client";

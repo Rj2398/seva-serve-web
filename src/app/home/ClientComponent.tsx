@@ -200,9 +200,6 @@ const ClientComponent = ({ data }: homeprops) => {
     return `${dateStr} • ${timeStr}`;
   };
 
-
-
-
   return (
     <>
       <style
@@ -258,9 +255,22 @@ const ClientComponent = ({ data }: homeprops) => {
                             </div>
                             <p>{item?.title}</p>
                             <div className="hero-btn">
-                              <button onClick={() => router.push("/category")}>
+                              <button
+                                onClick={() => {
+                                  if (isLogin) {
+                                    router.push("/category");
+                                  }
+                                }}
+                                data-bs-toggle={!isLogin ? "modal" : undefined}
+                                data-bs-target={
+                                  !isLogin ? "#login-screen-1" : undefined
+                                }
+                              >
                                 Book Now{" "}
-                                <img src="images/home/right-arrow.svg" />
+                                <img
+                                  src="/images/home/right-arrow.svg"
+                                  alt="arrow"
+                                />
                               </button>
                             </div>
                           </div>
@@ -318,14 +328,26 @@ const ClientComponent = ({ data }: homeprops) => {
                     <div className="browse-wrp">
                       <div className="browse-ctg-head">
                         <h2>Browse by Category</h2>
-                        <p className="see-all">
-                          <Link href="/category">
-                            See All{" "}
-                            <img
-                              src="images/home/browse-category/right-arrow.svg"
-                              alt="right-arrow"
-                            />
-                          </Link>
+                        <p
+                          className="see-all"
+                          style={{ cursor: "pointer" }}
+                          onClick={() => {
+                            if (isLogin) {
+                              router.push("/category");
+                            }
+                          }}
+                          data-bs-toggle={!isLogin ? "modal" : undefined}
+                          data-bs-target={
+                            !isLogin ? "#login-screen-1" : undefined
+                          }
+                        >
+                          {/* <Link href="/category"> */}
+                          See All{" "}
+                          <img
+                            src="images/home/browse-category/right-arrow.svg"
+                            alt="right-arrow"
+                          />
+                          {/* </Link> */}
                         </p>
                       </div>
                       <div className="browse-inner">
@@ -333,8 +355,21 @@ const ClientComponent = ({ data }: homeprops) => {
                           {data?.categories?.map((item: any) => (
                             <li key={item?.id}>
                               <Link
-                                href={`/serviceDetails?categoryId=${item?.id}`}
+                                href={
+                                  isLogin
+                                    ? `/serviceDetails?categoryId=${item?.id}`
+                                    : "#"
+                                }
                                 className="wrp-img"
+                                data-bs-toggle={!isLogin ? "modal" : undefined}
+                                data-bs-target={
+                                  !isLogin ? "#login-screen-1" : undefined
+                                }
+                                onClick={(e) => {
+                                  if (!isLogin) {
+                                    e.preventDefault();
+                                  }
+                                }}
                               >
                                 <div className="c-img">
                                   <img
@@ -441,23 +476,28 @@ const ClientComponent = ({ data }: homeprops) => {
                           </Link>
                         </p>
                       </div>
-                      {data?.quotes?.slice(0, 1).map((item: any, index: number) => (
-                        <div className="my-quotes-inner" key={index}>
-                          <div className="add-user">
-                            <p className="left">#{item?.quoteId}</p>
-                            <p className="right">Additional Services</p>
-                          </div>
-                          <div className="plumbing">
-                            <Link href={`/serviceDetails?serviceId=${item?.id}`} className="plm">
-                              {item?.title || "Plumbing"}{" "}
-                              <img
-                                src="images/home/up-right-arrow.svg"
-                                alt=""
-                              />
-                            </Link>
-                            {/* <p className="sub-cate">Sub categories Selected</p> */}
-                            <div className="service-list-type">
-                              {/* <ol className="main-category">
+                      {data?.quotes
+                        ?.slice(0, 1)
+                        .map((item: any, index: number) => (
+                          <div className="my-quotes-inner" key={index}>
+                            <div className="add-user">
+                              <p className="left">#{item?.quoteId}</p>
+                              <p className="right">Additional Services</p>
+                            </div>
+                            <div className="plumbing">
+                              <Link
+                                href={`/serviceDetails?serviceId=${item?.id}`}
+                                className="plm"
+                              >
+                                {item?.title || "Plumbing"}{" "}
+                                <img
+                                  src="images/home/up-right-arrow.svg"
+                                  alt=""
+                                />
+                              </Link>
+                              {/* <p className="sub-cate">Sub categories Selected</p> */}
+                              <div className="service-list-type">
+                                {/* <ol className="main-category">
                                 <li>
                                   Installation
                                   <ul>
@@ -514,53 +554,88 @@ const ClientComponent = ({ data }: homeprops) => {
                                 </ul>
                               </div> */}
 
-                              <div className="booking-schedule-container" style={{ padding: "15px", fontFamily: "'Segoe UI', Roboto, Helvetica, Arial, sans-serif", color: "#333", fontSize: "16px", maxWidth: "400px" }}>
-                                {/* {item?.schedule?.map((scheduleItem: any, schedIndex: number) => ( */}
-                                <div style={{ display: "flex", alignItems: "center", marginBottom: "12px", lineHeight: "1.4" }}>
-                                  <div style={{ width: "70px", fontWeight: "500", color: "#222222" }}>
-                                    Date :
+                                <div
+                                  className="booking-schedule-container"
+                                  style={{
+                                    padding: "15px",
+                                    fontFamily:
+                                      "'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+                                    color: "#333",
+                                    fontSize: "16px",
+                                    maxWidth: "400px",
+                                  }}
+                                >
+                                  {/* {item?.schedule?.map((scheduleItem: any, schedIndex: number) => ( */}
+                                  <div
+                                    style={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      marginBottom: "12px",
+                                      lineHeight: "1.4",
+                                    }}
+                                  >
+                                    <div
+                                      style={{
+                                        width: "70px",
+                                        fontWeight: "500",
+                                        color: "#222222",
+                                      }}
+                                    >
+                                      Date :
+                                    </div>
+                                    <div
+                                      style={{
+                                        width: "140px",
+                                        letterSpacing: "0.3px",
+                                        color: "#222",
+                                      }}
+                                    >
+                                      {item?.date}
+                                    </div>
+                                    <div
+                                      style={{
+                                        letterSpacing: "0.5px",
+                                        color: "#222",
+                                        paddingLeft: "10px",
+                                      }}
+                                    >
+                                      {item?.time}
+                                    </div>
                                   </div>
-                                  <div style={{ width: "140px", letterSpacing: "0.3px", color: "#222" }}>
-                                    {item?.date}
-                                  </div>
-                                  <div style={{ letterSpacing: "0.5px", color: "#222", paddingLeft: "10px" }}>
-                                    {item?.time}
-                                  </div>
+                                  {/* ))} */}
                                 </div>
-                                {/* ))} */}
-                              </div>
 
-                              <div className="service-quotes">
-                                <p className="service-cost">
-                                  Cost:<span>${item?.quotedPrice}</span>
-                                </p>
-                                <div className="home-quotes-cta">
-                                  <button
-                                    className="reject-btn"
-                                    data-bs-target="#servicesRejection"
-                                    data-bs-toggle="modal"
-                                    onClick={() => setServiceId(item?.id)}
-                                  >
-                                    Reject
-                                  </button>
-                                  <button
-                                    className="primary-cta rgt"
-                                    data-bs-target="#servicesAccepted"
-                                    data-bs-toggle="modal"
-                                    onClick={() => setServiceId(item?.id)}
-                                  >
-                                    Accept{" "}
-                                    <img
-                                      src="images/home/right-img.svg"
-                                      alt=""
-                                    />
-                                  </button>
+                                <div className="service-quotes">
+                                  <p className="service-cost">
+                                    Cost:<span>${item?.quotedPrice}</span>
+                                  </p>
+                                  <div className="home-quotes-cta">
+                                    <button
+                                      className="reject-btn"
+                                      data-bs-target="#servicesRejection"
+                                      data-bs-toggle="modal"
+                                      onClick={() => setServiceId(item?.id)}
+                                    >
+                                      Reject
+                                    </button>
+                                    <button
+                                      className="primary-cta rgt"
+                                      data-bs-target="#servicesAccepted"
+                                      data-bs-toggle="modal"
+                                      onClick={() => setServiceId(item?.id)}
+                                    >
+                                      Accept{" "}
+                                      <img
+                                        src="images/home/right-img.svg"
+                                        alt=""
+                                      />
+                                    </button>
+                                  </div>
                                 </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        ))}
                     </div>
                   </div>
                 </div>
@@ -576,14 +651,26 @@ const ClientComponent = ({ data }: homeprops) => {
                     <div className="popular-service-home">
                       <div className="browse-ctg-head">
                         <h2>Popular Services</h2>
-                        <p className="see-all">
-                          <Link href="/services">
-                            See All{" "}
-                            <img
-                              src="images/home/browse-category/right-arrow.svg"
-                              alt="right-arrow"
-                            />
-                          </Link>
+                        <p
+                          className="see-all"
+                          style={{ cursor: "pointer" }}
+                          onClick={() => {
+                            if (isLogin) {
+                              router.push("/services");
+                            }
+                          }}
+                          data-bs-toggle={!isLogin ? "modal" : undefined}
+                          data-bs-target={
+                            !isLogin ? "#login-screen-1" : undefined
+                          }
+                        >
+                          {/* <Link href="/services"> */}
+                          See All{" "}
+                          <img
+                            src="images/home/browse-category/right-arrow.svg"
+                            alt="right-arrow"
+                          />
+                          {/* </Link> */}
                         </p>
                       </div>
                       <div
@@ -602,7 +689,22 @@ const ClientComponent = ({ data }: homeprops) => {
                             <div
                               className="upcoming-my-slide"
                               key={item?.id}
-                              onClick={() => router.push(`/serviceDetails?serviceId=${item?.id}`)}
+                              onClick={() => {
+                                if (isLogin) {
+                                  router.push(
+                                    `/serviceDetails?serviceId=${item?.id}`
+                                  );
+                                } else {
+                                  const modal =
+                                    document.getElementById("login-screen-1");
+                                  if (modal) {
+                                    const bsModal = new (
+                                      window as any
+                                    ).bootstrap.Modal(modal);
+                                    bsModal.show();
+                                  }
+                                }
+                              }}
                               style={{
                                 cursor: "pointer",
                                 position: "relative",
@@ -613,18 +715,13 @@ const ClientComponent = ({ data }: homeprops) => {
                                 <img
                                   src={`${item?.imageUrl}`}
                                   alt=""
-                                  style={{ width: '308px' }}
+                                  style={{ width: "308px" }}
                                 />
                               </div>
                               <div className="upcoming-data">
-                                <p className="up-text">
-                                  {item?.name}
-                                </p>
+                                <p className="up-text">{item?.name}</p>
                                 <div className="upcm-slider-btn pop-srv">
-                                  <button
-                                    className="primary-cta upcm-btn pop-srv-btn"
-
-                                  >
+                                  <button className="primary-cta upcm-btn pop-srv-btn">
                                     Request Exact Quote
                                   </button>
                                 </div>
