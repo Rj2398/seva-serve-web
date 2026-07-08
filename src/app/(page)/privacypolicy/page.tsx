@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import React from 'react'
 import PrivacyPolicy from './PrivacyPolicy'
 import { globalServerRequest } from '@/actions/globalApi';
