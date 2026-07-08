@@ -1,4 +1,4 @@
-export const BASE_URL = "http://seva.tgastaging.com/api/v1/";
+export const BASE_URL = "https://seva.tgastaging.com/api/v1/";
 
 interface ApiOptions {
   endpoint: string;
@@ -45,7 +45,9 @@ export async function globalServerRequest({
       });
       const queryString = searchParams.toString();
       if (queryString) {
-        targetUrl += targetUrl.includes("?") ? `&${queryString}` : `?${queryString}`;
+        targetUrl += targetUrl.includes("?")
+          ? `&${queryString}`
+          : `?${queryString}`;
       }
     }
 
