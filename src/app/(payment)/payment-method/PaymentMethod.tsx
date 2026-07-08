@@ -330,8 +330,8 @@ function PaymentMethodContent({ initialCardsData }: CardProps) {
                       {isPaying ? (
                         "Processing..."
                       ) : (
-                        <span>
-                          $
+                        <span style={{ fontWeight: 500 }}>
+                          Pay Now $
                           {paymenttype === "full"
                             ? remainingPaymentNum.toFixed(2)
                             : initialPaymentNum.toFixed(2)}
