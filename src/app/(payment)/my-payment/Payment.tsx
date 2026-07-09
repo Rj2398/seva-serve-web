@@ -10,7 +10,7 @@ const Payment = () => {
     const [payments, setPayments] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
     const [pageNo, setPageNo] = useState(1);
-    const [limit] = useState(10);
+    const [limit] = useState(5);
     const [pagination, setPagination] = useState<any>(null);
 
     const handleTabChange = (tab: string) => {
