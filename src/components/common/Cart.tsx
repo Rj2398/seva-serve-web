@@ -13,6 +13,9 @@ function Cart() {
   const [hasMore, setHasMore] = useState<boolean>(false);
   const [totalCount, setTotalCount] = useState<number>(0);
   const [btnHover, setBtnHover] = useState<boolean>(false);
+
+  console.log(cartData, "add to cart ***********");
+
   const limit = 2;
 
   const fetchCartData = async (pageNum: number = 1) => {
@@ -25,17 +28,28 @@ function Cart() {
 
       if (response.success) {
         const responseData = response.data;
-        const items = responseData?.data?.cart_items || responseData?.cart_items || responseData?.data || responseData;
+        const items =
+          responseData?.data?.cart_items ||
+          responseData?.cart_items ||
+          responseData?.data ||
+          responseData;
         const newItems = Array.isArray(items) ? items : [];
-        const responseHasMore = responseData?.data?.pagination?.has_next_page ?? (newItems.length === limit);
+        const responseHasMore =
+          responseData?.data?.pagination?.has_next_page ??
+          newItems.length === limit;
         const total = responseData?.data?.pagination?.total ?? newItems.length;
 
         if (pageNum === 1) {
           setCartData(newItems);
         } else {
           setCartData((prev) => {
-            const existingIds = new Set(prev.map((item) => item.cart_item_id || item.requestId || item.id));
-            const filteredNew = newItems.filter((item) => !existingIds.has(item.cart_item_id || item.requestId || item.id));
+            const existingIds = new Set(
+              prev.map((item) => item.cart_item_id || item.requestId || item.id)
+            );
+            const filteredNew = newItems.filter(
+              (item) =>
+                !existingIds.has(item.cart_item_id || item.requestId || item.id)
+            );
             return [...prev, ...filteredNew];
           });
         }
@@ -219,7 +233,11 @@ function Cart() {
               <h5 id="offcanvasRightLabel">My Service Cart</h5>
             </div>
 
-            <div className={`offcanvas-body ${!loading && cartData?.length === 0 ? "empaty-cart" : "cart-data"}`}>
+            <div
+              className={`offcanvas-body ${
+                !loading && cartData?.length === 0 ? "empaty-cart" : "cart-data"
+              }`}
+            >
               {loading && page === 1 ? (
                 <div className="d-flex flex-column align-items-center justify-content-center py-5 w-100 h-100">
                   <div className="spinner-border text-primary" role="status">
@@ -237,8 +255,10 @@ function Cart() {
               ) : (
                 <div className="wrp-cart">
                   {cartData.map((item) => {
-                    const itemId = item.cart_item_id || item.requestId || item.id;
-                    const categoryName = item.category?.name || item.category || "NA";
+                    const itemId =
+                      item.cart_item_id || item.requestId || item.id;
+                    const categoryName =
+                      item.category?.name || item.category || "NA";
                     const subCategories = item.sub_categories || [];
                     const hasSubCategories = subCategories.length > 0;
 
@@ -252,64 +272,71 @@ function Cart() {
 
                           <p className="sub-cate">
                             {hasSubCategories
-                              ? subCategories.map((sub: any) => sub.name).join(", ")
+                              ? subCategories
+                                  .map((sub: any) => sub.name)
+                                  .join(", ")
                               : "Sub categories Selected"}
                           </p>
 
                           <div className="service-list-type">
                             {hasSubCategories ? (
                               <ol className="main-category">
-                                {subCategories.map((sub: any, subIdx: number) => (
-                                  <li key={sub.id || subIdx} className={subIdx === 0 ? "bdr" : ""}>
-                                    {sub.name}
-                                    {sub.issues && Array.isArray(sub.issues) && sub.issues.map((issueItem: any, issueIdx: number) => (
-                                      <ul key={issueItem.id || issueIdx}>
-                                        <li>
-                                          {issueItem.name}
-                                          {issueItem.specificIssues && Array.isArray(issueItem.specificIssues) && issueItem.specificIssues.length > 0 && (
-                                            <ul>
-                                              {issueItem.specificIssues.map((spec: any, specIdx: number) => (
-                                                <li key={spec.id || specIdx}>{spec.name}</li>
-                                              ))}
+                                {subCategories.map(
+                                  (sub: any, subIdx: number) => (
+                                    <li
+                                      key={sub.id || subIdx}
+                                      className={subIdx === 0 ? "bdr" : ""}
+                                    >
+                                      {sub.name}
+                                      {sub.issues &&
+                                        Array.isArray(sub.issues) &&
+                                        sub.issues.map(
+                                          (
+                                            issueItem: any,
+                                            issueIdx: number
+                                          ) => (
+                                            <ul key={issueItem.id || issueIdx}>
+                                              <li>
+                                                {issueItem.name}
+                                                {issueItem.specificIssues &&
+                                                  Array.isArray(
+                                                    issueItem.specificIssues
+                                                  ) &&
+                                                  issueItem.specificIssues
+                                                    .length > 0 && (
+                                                    <ul>
+                                                      {issueItem.specificIssues.map(
+                                                        (
+                                                          spec: any,
+                                                          specIdx: number
+                                                        ) => (
+                                                          <li
+                                                            key={
+                                                              spec.id || specIdx
+                                                            }
+                                                          >
+                                                            {spec.name}
+                                                          </li>
+                                                        )
+                                                      )}
+                                                    </ul>
+                                                  )}
+                                              </li>
                                             </ul>
-                                          )}
-                                        </li>
-                                      </ul>
-                                    ))}
-                                  </li>
-                                ))}
+                                          )
+                                        )}
+                                    </li>
+                                  )
+                                )}
                               </ol>
                             ) : (
                               <ol className="main-category">
-                                {item.visibleServices?.map((service: any, index: number) => (
-                                  <li
-                                    key={index}
-                                    className={index === 0 ? "bdr" : ""}
-                                  >
-                                    {service.mainCategory}
-                                    <ul>
-                                      <li>
-                                        {service.subCategory}
-                                        <ul>
-                                          <li>{service.service}</li>
-                                        </ul>
-                                      </li>
-                                    </ul>
-                                  </li>
-                                ))}
-                              </ol>
-                            )}
-
-                            {!hasSubCategories && item.additionalServices?.length > 0 && (
-                              <ol className="main-category">
-                                <li className="more-service">
-                                  + {item.additionalServices.length} more service
-                                  <img src="/images/header/down-icon.svg" alt="" />
-                                </li>
-
-                                <div className="service-data">
-                                  {item.additionalServices.map((service: any, index: number) => (
-                                    <li key={index}>
+                                {item.visibleServices?.map(
+                                  (service: any, index: number) => (
+                                    <li
+                                      key={index}
+                                      className={index === 0 ? "bdr" : ""}
+                                    >
                                       {service.mainCategory}
                                       <ul>
                                         <li>
@@ -320,18 +347,54 @@ function Cart() {
                                         </li>
                                       </ul>
                                     </li>
-                                  ))}
-                                </div>
-
-                                <li className="less-service">Less service</li>
+                                  )
+                                )}
                               </ol>
                             )}
+
+                            {!hasSubCategories &&
+                              item.additionalServices?.length > 0 && (
+                                <ol className="main-category">
+                                  <li className="more-service">
+                                    + {item.additionalServices.length} more
+                                    service
+                                    <img
+                                      src="/images/header/down-icon.svg"
+                                      alt=""
+                                    />
+                                  </li>
+
+                                  <div className="service-data">
+                                    {item.additionalServices.map(
+                                      (service: any, index: number) => (
+                                        <li key={index}>
+                                          {service.mainCategory}
+                                          <ul>
+                                            <li>
+                                              {service.subCategory}
+                                              <ul>
+                                                <li>{service.service}</li>
+                                              </ul>
+                                            </li>
+                                          </ul>
+                                        </li>
+                                      )
+                                    )}
+                                  </div>
+
+                                  <li className="less-service">Less service</li>
+                                </ol>
+                              )}
                           </div>
                         </div>
 
                         <div className="service-quotes card-quotes">
                           <p className="service-cost cart-cost">
-                            Estimated Cost: <span>{item.estimated_cost?.formatted ?? `$${item.estimated_cost?.amount ?? 0}`}</span>
+                            Estimated Cost:{" "}
+                            <span>
+                              {item.estimated_cost?.formatted ??
+                                `$${item.estimated_cost?.amount ?? 0}`}
+                            </span>
                           </p>
 
                           <div className="home-quotes-cta cart-cta">
@@ -348,7 +411,13 @@ function Cart() {
 
                             <button
                               className="primary-cta rgt"
-                              onClick={() => router.push(itemId ? `/summary-estimate?requestedId=${itemId}` : "/quotes")}
+                              onClick={() =>
+                                router.push(
+                                  itemId
+                                    ? `/summary-estimate?requestedId=${itemId}`
+                                    : "/quotes"
+                                )
+                              }
                             >
                               Request
                             </button>
@@ -372,8 +441,12 @@ function Cart() {
                           fontWeight: "500",
                           padding: "8px 24px",
                           border: "1px solid var(--primary-color)",
-                          background: btnHover ? "var(--primary-color)" : "transparent",
-                          color: btnHover ? "var(--white)" : "var(--primary-color)",
+                          background: btnHover
+                            ? "var(--primary-color)"
+                            : "transparent",
+                          color: btnHover
+                            ? "var(--white)"
+                            : "var(--primary-color)",
                           transition: "all 0.2s ease-in-out",
                           cursor: "pointer",
                           display: "inline-flex",
