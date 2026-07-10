@@ -12,6 +12,9 @@ interface ApiTimeSlot {
   label: string;
 }
 
+interface booking {
+  booking_id: number;
+}
 // Interface for the array payload you requested
 interface SelectedSlotPayload {
   date: string;
@@ -40,6 +43,7 @@ interface DatePopupProps {
   // Callback now receives your exact array payload format
   onConfirm?: (data: ReschedulePayload) => void;
   getAddressIdCallback?: (addressId: string) => void;
+  booking_Id?: number | string;
 }
 
 const getTodayString = () => {
@@ -55,10 +59,12 @@ const DatePopup: React.FC<DatePopupProps> = ({
   setIsOpen,
   onConfirm,
   getAddressIdCallback,
+  booking_Id,
 }) => {
   // console.log("onConfirm up", onConfirm)
   // console.log("isOpen up", isOpen)
   // console.log("setIsOpen up", setIsOpen)
+  console.log(booking_Id, "booking_Id");
   const modalRef = useRef<HTMLDivElement>(null);
   const [selectedDate, setSelectedDate] = useState<string>(getTodayString());
   const [address, setAddress] = useState<string>("");
@@ -246,6 +252,49 @@ const DatePopup: React.FC<DatePopupProps> = ({
     );
   };
 
+  const handleContractorRequest = async () => {
+    if (selectedSlots.length === 0) {
+      toast.error("Please select at least one date and time slot");
+      return;
+    }
+
+    if (!address) {
+      toast.error("Please select a service address");
+      return;
+    }
+
+    const grouped: { [date: string]: number[] } = {};
+    selectedSlots.forEach((item) => {
+      if (!grouped[item.date]) {
+        grouped[item.date] = [];
+      }
+      grouped[item.date].push(item.slotId);
+    });
+
+    const cleanedSlots = Object.keys(grouped).map((date) => ({
+      date,
+      slotId: grouped[date].join(","),
+    }));
+
+    const res = await globalServerRequest({
+      endpoint: "booking/reschedule",
+      method: "POST",
+      payload: {
+        bookingId: booking_Id,
+        addressId: selectedAddressId,
+        availabilitySlots: cleanedSlots,
+      },
+    });
+
+    console.log(res?.data);
+    if (res.success) {
+      toast.success(res?.data?.message || "Booking rescheduled successfully");
+      setIsOpen(false);
+    } else {
+      toast.error(res.error || "Failed to reschedule booking");
+      setIsOpen(false);
+    }
+  };
   const handleConfirmBooking = () => {
     if (selectedSlots.length === 0) {
       toast.error("Please select at least one date and time slot");
@@ -497,7 +546,11 @@ const DatePopup: React.FC<DatePopupProps> = ({
                   <button
                     type="button"
                     className="filled"
-                    onClick={handleConfirmBooking}
+                    onClick={
+                      booking_Id
+                        ? handleContractorRequest
+                        : handleConfirmBooking
+                    }
                   >
                     Confirm & Book
                     <img src="images/home/right-img.svg" alt="" />

@@ -1,7 +1,9 @@
 "use client";
 
-import React, { useState } from 'react';
-import DatePopup from './DatePopup';
+import React, { useState } from "react";
+import DatePopup from "./DatePopup";
+import { globalServerRequest } from "@/actions/globalApi";
+import toast from "react-hot-toast";
 
 // 1. Extend the global Window interface for Bootstrap
 declare global {
@@ -13,7 +15,6 @@ declare global {
     };
   }
 }
-
 
 // 2. Define strict TypeScript interfaces for your booking prop
 interface ServiceItem {
@@ -51,6 +52,29 @@ const ContractorRequest = ({ booking }: ContractorRequestProps) => {
     setShowDatePicker(true);
   };
 
+  const bookingAccept = async () => {
+    const res = await globalServerRequest({
+      endpoint: "booking/accept-booking",
+      method: "POST",
+      payload: {
+        bookingId: booking?.bookingId,
+      },
+    });
+
+    console.log(res?.data, "resresresres");
+    if (res.success) {
+      toast.success(res?.data?.message || "Booking accepted successfully");
+    } else {
+      toast.error(res.error);
+    }
+
+    const currentModal = document.getElementById("contractorTime");
+    if (currentModal) {
+      const bootstrapModal = window.bootstrap?.Modal.getInstance(currentModal);
+      bootstrapModal?.hide();
+    }
+  };
+
   // Optional: Safe access extraction to make your JSX cleaner and prevent array index crashes
   const firstService = booking?.services?.[0];
 
@@ -68,27 +92,69 @@ const ContractorRequest = ({ booking }: ContractorRequestProps) => {
         <div className="modal-dialog modal-dialog-centered">
           <div className="modal-content">
             <div className="modal-header">
-              <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              <button
+                type="button"
+                className="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
               <h5 className="modal-title">Contractor’s Time Request</h5>
             </div>
             <div className="modal-body">
               <div className="welcome-seva-ser full-bdr">
                 <div className="plumbing-repair">
-                  <h6>{booking?.categoryName} - {firstService?.serviceName}</h6>
-                  <p>Preferred : {booking?.contractorTimeRequest?.preferredDateTime}</p>
-                  <p><img src="images/modal/location-icon.svg" alt="" /></p>
+                  <h6>
+                    {booking?.categoryName} - {firstService?.serviceName}
+                  </h6>
+                  <p>
+                    Preferred :{" "}
+                    {booking?.contractorTimeRequest?.preferredDateTime}
+                  </p>
+                  <p>
+                    <img src="images/modal/location-icon.svg" alt="" />
+                  </p>
                 </div>
                 <div className="contractor-new">
                   <h6>Contractor Suggested New Time</h6>
-                  <p>{booking?.contractorTimeRequest?.contractorSuggestedSlot}</p>
+                  <p>
+                    {booking?.contractorTimeRequest?.contractorSuggestedSlot}
+                  </p>
                 </div>
+
                 <div className="contractor-btn">
-                  <a href="#" data-bs-toggle="modal" className="secondary-cta">Reject</a>
-                  <a href="#" onClick={handlePopupOpen} className="Propose-cta">Propose</a>
-                  <a href="#" data-bs-toggle="modal" className="primary-cta">
-                    Accept <img src="images/modal/right-arrow-icon.svg" alt="" />
+                  <a
+                    href="#"
+                    onClick={handlePopupOpen}
+                    className="secondary-cta"
+                  >
+                    Reject
+                  </a>
+                  <a href="#" className="Propose-cta">
+                    Propose
+                  </a>
+                  <a
+                    href="#"
+                    data-bs-toggle="modal"
+                    className="primary-cta"
+                    onClick={bookingAccept}
+                  >
+                    Accept{" "}
+                    <img src="images/modal/right-arrow-icon.svg" alt="" />
                   </a>
                 </div>
+
+                {/* <div className="contractor-new">
+                  <h6>Propose New Time Slot</h6>
+                  <p>{booking?.contractorTimeRequest?.contractorSuggestedSlot}</p>
+                </div> */}
+
+                {/* <div className="contractor-btn">
+                  <a href="#" data-bs-toggle="modal" className="secondary-cta">Reject</a>
+                  <a href="#" onClick={handlePopupOpen} className="Propose-cta">send Proposal</a>
+                  <a href="#" data-bs-toggle="modal" className="primary-cta" style={{ fontSize: "14px" }}>
+                    send Proposal{" "} <img src="images/modal/right-arrow-icon.svg" alt="" />
+                  </a>
+                </div> */}
               </div>
             </div>
           </div>
@@ -98,7 +164,7 @@ const ContractorRequest = ({ booking }: ContractorRequestProps) => {
       <DatePopup
         isOpen={showDatePicker}
         setIsOpen={setShowDatePicker}
-      // requestId={booking?.contractorTimeRequest?.requestId}
+        booking_Id={booking?.bookingId || (booking as any)?.bookingId}
       />
     </>
   );

@@ -506,9 +506,11 @@ a.wrp-img {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg,
-      rgba(255, 255, 255, 0) -0.03%,
-      #000000 99.71%);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0) -0.03%,
+    #000000 99.71%
+  );
   border-radius: 25px;
 }
 
@@ -930,11 +932,14 @@ p.user-seva-text {
   padding-bottom: 30px;
   margin-bottom: 10px;
   border-bottom: 1px solid transparent;
-  border-image: repeating-linear-gradient(to right,
+  border-image: repeating-linear-gradient(
+      to right,
       #991318 0,
       #991318 10px,
       transparent 10px,
-      transparent 20px) 1;
+      transparent 20px
+    )
+    1;
 }
 
 .agent-off-canvas-wrp {
@@ -1955,9 +1960,11 @@ img.thd-img {
 }
 
 .left-slider-pop {
-  background: linear-gradient(270deg,
-      rgba(238, 209, 211, 0.25) 0%,
-      rgba(136, 119, 121, 0) 77%);
+  background: linear-gradient(
+    270deg,
+    rgba(238, 209, 211, 0.25) 0%,
+    rgba(136, 119, 121, 0) 77%
+  );
   border-radius: 20px;
   width: 50%;
 }
@@ -2243,7 +2250,7 @@ a.primary-cta.requ-suc {
 /* My Quotes */
 
 .tab-left .nav-pills .nav-link.active,
-.nav-pills .show>.nav-link {
+.nav-pills .show > .nav-link {
   color: #991318;
   background-color: #9913180f;
   border: 1px solid #991318;
@@ -2547,13 +2554,13 @@ a.primary-cta img {
 }
 
 a.Propose-cta {
-  color: var(--primary-color);
-  background: var(--white);
+  color: #bfbfbf;
+  background: #e8e8e8;
   padding: 0.5rem 1.2rem;
   height: 40px;
   font-weight: 500;
   font-size: 14px;
-  border: 1px solid var(--primary-color);
+  border: 1px solid #e8e8e8;
   border-radius: 20px;
   display: inline-flex;
   align-items: center;
@@ -3295,7 +3302,7 @@ p.body-text a {
   }
 }
 
-.select-time-btn-grp input[type="radio"]:checked+label {
+.select-time-btn-grp input[type="radio"]:checked + label {
   border: 1px solid #991318;
   background-color: #9913181a;
 }
@@ -3584,7 +3591,12 @@ a.hel-cta {
   width: 100%;
   opacity: 1;
   border: 1px solid transparent;
-  border-image: repeating-linear-gradient(90deg, #991318 0 10px, transparent 10px 20px) 1;
+  border-image: repeating-linear-gradient(
+      90deg,
+      #991318 0 10px,
+      transparent 10px 20px
+    )
+    1;
   background: none;
 }
 
@@ -3785,7 +3797,7 @@ a.hel-cta {
   margin-bottom: 15px;
 }
 
-.svd-add-wrp input[type="radio"]:checked+label {
+.svd-add-wrp input[type="radio"]:checked + label {
   background: #9913180f;
 }
 
@@ -3964,7 +3976,6 @@ a.hel-cta {
 }
 
 .upcoming-img {
-
   position: relative;
   height: 310px;
   /* width: 339px */
@@ -4005,9 +4016,11 @@ a.hel-cta {
 }
 
 .services-sec-in .upcoming-my-slide .upcoming-img::before {
-  background: linear-gradient(180deg,
-      rgba(255, 255, 255, 0.1) 20%,
-      #000000 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.1) 20%,
+    #000000 100%
+  );
 }
 
 .featured-category-slider .browse-inner ul {
@@ -4542,7 +4555,6 @@ a.hel-cta {
   gap: 20px;
 }
 
-
 .checkout-steps {
   width: 100%;
   display: flex;
@@ -4707,9 +4719,12 @@ a.hel-cta {
   width: 100%;
   opacity: 1;
   border: 1px solid transparent;
-  border-image: repeating-linear-gradient(90deg,
+  border-image: repeating-linear-gradient(
+      90deg,
       #991318 0 10px,
-      transparent 10px 20px) 1;
+      transparent 10px 20px
+    )
+    1;
   background: none;
 }
 
@@ -4905,7 +4920,7 @@ a.hel-cta {
   width: 25px;
 }
 
-.rating__input:checked~.rating__label .rating__icon--star {
+.rating__input:checked ~ .rating__label .rating__icon--star {
   filter: contrast(0.1) brightness(1.8);
 }
 
@@ -4913,7 +4928,7 @@ a.hel-cta {
   filter: brightness(1) invert(0);
 }
 
-.rating__input:hover~.rating__label .rating__icon--star {
+.rating__input:hover ~ .rating__label .rating__icon--star {
   filter: contrast(0.1) brightness(1.8);
 }
 
@@ -5059,7 +5074,7 @@ ol.main-category li.more-service {
 }
 
 .notification-item.bdr-clr {
-  background: #3636360F;
+  background: #3636360f;
 }
 
 .notification-item.bdr-clr .notification-data h3 {
@@ -5076,7 +5091,7 @@ ol.main-category li.more-service {
 }
 
 span.status.home {
-  background: #9913181A;
+  background: #9913181a;
   text-align: center;
   border-radius: 15px;
   height: 25px;
@@ -5105,7 +5120,7 @@ span.status.home {
 .add-progress.rated p span {
   font-size: 16px;
   font-weight: 500;
-  color: #1A1A1A;
+  color: #1a1a1a;
 }
 
 #rateSevaServe .modal-dialog button.btn-close {
@@ -5143,7 +5158,7 @@ span.status.home {
   padding: 10px 20px;
   width: 100%;
   border-radius: 30px;
-  background: #4285F4;
+  background: #4285f4;
   border: none;
   color: #fff;
   font-size: 16px;
@@ -5169,7 +5184,7 @@ span.status.home {
 .runing-late {
   display: flex;
   justify-content: space-between;
-  background: #9913180F;
+  background: #9913180f;
   padding: 20px;
   align-items: center;
   border-radius: 15px;
@@ -5228,7 +5243,7 @@ span.status.home {
   display: flex;
   gap: 10px;
   align-items: center;
-  box-shadow: 0px 4px 20px 0px #0000000D;
+  box-shadow: 0px 4px 20px 0px #0000000d;
   border: 1px solid #99131833;
   background: #fff;
   padding: 15px;
@@ -5293,8 +5308,7 @@ span.status.home {
   padding: 15px;
   border-radius: 20px;
   border: 1px solid #99131833;
-  box-shadow: 0px 4px 20px 0px #0000000D;
-
+  box-shadow: 0px 4px 20px 0px #0000000d;
 }
 
 .vahicle-footer-btn {
@@ -5332,7 +5346,7 @@ span.status.home {
 }
 
 .subcription-status .applied-subs p span {
-  background: #FFFFFF40;
+  background: #ffffff40;
   padding: 4px 12px;
   border-radius: 20px;
   margin-left: 10px;
@@ -5360,14 +5374,14 @@ span.status.home {
 .choose-plan-wrp .yearly-cards h4 {
   font-size: 36px;
   font-weight: 600;
-  color: #1B1A25;
+  color: #1b1a25;
 }
 
 .choose-plan-wrp .yearly-cards {
   display: flex;
   flex-direction: column;
   gap: 15px;
-  box-shadow: 0px 12px 40px 0px #1B1A250F;
+  box-shadow: 0px 12px 40px 0px #1b1a250f;
   background: var(--white);
   padding: 20px;
   border-radius: 15px;
@@ -5461,7 +5475,7 @@ span.status.home {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border: 1px solid #C7C4DA;
+  border: 1px solid #c7c4da;
   background: #fff;
   border-radius: 15px;
   width: 25%;
@@ -5523,7 +5537,6 @@ span.status.home {
 #servicesRejection .modal-content {
   padding: 0;
 }
-
 
 .cost-details-in {
   background: #f7f2f2;
@@ -5716,26 +5729,6 @@ div#costDropdown span {
   font-size: 26px;
   font-weight: 600;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /* .hero-slider ul.slick-dots {
     display: flex;
