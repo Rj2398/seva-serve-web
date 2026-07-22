@@ -103,7 +103,7 @@ export default function Booking({ initialBookingData }: BookingProps) {
   };
 
 
-  const handleCancleBooking = async (data) => {
+  const handleCancleBooking = async (data: any) => {
     console.log("data on cnacle click in booking", data)
   }
 
