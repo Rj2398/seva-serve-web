@@ -1,26 +1,22 @@
 "use client";
 
-import Link from 'next/link';
-import React, { useState } from 'react';
-
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import React, { useState } from "react";
 
 interface PlanProps {
   initialPlanData?: {
     plans: any[];
-  }
+  };
 }
 
-
 export default function ChoosePlan({ initialPlanData }: PlanProps) {
+  const router = useRouter();
+  const [myPlans, setmyPlans] = useState<any>(initialPlanData);
 
+  let plansData = myPlans.plans.plans;
 
-  const [myPlans, setmyPlans] = useState<any>(
-    initialPlanData
-  );
-
-  let plansData = myPlans.plans.plans
-
-  console.log("plansData", myPlans.plans)
+  console.log("plansData", myPlans.plans);
 
   const couponCode = myPlans.plans.coupon;
 
@@ -28,29 +24,32 @@ export default function ChoosePlan({ initialPlanData }: PlanProps) {
 
   const [copied, setCopied] = useState(false);
 
-  const handleSubscribe = (price: string) => {
-    console.log("Selected Price:", price);
-  }
+  const handleSubscribe = (plan: any) => {
+    // URL parameters build karein (Safe navigation ?. ke saath)
+    const planId = plan?.id || "";
+    const planType = plan?.type || "";
+    const planAmount = plan?.price?.amount || "";
+    const hasCard = plan?.hasCard;
+
+    router.push(
+      hasCard
+        ? `/payment-method?subscription_plan_id=${planId}&type=${planType}&amount=${planAmount}`
+        : `/add-new-card?subscription_plan_id=${planId}&type=${planType}&amount=${planAmount}`
+    );
+  };
 
   // COPY COUPON
   const handleCopy = async () => {
-
     try {
-
       await navigator.clipboard.writeText(couponCode);
 
       setCopied(true);
 
       console.log("Copied:", couponCode);
-
     } catch (error) {
-
       console.log("Copy failed");
-
     }
-
   };
-
 
   return (
     <main>
@@ -61,71 +60,65 @@ export default function ChoosePlan({ initialPlanData }: PlanProps) {
               <div className="col-lg-12">
                 <div className="browse-wrp">
                   <div className="browse-ctg-head my-con-head">
-                    <h2 className="sub-cate-page"> <Link href="/home"><img src="images/home/left-arrow.svg" alt="" /></Link>Choose Your Plan</h2>
-
+                    <h2 className="sub-cate-page">
+                      {" "}
+                      <Link href="/home">
+                        <img src="images/home/left-arrow.svg" alt="" />
+                      </Link>
+                      Choose Your Plan
+                    </h2>
                   </div>
 
                   <div className="choose-plan-wrp">
+                    {plansData?.map((plan: any) => (
+                      <div
+                        key={plan.id}
+                        className={`yearly-cards ${
+                          selectedPlan === plan.id ? "active" : ""
+                        }`}
+                        onClick={() => setSelectedPlan(plan.id)}
+                        style={{ cursor: "pointer" }}
+                      >
+                        {plan?.is_popular && (
+                          <span>
+                            <img src="images/inner-page/check-papular-icon.svg" />
+                            Most Popular
+                          </span>
+                        )}
 
-                    {
-                      plansData?.map((plan: any) => (
-                        <div
-                          key={plan.id}
-                          className={`yearly-cards ${selectedPlan === plan.id ? "active" : ""}`}
-                          onClick={() => setSelectedPlan(plan.id)}
-                          style={{ cursor: "pointer" }}
-                        >
-                          {
-                            plan?.popular && (
-                              <span>
-                                <img
-                                  src="images/inner-page/check-papular-icon.svg"
-                                />
-                                Most Popular
-                              </span>
-                            )
-                          }
+                        <h3>{plan.label}</h3>
 
-                          <h3>{plan.title}</h3>
+                        <h4>{plan.price.formatted}</h4>
 
-                          <h4>{plan.price.formatted}</h4>
+                        <div className="plan-features">
+                          {plan?.features.map((feature: any, index: any) => (
+                            <p key={index}>
+                              <img
+                                src="images/inner-page/red-check.svg"
+                                alt=""
+                              />
 
-                          <div>
-
-                            {plan?.features.map((feature: any, index: any) => (
-
-                              <p key={index}>
-                                <img
-                                  src="images/inner-page/red-check.svg"
-                                  alt=""
-                                />
-
-                                {feature}
-                              </p>
-
-                            ))}
-
-                          </div>
-
-                          <button
-                            className="primary-cta"
-                            onClick={(e) => {
-                              e.stopPropagation();
-
-                              handleSubscribe(plan.price);
-                            }}
-                          >
-                            Subscribe Now
-
-                            <img
-                              src="images/inner-page/right-subcription.svg"
-                              alt=""
-                            />
-                          </button>
-
+                              {feature}
+                            </p>
+                          ))}
                         </div>
-                      ))
-                    }
+
+                        <button
+                          className="primary-cta"
+                          onClick={(e) => {
+                            e.stopPropagation();
+
+                            handleSubscribe(plan);
+                          }}
+                        >
+                          Subscribe Now
+                          <img
+                            src="images/inner-page/right-subcription.svg"
+                            alt=""
+                          />
+                        </button>
+                      </div>
+                    ))}
 
                     {/* <div className="yearly-cards">
                       <h3>Monthly</h3>
@@ -157,8 +150,6 @@ export default function ChoosePlan({ initialPlanData }: PlanProps) {
                       </div>
                       <button className="primary-cta">Subscribe Now <img src="images/inner-page/right-subcription.svg" alt="" /></button>
                     </div> */}
-
-
                   </div>
 
                   <div className="coupon-unlocked-wrp">
@@ -168,18 +159,24 @@ export default function ChoosePlan({ initialPlanData }: PlanProps) {
                       </div>
                       <div className="inner-data">
                         <h4>Coupon Unlocked!</h4>
-                        <p>Enjoy additional rewards at checkout with your exclusive curator code.</p>
+                        <p>
+                          Enjoy additional rewards at checkout with your
+                          exclusive curator code.
+                        </p>
                       </div>
                     </div>
 
                     <div className="right">
-                      <p className={copied ? "copy" : ""}>
-                        {couponCode}
-                      </p>
+                      <p className={copied ? "copy" : ""}>{couponCode}</p>
                       <button className="copy-text-size" onClick={handleCopy}>
-                        <img src={
-                          copied ? "images/inner-page/success-icon.svg" : "images/inner-page/copy-icon-inner.svg"
-                        } alt="" />
+                        <img
+                          src={
+                            copied
+                              ? "images/inner-page/success-icon.svg"
+                              : "images/inner-page/copy-icon-inner.svg"
+                          }
+                          alt=""
+                        />
                       </button>
                     </div>
 
@@ -189,22 +186,16 @@ export default function ChoosePlan({ initialPlanData }: PlanProps) {
                         <img src="images/inner-page/success-icon.svg" alt="" />
                       </button>
                     </div> */}
-
                   </div>
-
                 </div>
               </div>
             </div>
           </div>
         </section>
-
       </div>
-
     </main>
-  )
+  );
 }
-
-
 
 // const ChoosePlan = () => {
 //   // JSON DATA
@@ -267,8 +258,6 @@ export default function ChoosePlan({ initialPlanData }: PlanProps) {
 //     }
 
 //   };
-
-
 
 //   return (
 //     <main>
@@ -375,7 +364,6 @@ export default function ChoosePlan({ initialPlanData }: PlanProps) {
 //                       </div>
 //                       <button className="primary-cta">Subscribe Now <img src="images/inner-page/right-subcription.svg" alt="" /></button>
 //                     </div> */}
-
 
 //                   </div>
 

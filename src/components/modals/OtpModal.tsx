@@ -2,7 +2,7 @@
 
 import { globalServerRequest } from "@/actions/globalApi";
 import { useRouter } from "next/navigation";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import toast from "react-hot-toast";
 
 interface OtpModalProps {
@@ -14,7 +14,7 @@ const OtpModal = ({ emailLogin = false, loginValue = "" }: OtpModalProps) => {
   // console.log(emailLogin, "emailLogin");
 
   const router = useRouter();
-
+const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const [otp, setOtp] = useState(["", "", "", "", ""]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -27,19 +27,52 @@ const OtpModal = ({ emailLogin = false, loginValue = "" }: OtpModalProps) => {
       : null;
 
   // ✅ TIMER FIX: Clean implementation that starts immediately on modal mount
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      setTimer((prev) => {
-        if (prev <= 1) {
-          clearInterval(intervalId);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+  // useEffect(() => {
+  //   const intervalId = setInterval(() => {
+  //     setTimer((prev) => {
+  //       if (prev <= 1) {
+  //         clearInterval(intervalId);
+  //         return 0;
+  //       }
+  //       return prev - 1;
+  //     });
+  //   }, 1000);
 
-    return () => clearInterval(intervalId); // Cleanup interval on unmount
-  }, []); // Empty array ensures it initializes immediately on mount
+  //   return () => clearInterval(intervalId); // Cleanup interval on unmount
+  // }, []); 
+
+const startOtpTimer = () => {
+  if (intervalRef.current) {
+    clearInterval(intervalRef.current);
+  }
+
+  setTimer(30);
+
+  intervalRef.current = setInterval(() => {
+    setTimer((prev) => {
+      if (prev <= 1) {
+        clearInterval(intervalRef.current!);
+        return 0;
+      }
+
+      return prev - 1;
+    });
+  }, 1000);
+};
+
+useEffect(() => {
+  const handleStartTimer = () => {
+    startOtpTimer();
+  };
+
+  window.addEventListener("start-otp-timer", handleStartTimer);
+
+  return () => {
+    window.removeEventListener("start-otp-timer", handleStartTimer);
+  };
+}, []); // Empty dependency array ensures it runs only once on mount
+  // Start the timer when the component mounts 
+  // Empty array ensures it initializes immediately on mount
 
   // ✅ INPUT FIX: Smooth auto-focus that allows continuous typing without lockups
   const handleChange = (value: string, index: number) => {
@@ -47,12 +80,13 @@ const OtpModal = ({ emailLogin = false, loginValue = "" }: OtpModalProps) => {
     const updatedOtp = [...otp];
     updatedOtp[index] = numericValue;
     setOtp(updatedOtp);
+    setError(""); // Clear error on input change
 
     // Auto-focus next box using a deferred queue so characters render first
     // if (numericValue && index < 4) {
     //   setTimeout(() => {
-    //     const nextInput = document.getElementById(`otp-${index + 1}`);
-    //     nextInput?.focus();
+    //     // const nextInput = document.getElementById(`otp-${index + 1}`);
+    //     // nextInput?.focus();
     //   }, 0);
     // }
   };
@@ -147,6 +181,7 @@ const OtpModal = ({ emailLogin = false, loginValue = "" }: OtpModalProps) => {
     }
 
     setOtp(["", "", "", "", ""]);
+    setError("");
   };
 
   const handleResend = async () => {
@@ -174,8 +209,8 @@ const OtpModal = ({ emailLogin = false, loginValue = "" }: OtpModalProps) => {
       setLoading(false);
 
       if (response.success) {
-        toast.success("A brand new OTP has been sent!");
-        setTimer(30); // Cleanly restart our timer back to 30 seconds
+        toast.success(response?.data?.message || "A brand new OTP has been sent!");
+        startOtpTimer();; // Cleanly restart our timer back to 30 seconds
         setOtp(["", "", "", "", ""]);
       } else {
         setError(response.error || "Failed to resend OTP. Try again.");

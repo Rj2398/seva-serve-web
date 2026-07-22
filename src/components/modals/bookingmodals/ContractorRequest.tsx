@@ -38,6 +38,49 @@ interface ContractorRequestProps {
   booking: BookingData | null | undefined; // Safe for null/uninitialized states
 }
 
+const formatSlot = (slot: any): string => {
+  if (!slot) return "";
+  if (typeof slot === "string") return slot;
+
+  try {
+    const dateObj = slot.date ? new Date(slot.date) : null;
+    const startObj = slot.startTime ? new Date(slot.startTime) : null;
+    const endObj = slot.endTime ? new Date(slot.endTime) : null;
+
+    const formattedDate = dateObj
+      ? dateObj.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
+      : "";
+
+    const formattedStart = startObj
+      ? startObj.toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      })
+      : "";
+
+    const formattedEnd = endObj
+      ? endObj.toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      })
+      : "";
+
+    if (formattedStart && formattedEnd) {
+      return `${formattedDate} •  ${formattedStart} - ${formattedEnd}`;
+    }
+
+    return formattedDate || `${slot.date}`;
+  } catch (err) {
+    return String(slot.date || "");
+  }
+};
+
 const ContractorRequest = ({ booking }: ContractorRequestProps) => {
   console.log(booking, "jdsfdksfjkfj");
   const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
@@ -52,12 +95,35 @@ const ContractorRequest = ({ booking }: ContractorRequestProps) => {
     setShowDatePicker(true);
   };
 
-  const bookingAccept = async () => {
+  const rejectBooking = async () => {
     const res = await globalServerRequest({
-      endpoint: "booking/accept-booking",
+      endpoint: "booking/reschedule-reject",
       method: "POST",
       payload: {
-        bookingId: booking?.bookingId,
+        booking_id: booking?.bookingId,
+      },
+    });
+
+    console.log(res?.data, "resresresres");
+    if (res.success) {
+      toast.success(res?.data?.message || "Booking rejected successfully");
+    } else {
+      toast.error(res.error);
+    }
+
+    const currentModal = document.getElementById("contractorTime");
+    if (currentModal) {
+      const bootstrapModal = window.bootstrap?.Modal.getInstance(currentModal);
+      bootstrapModal?.hide();
+    }
+  };
+
+  const acceptBooking = async () => {
+    const res = await globalServerRequest({
+      endpoint: "booking/reschedule-accept",
+      method: "POST",
+      payload: {
+        booking_id: booking?.bookingId,
       },
     });
 
@@ -75,9 +141,12 @@ const ContractorRequest = ({ booking }: ContractorRequestProps) => {
     }
   };
 
+
+
+
   // Optional: Safe access extraction to make your JSX cleaner and prevent array index crashes
   const firstService = booking?.services?.[0];
-
+  console.log("booking?.contractorTimeRequest?.preferredDateTime", booking?.contractorTimeRequest)
   return (
     <>
       <div
@@ -109,6 +178,7 @@ const ContractorRequest = ({ booking }: ContractorRequestProps) => {
                   <p>
                     Preferred :{" "}
                     {booking?.contractorTimeRequest?.preferredDateTime}
+                    {/* {formatSlot(booking?.contractorTimeRequest?.preferredDateTime)} */}
                   </p>
                   <p>
                     <img src="images/modal/location-icon.svg" alt="" />
@@ -117,26 +187,27 @@ const ContractorRequest = ({ booking }: ContractorRequestProps) => {
                 <div className="contractor-new">
                   <h6>Contractor Suggested New Time</h6>
                   <p>
-                    {booking?.contractorTimeRequest?.contractorSuggestedSlot}
+                    {/* {booking?.contractorTimeRequest?.contractorSuggestedSlot} */}
+                    {formatSlot(booking?.contractorTimeRequest?.contractorSuggestedSlot)}
                   </p>
                 </div>
 
                 <div className="contractor-btn">
-                  <a
+                  <a onClick={rejectBooking}
                     href="#"
-                    onClick={handlePopupOpen}
+                    // onClick={handlePopupOpen}
                     className="secondary-cta"
                   >
                     Reject
                   </a>
-                  <a href="#" className="Propose-cta">
+                  {/* <a href="#" className="Propose-cta">
                     Propose
-                  </a>
+                  </a> */}
                   <a
                     href="#"
                     data-bs-toggle="modal"
                     className="primary-cta"
-                    onClick={bookingAccept}
+                    onClick={acceptBooking}
                   >
                     Accept{" "}
                     <img src="images/modal/right-arrow-icon.svg" alt="" />

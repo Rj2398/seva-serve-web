@@ -136,7 +136,7 @@ const Payment = () => {
                                                                 <div className="my-payments-body" key={item.transaction_id || item.id}>
                                                                     <div className="left-payments-body">
                                                                         <div className="plumbing-icon">
-                                                                            <img src="images/inner-page/plum-img.svg" alt={title} />
+                                                                            <img src={  item?.booking_image || ""} alt={title} />
                                                                         </div>
                                                                         <div className={`paid ${isPending ? 'pending' : ''}`}>
                                                                             <h5>

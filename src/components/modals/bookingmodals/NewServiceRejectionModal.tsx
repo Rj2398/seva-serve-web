@@ -41,6 +41,9 @@ export default function NewServiceRejectionModal({ serviceId = "" }: ServiceAcce
 
       console.log(" rejected services response  ", response)
       if (response.success) {
+
+        window.dispatchEvent(new Event("quoteUpdated"));
+
         const bootstrap = (window as any).bootstrap;
 
         const currentModalEl = document.getElementById("servicesRejection");

@@ -16,6 +16,8 @@ const PaymentRemainingPopup = ({
   const [checkoutData, setCheckoutData] = useState<any>();
   console.log(checkoutData, "checkout data***");
 
+  console.log(quote_id, "quote_id")
+
   useEffect(() => {
     if (!quote_id) return;
 

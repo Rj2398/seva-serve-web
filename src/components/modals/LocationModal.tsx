@@ -354,7 +354,8 @@ const LocationModal = () => {
                       type="text"
                       placeholder="Search a new address"
                       className="top-srch"
-                      value={searchTerm}
+                      // value={searchTerm}
+
                       // onChange={(e) => {
                       //   setSearchTerm(e.target.value);
                       //   setShowDropdown(true);
@@ -362,6 +363,7 @@ const LocationModal = () => {
                       // onFocus={() => setShowDropdown(true)}
 
                       // type="button"
+                    
                       data-bs-target="#add-address-popup"
                       data-bs-toggle="modal"
                       // className="add-address"

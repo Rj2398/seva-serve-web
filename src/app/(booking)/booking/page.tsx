@@ -16,17 +16,17 @@ export default async function BookingPage() {
       globalServerRequest({
         endpoint: "booking",
         method: "POST",
-        payload: { type: "upcoming", pageNo: 1, limit: 100 },
+        payload: { type: "upcoming", pageNo: 1, limit:2 },
       }),
       globalServerRequest({
         endpoint: "booking",
         method: "POST",
-        payload: { type: "previous", pageNo: 1, limit: 100 },
+        payload: { type: "previous", pageNo: 1, limit: 2 },
       }),
       globalServerRequest({
         endpoint: "booking",
         method: "POST",
-        payload: { type: "cancelled", pageNo: 1, limit: 100 },
+        payload: { type: "cancelled", pageNo: 1, limit: 2 },
       }),
     ]);
 

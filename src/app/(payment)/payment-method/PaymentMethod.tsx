@@ -36,6 +36,7 @@ interface CardProps {
 }
 
 function PaymentMethodContent({ initialCardsData }: CardProps) {
+  console.log(initialCardsData, "initialCardsData")
   const searchParams = useSearchParams();
   const bookingId = searchParams.get("booking_id");
   const initialpayment = searchParams.get("initialpayment");
@@ -48,10 +49,18 @@ function PaymentMethodContent({ initialCardsData }: CardProps) {
 
   console.log(remainingPayment, "remaining payment **");
 
+  //for subscription
+  const planId: any = searchParams.get("subscription_plan_id");
+  const planType: any = searchParams.get("type");
+  const planAmount: any = searchParams.get("amount");
+  const quoteId: any = searchParams.get("quoteId");
+
+  console.log("quoteId", quoteId)
+
   const router = useRouter();
   const [cards, setCards] = useState<Card[]>(initialCardsData?.cards || []);
 
-  const [selectedCard, setSelectedCard] = useState<string | number | null>(
+  const [selectedCard, setSelectedCard] = useState<any | number | null>(
     initialCardsData?.cards && initialCardsData.cards.length > 0
       ? initialCardsData.cards[0].card_id || initialCardsData.cards[0].id
       : null
@@ -79,7 +88,7 @@ function PaymentMethodContent({ initialCardsData }: CardProps) {
         method: "POST",
         payload: {
           card_id: selectedCard,
-          quote_id: bookingId,
+          quote_id: quoteId || bookingId,
           payment_method_id: paymentMethodId,
           amount: paymenttype === "full" ? remainingPayment : initialpayment,
           type: paymenttype === "full" ? "full" : "initial",
@@ -102,8 +111,36 @@ function PaymentMethodContent({ initialCardsData }: CardProps) {
     }
   };
 
-  console.log("cards list:", cards);
+  const handleSubscription = async () => {
+    // 1. Payment type ke basis par dynamically amount calculate karein
 
+    if (!selectedCard) {
+      toast.error("Please select a card to pay.");
+      return;
+    }
+    const formData = new FormData();
+    formData.append("subscription_plan_id", planId);
+    formData.append("card_id", selectedCard);
+    formData.append("type", planType);
+    formData.append("amount", planAmount); // Sahi calculated amount append karein
+
+    try {
+      const response = await globalServerRequest({
+        endpoint: "payment/card/subscription-pay-now",
+        method: "POST",
+        payload: formData,
+        isFormData: true,
+      });
+
+      // Response handle karein (Success/Error handling)
+      if (response?.success) {
+        toast.success(response?.data.message);
+        router.push("/");
+      }
+    } catch (error) {
+      console.error("Subscription payment failed:", error);
+    }
+  };
   const fetchCards = async () => {
     try {
       const response = await globalServerRequest({
@@ -208,7 +245,11 @@ function PaymentMethodContent({ initialCardsData }: CardProps) {
                   </h2>
                   <div className="add-card">
                     <Link
-                      href={`/add-new-card?booking_id=${bookingId}&initialpayment=${initialpayment}&remaingPayment=${remainingPayment}&paymenttype=${paymenttype}`}
+                      href={
+                        !bookingId
+                          ? `/add-new-card?subscription_plan_id=${planId}&type=${planType}&amount=${planAmount}`
+                          : `/add-new-card?booking_id=${bookingId}&initialpayment=${initialpayment}&remaingPayment=${remainingPayment}&paymenttype=${paymenttype}`
+                      }
                       className="primary-cta"
                     >
                       <img src="images/inner-page/add-rounded.svg" alt="" />
@@ -237,9 +278,8 @@ function PaymentMethodContent({ initialCardsData }: CardProps) {
 
                         return (
                           <div
-                            className={`single-card ${
-                              isSelected ? "active-card" : ""
-                            }`}
+                            className={`single-card ${isSelected ? "active-card" : ""
+                              }`}
                             key={cardId}
                             onClick={() => setSelectedCard(cardId)}
                             style={{ cursor: "pointer" }}
@@ -325,7 +365,9 @@ function PaymentMethodContent({ initialCardsData }: CardProps) {
                       type="button"
                       className="primary-cta"
                       disabled={cards.length === 0 || isPaying}
-                      onClick={handlePayment}
+                      onClick={() =>
+                        bookingId ? handlePayment() : handleSubscription()
+                      }
                     >
                       {isPaying ? (
                         "Processing..."
@@ -334,7 +376,9 @@ function PaymentMethodContent({ initialCardsData }: CardProps) {
                           Pay Now $
                           {paymenttype === "full"
                             ? remainingPaymentNum.toFixed(2)
-                            : initialPaymentNum.toFixed(2)}
+                            : paymenttype === "initial"
+                              ? initialPaymentNum.toFixed(2)
+                              : planAmount}
                         </span>
                       )}
                     </button>

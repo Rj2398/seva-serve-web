@@ -55,6 +55,7 @@ const SidebarMenu = () => {
           <li><Link href="/my-payment">My Payments</Link></li>
           <li><Link href="/choose-plan">Subscription</Link></li>
           <li><Link href="/saved-address">Saved Address</Link></li>
+          <li><Link href="/referral">Referral History</Link></li>
           <li><Link href="#logout-popup" data-bs-toggle="modal">Logout</Link></li>
         </ul>
       </div>

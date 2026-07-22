@@ -125,6 +125,25 @@ function Cart() {
     }
   };
 
+  const handleSubCategoryRemoveCart = async (subcategoryId: any, cartId: any) => {
+    console.log("handleSubCategoryRemoveCart :-  ", "subcategoryId ", subcategoryId, "  cartId", cartId);
+
+    const response = await globalServerRequest({
+      endpoint: `cart/remove-cart-item`,
+      method: "POST",
+      payload: { quote_id: cartId, subcategory_id: subcategoryId },
+    })
+
+    if (response.success) {
+      fetchCartData(1);
+      toast.success("Item removed from cart successfully!");
+    } else {
+      toast.error(response.error || "Failed to remove item from cart");
+    }
+  }
+
+
+
   return (
     <>
       {loginStatus !== "true" ? (
@@ -234,9 +253,8 @@ function Cart() {
             </div>
 
             <div
-              className={`offcanvas-body ${
-                !loading && cartData?.length === 0 ? "empaty-cart" : "cart-data"
-              }`}
+              className={`offcanvas-body ${!loading && cartData?.length === 0 ? "empaty-cart" : "cart-data"
+                }`}
             >
               {loading && page === 1 ? (
                 <div className="d-flex flex-column align-items-center justify-content-center py-5 w-100 h-100">
@@ -273,8 +291,8 @@ function Cart() {
                           <p className="sub-cate">
                             {hasSubCategories
                               ? subCategories
-                                  .map((sub: any) => sub.name)
-                                  .join(", ")
+                                .map((sub: any) => sub.name)
+                                .join(", ")
                               : "Sub categories Selected"}
                           </p>
 
@@ -285,9 +303,23 @@ function Cart() {
                                   (sub: any, subIdx: number) => (
                                     <li
                                       key={sub.id || subIdx}
-                                      className={subIdx === 0 ? "bdr" : ""}
+                                      className="bdr"
                                     >
-                                      {sub.name}
+                                      <div className="d-flex align-items-center justify-content-between w-100">
+                                        <span>{sub.name}</span>
+
+                                        <button
+                                          type="button"
+                                          className="btn-close my-cross m-0 p-0"
+                                          style={{ border: 'none', background: 'none' }}
+                                          onClick={() => handleSubCategoryRemoveCart(sub.id, itemId)}
+                                        >
+                                          <img
+                                            src="/images/off-canvas/cross-icon-off-canvas.svg"
+                                            alt="Close"
+                                          />
+                                        </button>
+                                      </div>
                                       {sub.issues &&
                                         Array.isArray(sub.issues) &&
                                         sub.issues.map(
@@ -408,9 +440,10 @@ function Cart() {
                               />
                               Remove
                             </button>
-
                             <button
                               className="primary-cta rgt"
+                              data-bs-dismiss="offcanvas"
+                              aria-label="Close"
                               onClick={() =>
                                 router.push(
                                   itemId

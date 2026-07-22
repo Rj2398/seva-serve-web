@@ -1,18 +1,18 @@
 "use client";
-
 import NewServiceRejectionModal from "@/components/modals/bookingmodals/NewServiceRejectionModal";
 import ServiceAccepted from "@/components/modals/bookingmodals/ServiceAccepted";
 import ServiceRejected from "@/components/modals/bookingmodals/ServiceRejected";
-import { quotesData } from "../../../json/quotes.json";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { globalServerRequest } from "@/actions/globalApi";
 import Link from "next/link";
 
 export default function Quotes() {
+  const searchParams = useSearchParams();
   const router = useRouter();
+  const is_requested = searchParams.get("is_requested");
 
-  const [activeTab, setActiveTab] = useState("received");
+  const [activeTab, setActiveTab] = useState(is_requested == 1 ? "requested" : "received");
   const [quotes, setQuotes] = useState<any[]>([]);
 
   console.log(quotes, "quotes****************");
@@ -20,8 +20,10 @@ export default function Quotes() {
 
   const [loading, setLoading] = useState<boolean>(false);
   const [pageNo, setPageNo] = useState<number>(1);
-  const [limit, setLimit] = useState<number>(10);
+  const [limit, setLimit] = useState<number>(2);
+  const [showLoadMore, setShowLoadMore] = useState(false);
   const [hasMore, setHasMore] = useState<boolean>(true);
+  const [btnHover, setBtnHover] = useState(false);
   const [serviceId, setServiceId] = useState<string>("");
 
   const [expandService, setExpandService] = useState<boolean>(false);
@@ -54,7 +56,9 @@ export default function Quotes() {
         } else {
           if (pageNo === 1) setQuotes([]);
           setHasMore(false);
+          // setShowLoadMore(false);
         }
+
       } catch (error) {
         console.error("Failed to fetch quotes:", error);
         if (pageNo === 1) setQuotes([]);
@@ -63,18 +67,30 @@ export default function Quotes() {
         setLoading(false);
       }
     };
-
     fetchQuotes();
-  }, [activeTab, pageNo, limit]);
+    const handleQuoteUpdate = () => {
+      fetchQuotes();
+    }
+    window.addEventListener("quoteUpdated", handleQuoteUpdate);
+    return () => {
+      window.removeEventListener("quoteUpdated", handleQuoteUpdate);
+    };
+
+  }, [activeTab, pageNo, limit, is_requested]);
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
-    if (scrollHeight - scrollTop <= clientHeight + 50 && !loading && hasMore) {
-      setPageNo(prev => prev + 1);
+
+    if (
+      scrollHeight - scrollTop <= clientHeight + 50 &&
+      hasMore &&
+      !loading &&
+      !showLoadMore
+    ) {
+      setShowLoadMore(true);
     }
   };
 
-  // Put this inside your component, right above your return statement
   const [expandedQuotes, setExpandedQuotes] = useState<Record<number, boolean>>(
     {}
   );
@@ -125,11 +141,20 @@ export default function Quotes() {
                                     : ""
                                     }`}
                                   type="button"
+                                  // onClick={() => {
+                                  //   if (activeTab !== item.toLowerCase()) {
+                                  //     setActiveTab(item.toLowerCase());
+                                  //     setPageNo(1);
+                                  //     setQuotes([]);
+                                  //   }
+                                  // }}
+
                                   onClick={() => {
                                     if (activeTab !== item.toLowerCase()) {
                                       setActiveTab(item.toLowerCase());
                                       setPageNo(1);
                                       setQuotes([]);
+                                      setShowLoadMore(false);
                                     }
                                   }}
                                 >
@@ -468,14 +493,12 @@ export default function Quotes() {
                                       alt=""
                                     />
                                   </Link>
-
                                   <p className="sub-cate">
-                                    Sub categories Selected
+                                    Selected Sub categories
                                   </p>
-
                                   <div className="service-list-type">
                                     {/* MAIN SERVICES */}
-                                    <ol className="main-category">
+                                    {/* <ol className="main-category">
                                       {item.sub_categories?.slice(0, 1).map(
                                         (subCat: any, i: number) => (
                                           <li key={i}>
@@ -497,10 +520,9 @@ export default function Quotes() {
                                       )}
                                     </ol>
 
-                                    {/* MORE / LESS SERVICES BLOCK */}
                                     {item.sub_categories?.length > 1 && (
                                       <ol className="main-category">
-                                        {/* 1. Toggle Button Option */}
+                                        
                                         {!isServicesOpen && (
                                           <li
                                             className="more-service"
@@ -516,7 +538,6 @@ export default function Quotes() {
                                           </li>
                                         )}
 
-                                        {/* 2. Expanded Content Block */}
                                         {isServicesOpen && (
                                           <div
                                             className="service-data"
@@ -562,9 +583,93 @@ export default function Quotes() {
                                           </div>
                                         )}
                                       </ol>
-                                    )}
+                                    )} */}
 
 
+
+                                    <ol className="main-category">
+                                      {/* 1. First Category (Hamesha dikhegi) */}
+                                      {item.sub_categories?.slice(0, 1).map((subCat: any, i: number) => (
+                                        <li key={`first-${i}`}>
+                                          {subCat.name}
+                                          <ul>
+                                            {subCat.services?.map((srv: any, j: number) => (
+                                              <li key={j}>
+                                                {srv.name}
+                                                <ul>
+                                                  {srv.issues?.map((issue: any, k: number) => (
+                                                    <li key={k}>{issue.name}</li>
+                                                  ))}
+                                                </ul>
+                                              </li>
+                                            ))}
+                                          </ul>
+                                        </li>
+                                      ))}
+
+                                      {/* MORE / LESS SERVICES LOGIC INSIDE THE SAME OL */}
+                                      {item.sub_categories?.length > 1 && (
+                                        <>
+                                          {/* 2. "+ X more category" Button - Number hide karne ke liye inline styles use kiye hain */}
+                                          {!isServicesOpen && (
+                                            <li
+                                              className="more-service"
+                                              style={{ cursor: "pointer", listStyleType: "none", marginLeft: "-20px" }}
+                                              onClick={() =>
+                                                setExpandedQuotes((prev) => ({
+                                                  ...prev,
+                                                  [index]: true,
+                                                }))
+                                              }
+                                            >
+                                              + {item.sub_categories.length - 1} more sub category
+                                            </li>
+                                          )}
+
+                                          {/* 3. Expanded Content Block - Fragment use karne se numbering sequence break nahi hogi */}
+                                          {isServicesOpen && (
+                                            <>
+                                              {item.sub_categories?.slice(1).map((subCat: any, i: number) => (
+                                                <li key={`more-${i}`}>
+                                                  {subCat.name}
+                                                  <ul>
+                                                    {subCat.services?.map((srv: any, j: number) => (
+                                                      <li key={j}>
+                                                        {srv.name}
+                                                        <ul>
+                                                          {srv.issues?.map((issue: any, k: number) => (
+                                                            <li key={k}>{issue.name}</li>
+                                                          ))}
+                                                        </ul>
+                                                      </li>
+                                                    ))}
+                                                  </ul>
+                                                </li>
+                                              ))}
+
+                                              {/* 4. "Less service" Button - listStyleType none se iska number show nahi hoga */}
+                                              <li
+                                                style={{
+                                                  cursor: "pointer",
+                                                  fontWeight: "bold",
+                                                  listStyleType: "none",
+                                                  marginLeft: "-20px",
+                                                  marginTop: "10px"
+                                                }}
+                                                onClick={() =>
+                                                  setExpandedQuotes((prev) => ({
+                                                    ...prev,
+                                                    [index]: false,
+                                                  }))
+                                                }
+                                              >
+                                                Less service
+                                              </li>
+                                            </>
+                                          )}
+                                        </>
+                                      )}
+                                    </ol>
                                     <div className="booking-schedule-container" style={{ padding: "15px", fontFamily: "'Segoe UI', Roboto, Helvetica, Arial, sans-serif", color: "#333", fontSize: "16px", maxWidth: "400px" }}>
                                       {item?.schedule?.map((scheduleItem: any, schedIndex: number) => (
                                         <div key={schedIndex} style={{ display: "flex", alignItems: "center", marginBottom: "12px", lineHeight: "1.4" }}>
@@ -679,7 +784,7 @@ export default function Quotes() {
                                               //   router.push("/serviceDetails")
                                               // }
                                               onClick={() =>
-                                                router.push(`/serviceDetails?serviceId=${item?.quote_id}`)
+                                                router.push(`/summary-estimate?requestedId=${item?.quote_id}&is_quote_edit=1`)
                                               }
                                             >
                                               Edit Req.
@@ -708,7 +813,58 @@ export default function Quotes() {
                         )}
                         {loading && (
                           <div style={{ textAlign: 'center', padding: '15px', color: '#666' }}>
-                            Loading more quotes...
+                            Loading...
+                          </div>
+                        )}
+
+                        {showLoadMore && hasMore && (
+                          <div className="text-center mt-4 mb-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setShowLoadMore(false);
+                                setPageNo((prev) => prev + 1);
+                              }}
+                              disabled={loading}
+                              style={{
+                                borderRadius: "20px",
+                                fontSize: "13px",
+                                fontWeight: "500",
+                                padding: "8px 24px",
+                                border: "1px solid var(--primary-color)",
+                                background: "transparent",
+                                // color: "var(--primary-color)",
+                                transition: "all 0.2s ease-in-out",
+                                cursor: "pointer",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                outline: "none",
+                                backgroundColor: btnHover ? "var(--primary-color)" : "transparent",
+                                color: btnHover ? "var(--white)" : "var(--primary-color)"
+                              }}
+                              onMouseEnter={(e) => {
+                                setBtnHover(true);
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = "transparent";
+                                e.currentTarget.style.color = "var(--primary-color)";
+                              }}
+                            >
+                              {loading ? (
+                                <>
+                                  <span
+                                    className="spinner-border spinner-border-sm me-2"
+                                    role="status"
+                                    aria-hidden="true"
+                                    style={{ width: "12px", height: "12px" }}
+                                  ></span>
+                                  Loading...
+                                </>
+                              ) : (
+                                "Load More"
+                              )}
+                            </button>
                           </div>
                         )}
                       </div>

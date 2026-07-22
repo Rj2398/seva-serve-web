@@ -31,6 +31,11 @@ function AddNewCardForm() {
   const initialpayment = searchParams.get("initialpayment");
   const remainingPayment = searchParams.get("remaingPayment");
   const paymenttype = searchParams.get("paymenttype");
+  //for subscription
+  const planId = searchParams.get("subscription_plan_id");
+  const planType = searchParams.get("type");
+  const planAmount = searchParams.get("amount");
+
   const [holderName, setHolderName] = useState("");
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -86,13 +91,20 @@ function AddNewCardForm() {
       if (response.success) {
         console.log("Response from card add:", response);
         toast.success("Card added successfully!", { id: toastId });
-        router.push(
-          `/payment-method?booking_id=${bookingId || ""}&initialpayment=${
-            initialpayment || ""
-          }&remaingPayment=${remainingPayment || ""}&paymenttype=${
-            paymenttype || ""
-          }`
-        );
+
+        if (bookingId) {
+          router.push(
+            `/payment-method?booking_id=${bookingId || ""}&initialpayment=${
+              initialpayment || ""
+            }&remaingPayment=${remainingPayment || ""}&paymenttype=${
+              paymenttype || ""
+            }`
+          );
+        } else {
+          router.push(
+            `/payment-method?subscription_plan_id=${planId}&type=${planType}&amount=${planAmount}`
+          );
+        }
       } else {
         toast.error(response.error || "Failed to add card.", { id: toastId });
         setIsSubmitting(false);

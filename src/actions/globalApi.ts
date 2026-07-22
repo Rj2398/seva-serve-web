@@ -1,3 +1,8 @@
+// "use client"
+import { isTokenExpired } from "@/utils/token";
+import { redirect } from "next/navigation";
+import { toast } from "react-hot-toast";
+
 export const BASE_URL = "https://seva.tgastaging.com/api/v1/";
 
 interface ApiOptions {
@@ -10,16 +15,24 @@ interface ApiOptions {
 /**
  * Helper to force logout the user immediately
  */
-// const forceLogoutClient = () => {
-//   if (typeof window !== "undefined") {
-//     sessionStorage.clear();
-//     localStorage.clear();
-//     document.cookie =
-//       "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax; Secure";
-//     window.dispatchEvent(new Event("loginStatusChanged"));
-//     window.location.href = "/";
-//   }
-// };
+const forceLogoutClient = () => {
+  // console.log("window", window)
+  // if (typeof window !== "undefined") {
+  console.log("window", window)
+  // sessionStorage.clear();
+  localStorage.removeItem('user')
+  localStorage.removeItem('autoLocation')
+  localStorage.removeItem('homeUserData')
+  localStorage.removeItem('isLoggedIn')
+  localStorage.clear();
+  document.cookie =
+    "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax; Secure";
+  window.dispatchEvent(new Event("loginStatusChanged"));
+  window.location.href = "/";
+  // } else {
+  //   redirect("/");
+  // }
+};
 
 /**
  * Global API request handler that automatically manages Authorization headers.
@@ -82,7 +95,26 @@ export async function globalServerRequest({
       }
     }
 
+    // if (token) {
+    //   headers.set("Authorization", `Bearer ${token}`);
+    // }
+
     if (token) {
+      if (typeof window !== "undefined" && isTokenExpired(token)) {
+        localStorage.removeItem("user");
+        sessionStorage.clear();
+
+        window.location.href = "/";
+
+        return {
+          success: false,
+          error: "Token expired",
+
+        }
+
+        toast.error("Session expired. Please log in again.");
+      }
+
       headers.set("Authorization", `Bearer ${token}`);
     }
 
@@ -111,7 +143,7 @@ export async function globalServerRequest({
 
     // 4. Execute Request
     const response = await fetch(targetUrl, fetchOptions);
-
+    console.log("response targetUrl", response)
     // Handle cases where response might not be JSON (e.g., 204 No Content)
     let responseData: any;
     const contentType = response.headers.get("content-type");
@@ -128,8 +160,10 @@ export async function globalServerRequest({
     }
 
     if (!response.ok) {
-      if (response.status === 401 || response.status === 403) {
-        // forceLogoutClient();
+      console.log("object", response.status)
+      if (response.status === 401 || response.status === 403 || response.status === 405) {
+        forceLogoutClient();
+        // console.log("hello")
       }
 
       return {
@@ -143,9 +177,19 @@ export async function globalServerRequest({
             : `API Error: Status ${response.status}`),
       };
     }
+    if (responseData?.status === 401 || responseData?.message?.toLowerCase().includes("unauthorized")) {
+      // forceLogoutClient();
+    }
 
     return { success: true, status: response.status, data: responseData };
-  } catch (error) {
+  } catch (error: any) {
+    if (
+      error?.message === "NEXT_REDIRECT" ||
+      error?.digest?.startsWith("NEXT_REDIRECT") ||
+      error?.message?.includes("NEXT_REDIRECT")
+    ) {
+      throw error;
+    }
     console.error(`Global API Error on [${endpoint}]:`, error);
     // forceLogoutClient();
     return { success: false, error: "Network connection to backend failed." };

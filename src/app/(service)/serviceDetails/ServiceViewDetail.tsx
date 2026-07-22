@@ -1,23 +1,18 @@
 "use client";
-
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { serviceDetails } from "../../../json/service-detail.json";
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { globalServerRequest } from "@/actions/globalApi";
 import { useDispatch } from "react-redux";
-import { setSummaryestimate } from "@/store/slices/userSlice";
 
 const normalizeData = (data: any) => {
   if (!data || Object.keys(data).length === 0) return null;
-
   // If it's already in the new format
   if (data.subCategories) {
     return data;
   }
 
-  // Convert old mock structure to new schema format
   return {
     category: {
       id: data.category?.id || 1,
@@ -62,10 +57,16 @@ export default function ServiceViewDetail({
 
   const searchParams = useSearchParams();
   const requestedId = searchParams.get("requestedId");
+  const subCategoryId = searchParams.get("subCategoryId");
+  const is_quote_edit = searchParams.get("is_quote_edit");
 
   // FIX: Unified selectedOptionId with selectedSpecificIssueId so state flows down to the API payload correctly
+  // const [selectedSpecificIssueId, setSelectedSpecificIssueId] = useState<
+  //   Record<string, number | null>
+  // >({});
+
   const [selectedSpecificIssueId, setSelectedSpecificIssueId] = useState<
-    Record<string, number | null>
+    Record<string, number[]>
   >({});
 
   const isLoggedIn =
@@ -91,6 +92,7 @@ export default function ServiceViewDetail({
   const [uploadedImg, setUploadedImage] = useState<Record<string, string[]>>({});
   const [activeIssueId, setActiveIssueId] = useState<string | null>(null);
   const [uploadedFiles, setUploadedFiles] = useState<Record<string, File[]>>({});
+  const [searchSubCategory, setSearchSubCategory] = useState<string>("");
   const [loadedData, setLoadedData] = useState<{
     subCategoryId: number | null;
     issueId: number | null;
@@ -99,7 +101,18 @@ export default function ServiceViewDetail({
     mediaUrls: string[];
   } | null>(null);
 
-  // Load existing quote request if editing (requestedId is present)
+  useEffect(() => {
+    if (searchSubCategory) {
+      if (filtersubCategory.length > 0) {
+        setSelectSubCategories(filtersubCategory[0].id);
+      } else {
+        setSelectSubCategories(null);
+      }
+    } else {
+      setSelectSubCategories(subCategories?.[0]?.id);
+    }
+  }, [searchSubCategory, subCategories]);
+
   useEffect(() => {
     const fetchSavedRequest = async () => {
       if (!requestedId) return;
@@ -111,45 +124,74 @@ export default function ServiceViewDetail({
 
         if (response.success) {
           const savedData = response.data?.data || response.data;
+
+          console.log("savedData", savedData)
+
           if (savedData) {
-            setLoadedData({
-              subCategoryId: savedData.subCategory?.id || null,
-              issueId: savedData.issue?.[0]?.id || null,
-              specificIssueId: savedData.specificIssue?.[0]?.id || null,
-              description: savedData.description || "",
-              mediaUrls: savedData.mediaUrls || [],
-            });
 
-            // 1. Select the sub-category
-            if (savedData.subCategory?.id) {
-              setSelectSubCategories(savedData.subCategory.id);
-            }
-            // 2. Select the issue
-            if (savedData.issue?.[0]?.id) {
-              const savedIssueId = String(savedData.issue[0].id);
-              setActiveIssueId(savedIssueId);
-              setAddedCategory(true);
+            const matchedSubCategory = savedData?.subCategories?.find(
+              (sub) => sub.id == subCategoryId
+            );
 
-              // 3. Select the specific issue
-              if (savedData.specificIssue?.[0]?.id) {
-                setSelectedSpecificIssueId((prev) => ({
-                  ...prev,
-                  [savedIssueId]: Number(savedData.specificIssue[0].id),
-                }));
+            console.log("matchedSubCategory", matchedSubCategory)
+
+            if (matchedSubCategory) {
+              const firstService = matchedSubCategory.services?.[0];
+              // const firstSpecificIssue = firstService?.specificIssues?.[0]; // Check standard naming in JSON
+              const savedIssueId = firstService?.id ? String(firstService.id) : null;
+              const savedSpecificIssueIds = Array.isArray(firstService?.specificIssues)
+                ? firstService.specificIssues.map((spec: any) => Number(spec.id))
+                : [];
+              // State me direct clean structure set karein
+              setLoadedData({
+                subCategoryId: matchedSubCategory.id || null,
+                issueId: firstService?.id || null,
+                // specificIssueId: firstSpecificIssue?.id || null,
+                specificIssueId: savedSpecificIssueIds,
+                description: matchedSubCategory.problemDescription || "",
+                mediaUrls: Array.isArray(matchedSubCategory.media)
+                  ? matchedSubCategory.media.map(m => m.url)
+                  : [],
+              });
+
+              if (matchedSubCategory.id) {
+                setSelectSubCategories(matchedSubCategory.id);
               }
-              // 4. Pre-fill problem description
-              if (savedData.description) {
-                setProblemDesc((prev) => ({
-                  ...prev,
-                  [savedIssueId]: savedData.description,
-                }));
-              }
-              // 5. Pre-fill uploaded images
-              if (savedData.mediaUrls && Array.isArray(savedData.mediaUrls)) {
-                setUploadedImage((prev) => ({
-                  ...prev,
-                  [savedIssueId]: savedData.mediaUrls,
-                }));
+
+              // 2. Select the issue
+              if (savedIssueId) {
+                setActiveIssueId(savedIssueId);
+                setAddedCategory(true);
+
+                // 3. Select the specific issue
+                // if (firstSpecificIssue?.id) {
+                //   setSelectedSpecificIssueId((prev) => ({
+                //     ...prev,
+                //     [savedIssueId]: Number(firstSpecificIssue.id),
+                //   }));
+                // }
+                if (savedIssueId && savedSpecificIssueIds.length > 0) {
+                  setSelectedSpecificIssueId((prev) => ({
+                    ...prev,
+                    [savedIssueId]: savedSpecificIssueIds,
+                  }));
+                }
+
+                // 4. Pre-fill problem description
+                if (matchedSubCategory.problemDescription) {
+                  setProblemDesc((prev) => ({
+                    ...prev,
+                    [savedIssueId]: matchedSubCategory.problemDescription,
+                  }));
+                }
+
+                // 5. Pre-fill uploaded images
+                if (matchedSubCategory.media && Array.isArray(matchedSubCategory.media)) {
+                  setUploadedImage((prev) => ({
+                    ...prev,
+                    [savedIssueId]: matchedSubCategory.media.map((item) => item.url),
+                  }));
+                }
               }
             }
           }
@@ -161,6 +203,12 @@ export default function ServiceViewDetail({
 
     fetchSavedRequest();
   }, [requestedId]);
+
+
+  console.log("loadedData", loadedData)
+  console.log("requestedId", requestedId)
+
+
 
   // Check if form changed when editing
   const isFormChanged = () => {
@@ -174,13 +222,19 @@ export default function ServiceViewDetail({
     const cleanLoadedIssueId = loadedData.issueId ? Number(loadedData.issueId) : null;
     if (cleanActiveIssueId !== cleanLoadedIssueId) return true;
 
-    const currentSpecificIssueId = activeIssueId ? selectedSpecificIssueId[activeIssueId] : null;
+    // const currentSpecificIssueId = activeIssueId ? selectedSpecificIssueId[activeIssueId] : null;
+    const currentSpecificIssueId = activeIssueId ? selectedSpecificIssueId[activeIssueId] || [] : [];
     const currentProblemDesc = activeIssueId ? problemDesc[activeIssueId] || "" : "";
     const currentUploadedFiles = activeIssueId ? uploadedFiles[activeIssueId] || [] : [];
     const currentUploadedImg = activeIssueId ? uploadedImg[activeIssueId] || [] : [];
+    const loadedSpecificIssueIds = loadedData?.specificIssueId || [];
 
     // Compare specific issue
     if (Number(currentSpecificIssueId || 0) !== Number(loadedData.specificIssueId || 0)) return true;
+
+    if (currentSpecificIssueId.length !== loadedSpecificIssueIds.length) return true;
+    const isMismatch = currentSpecificIssueId.some(id => !loadedSpecificIssueIds.includes(id));
+    if (isMismatch) return true;
 
     // Compare description
     if ((currentProblemDesc || "") !== (loadedData.description || "")) return true;
@@ -291,6 +345,67 @@ export default function ServiceViewDetail({
       }
 
       try {
+
+
+        // const existingSubCategoryIds: number[] = [];
+        // const existingIssueIds: string[] = [];
+        // const existingSpecificIssueIds: number[] = [];
+        // const fetchedMediaFiles: File[] = [];
+
+
+        // if (requestedId && actionType === "addtocart") {
+        //   try {
+        //     const fetchResponse = await globalServerRequest({
+        //       endpoint: `quotes/${requestedId}`,
+        //       method: "GET",
+        //     });
+
+        //     const savedData = fetchResponse.data?.data || fetchResponse.data;
+
+        //     if (fetchResponse?.success && savedData) {
+        //       const subCats = savedData.subCategories;
+
+        //       if (Array.isArray(subCats.media)) {
+        //         for (const mediaItem of subCats.media) {
+        //           if (mediaItem.url) {
+        //             try {
+        //               const imgRes = await fetch(mediaItem.url);
+        //               const blob = await imgRes.blob();
+        //               const filename = mediaItem.url.substring(mediaItem.url.lastIndexOf('/') + 1) || "existing-file.png";
+        //               const file = new File([blob], filename, { type: blob.type || "image/png" });
+        //               fetchedMediaFiles.push(file);
+        //             } catch (imgErr) {
+        //               console.error("Error converting remote image url to file:", imgErr);
+        //             }
+        //           }
+        //         }
+        //       }
+
+        //       subCats.forEach((sub: any) => {
+        //         if (sub.id) existingSubCategoryIds.push(sub.id);
+
+        //         sub.services?.forEach((service: any) => {
+        //           if (service.id) existingIssueIds.push(String(service.id));
+
+        //           service.specificIssues?.forEach((spec: any) => {
+        //             if (spec.id) existingSpecificIssueIds.push(spec.id);
+        //           });
+        //         });
+        //       });
+        //     }
+        //   } catch (fetchError) {
+        //     console.error("Failed to fetch existing quote details, proceeding with current selection only:", fetchError);
+        //   }
+        // }
+
+        // console.log("existingSubCategoryIds  ", existingSubCategoryIds, "  existingIssueIds", existingIssueIds, "   existingSpecificIssueIds", existingSpecificIssueIds)
+
+
+
+
+
+
+
         const formData = new FormData();
 
         // categoryId
@@ -299,23 +414,48 @@ export default function ServiceViewDetail({
         }
 
         // subCategoryId
+        console.log("selectSubCategories", selectSubCategories)
         if (selectSubCategories) {
           formData.append("subCategoryId", String(selectSubCategories));
+          // const currentSubId = Number(selectSubCategories);
+          // const mergedSubCategories = Array.from(new Set([...existingSubCategoryIds, currentSubId])).filter(Boolean);
+          // formData.append("subCategoryId", mergedSubCategories.join(","));
         }
 
         // issueId
+        console.log("activeIssueId", activeIssueId)
         if (activeIssueId) {
           const cleanIssueId = String(activeIssueId).replace("issue_", "");
           formData.append("issueId", cleanIssueId);
+          // const cleanCurrentIssue = String(activeIssueId).replace("issue_", "");
+          // const mergedIssues = Array.from(new Set([...existingIssueIds, cleanCurrentIssue])).filter(Boolean);
+          // formData.append("issueId", mergedIssues.join(","));
         }
 
-        const currentSpecificIssueId = activeIssueId ? selectedSpecificIssueId[activeIssueId] : null;
+        // const currentSpecificIssueId = activeIssueId ? selectedSpecificIssueId[activeIssueId] : null;
+        const currentSpecificIssueId = activeIssueId ? selectedSpecificIssueId[activeIssueId] || [] : [];
         const currentUploadedFiles = activeIssueId ? uploadedFiles[activeIssueId] || [] : [];
+        // const totalMediaFiles = [...fetchedMediaFiles, ...currentUploadedFiles];
+        // // specificIssueId
+        // console.log("currentSpecificIssueId", currentSpecificIssueId)
+        // if (currentSpecificIssueId) {
+        //   formData.append("specificIssueId", String(currentSpecificIssueId));
+        // }
 
-        // specificIssueId
-        if (currentSpecificIssueId) {
-          formData.append("specificIssueId", String(currentSpecificIssueId));
+        if (currentSpecificIssueId.length > 0) {
+          formData.append("specificIssueId", currentSpecificIssueId.join(","));
         }
+
+        // const currentSpecificIssueId = activeIssueId ? selectedSpecificIssueId[activeIssueId] : null;
+        // const specIdsToMerge = currentSpecificIssueId ? [Number(currentSpecificIssueId)] : [];
+        // const mergedSpecificIssues = Array.from(new Set([...existingSpecificIssueIds, ...specIdsToMerge])).filter(Boolean);
+
+        // if (mergedSpecificIssues.length > 0) {
+        //   formData.append("specificIssueId", mergedSpecificIssues.join(","));
+        // }
+
+
+
 
         // description
         formData.append("description", currentProblemDesc);
@@ -325,16 +465,23 @@ export default function ServiceViewDetail({
           formData.append(`mediaUrls[${index}]`, file);
         });
 
+        // totalMediaFiles.forEach((file, index) => {
+        //   formData.append(`mediaUrls[${index}]`, file);
+        // });
+
         // Pass existing remote URLs in a separate existingMediaUrls parameter
         const existingRemoteUrls = currentUploadedImg.filter((url) => url.startsWith("http"));
         existingRemoteUrls.forEach((url, index) => {
-          formData.append(`existingMediaUrls[index]`, url);
+          console.log(`existingMediaUrls[${index}]`, url);
+          formData.append(`existingMediaUrls[${index}]`, url);
         });
 
         if (requestedId) {
           formData.append("requestId", requestedId);
           formData.append("id", requestedId);
         }
+
+        console.log("formData", formData)
 
         const response = await globalServerRequest({
           endpoint:
@@ -384,10 +531,156 @@ export default function ServiceViewDetail({
     }
   };
 
+
+
+  const handleUpdateQuote = async (actionType: string,
+    e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    if (!isLoggedIn || isLoggedIn === "false") {
+      if (typeof window !== "undefined" && (window as any).bootstrap) {
+        const loginModalElement = document.getElementById("login-screen-1");
+        if (loginModalElement) {
+          const bootstrapModal =
+            (window as any).bootstrap.Modal.getInstance(loginModalElement) ||
+            new (window as any).bootstrap.Modal(loginModalElement);
+          bootstrapModal.show();
+        }
+      }
+      return;
+    }
+
+    const currentUploadedImg = activeIssueId ? uploadedImg[activeIssueId] || [] : [];
+    const currentProblemDesc = activeIssueId ? problemDesc[activeIssueId] || "" : "";
+
+    if (!addedCategory) {
+      toast.error("please select sub Category");
+    } else if (currentUploadedImg.length === 0) {
+      toast.error("please upload at least one video/image");
+    } else if (!currentProblemDesc) {
+      toast.error("please enter the description");
+    } else {
+      if (requestedId && !isFormChanged()) {
+        toast.success(
+          actionType === "updateQuote"
+            ? "Updated your quote!"
+            : "Redirecting to summary..."
+        );
+        if (actionType === "cancle") {
+          router.push(`/summary-estimate?requestedId=${requestedId}&is_quote_edit=${is_quote_edit}`);
+        } else {
+          router.push(`/summary-estimate?requestedId=${requestedId}&is_quote_edit=${is_quote_edit}`);
+        }
+        return;
+      }
+
+      try {
+        const formData = new FormData();
+        if (serviceDetailss?.category?.id) {
+          formData.append("categoryId", String(serviceDetailss.category.id));
+        }
+
+        console.log("selectSubCategories", selectSubCategories);
+        if (!(selectSubCategories == subCategoryId)) {
+          toast.error("You can't update subcategory you can only update there data")
+        }
+        if (selectSubCategories) {
+          formData.append("subCategoryId", String(selectSubCategories));
+        }
+
+        // issueId
+        console.log("activeIssueId", activeIssueId)
+        if (activeIssueId) {
+          const cleanIssueId = String(activeIssueId).replace("issue_", "");
+          formData.append("issueId", cleanIssueId);
+        }
+
+        const currentSpecificIssueId = activeIssueId ? selectedSpecificIssueId[activeIssueId] : null;
+        const currentUploadedFiles = activeIssueId ? uploadedFiles[activeIssueId] || [] : [];
+        if (currentSpecificIssueId) {
+          formData.append("specificIssueId", String(currentSpecificIssueId));
+        }
+
+        // description
+        formData.append("description", currentProblemDesc);
+
+        // mediaUrls (only new file uploads)
+        currentUploadedFiles.forEach((file, index) => {
+          formData.append(`mediaUrls[${index}]`, file);
+        });
+
+        const existingRemoteUrls = currentUploadedImg.filter((url) => url.startsWith("http"));
+        existingRemoteUrls.forEach((url, index) => {
+          console.log(`existingMediaUrls[${index}]`, url);
+          formData.append(`existingMediaUrls[${index}]`, url);
+        });
+
+        if (requestedId) {
+          formData.append("requestId", requestedId);
+          formData.append("id", requestedId);
+        }
+
+        console.log("formData", formData)
+
+        const response = await globalServerRequest({
+          endpoint: "quotes/update-quote",
+          method: "POST",
+          payload: formData,
+          isFormData: true,
+        });
+
+        if (!response.success) {
+          throw new Error(response.error || "Failed to add service to cart");
+        }
+
+        toast.success(
+          actionType === "updateQuote"
+            ? "Updated your Quote"
+            : "Redirecting to summery...!"
+        );
+
+        if (actionType === "cancle")
+          router.push(`/summary-estimate?requestedId=${requestedId}&is_quote_edit=${is_quote_edit}`);
+        if (actionType === "updateQuote") router.push(`/summary-estimate?requestedId=${requestedId}&is_quote_edit=${is_quote_edit}`);
+
+        setAddedCategory(false);
+        if (activeIssueId) {
+          setProblemDesc((prev) => ({ ...prev, [activeIssueId]: "" }));
+          setUploadedImage((prev) => ({ ...prev, [activeIssueId]: [] }));
+          setUploadedFiles((prev) => ({ ...prev, [activeIssueId]: [] }));
+          setSelectedSpecificIssueId((prev) => ({ ...prev, [activeIssueId]: null }));
+        }
+        setActiveIssueId(null);
+      } catch (error: any) {
+        console.error("Failed to add to cart:", error);
+        toast.error(
+          error?.message || error?.error || "Failed to add service to cart"
+        );
+      }
+    }
+  }
+
+
+
+
+
+
   const activeSubCategory = subCategories?.find(
     (sub: any) => String(sub.id) === String(selectSubCategories)
   );
+
+  const filtersubCategory = subCategories?.filter((sub: any) =>
+    !searchSubCategory ||
+    sub.name.toLowerCase().includes(searchSubCategory.toLowerCase())
+  );
+
+
+
+  // const activeSubCategory = subCategories?.find(
+  //   (sub: any) => String(sub.id) === String(selectSubCategories)
+  // );
   const activeIssues = activeSubCategory?.issues || [];
+
+
 
   return (
     <>
@@ -417,6 +710,8 @@ export default function ServiceViewDetail({
                         <input
                           type="text"
                           placeholder="Search"
+                          value={searchSubCategory}
+                          onChange={(e) => setSearchSubCategory(e.target.value)}
                           className="top-srch"
                         />
                       </div>
@@ -450,20 +745,23 @@ export default function ServiceViewDetail({
                       <h3>Choose a Sub-category</h3>
 
                       <div className="sub-cat-filtr-btns">
-                        {subCategories?.map((item) => (
+                        {filtersubCategory?.map((item) => (
                           <button
                             type="button"
+
                             onClick={() => {
                               setSelectSubCategories(item?.id);
                               setActiveIssueId(null);
                               setAddedCategory(false);
                             }}
+
                             className={
                               String(selectSubCategories) === String(item?.id)
                                 ? "active"
                                 : ""
                             }
                             key={item?.id}
+                            disabled={is_quote_edit == 1 && String(subCategoryId) !== String(item?.id)}
                           >
                             {item?.name}
                           </button>
@@ -526,21 +824,38 @@ export default function ServiceViewDetail({
                                 </p>
                                 <ul>
                                   {item?.specificIssues?.map((option: any) => {
-                                    const currentSpecificIssueId = selectedSpecificIssueId[issueIdStr]
+                                    // const currentSpecificIssueId = selectedSpecificIssueId[issueIdStr]
+                                    const currentSelectedIds = selectedSpecificIssueId[issueIdStr] || [];
+
                                     const isSelected =
-                                      currentSpecificIssueId !== null &&
-                                      currentSpecificIssueId !== undefined &&
-                                      String(currentSpecificIssueId) ===
-                                      String(option?.id);
+                                      currentSelectedIds !== null &&
+                                      currentSelectedIds !== undefined &&
+                                      // String(currentSpecificIssueId) ===
+                                      // String(option?.id);
+                                      currentSelectedIds.includes(Number(option?.id))
                                     return (
                                       <li
                                         key={option?.id}
                                         onClick={() =>
-                                          setSelectedSpecificIssueId((prev) => ({
-                                            ...prev,
-                                            [issueIdStr]: option?.id,
-                                          }))
-                                        }
+                                        // setSelectedSpecificIssueId((prev) => ({
+                                        //   ...prev,
+                                        //   [issueIdStr]: option?.id,
+                                        // }))
+                                        {
+                                          setSelectedSpecificIssueId((prev) => {
+                                            const currentIds = prev[issueIdStr] || [];
+                                            const optionId = Number(option?.id);
+
+                                            const updatedIds = currentIds.includes(optionId)
+                                              ? currentIds.filter((id) => id !== optionId)
+                                              : [...currentIds, optionId];
+
+                                            return {
+                                              ...prev,
+                                              [issueIdStr]: updatedIds,
+                                            };
+                                          });
+                                        }}
                                         style={{
                                           cursor: "pointer",
                                           transition: "all 0.2s ease-in-out",
@@ -648,7 +963,26 @@ export default function ServiceViewDetail({
                       )}
                     </div>
 
-                    {(activeIssues && activeIssues.length > 0) &&
+                    {is_quote_edit == 1 ? (
+                      <>
+                        <Link
+                          href=""
+                          onClick={(e) => handleUpdateQuote("updateQuote", e)}
+                          className="primary-cta"
+                        >
+                          Update Quote
+                        </Link>
+                        <Link
+                          href=""
+                          onClick={(e) => handleUpdateQuote("cancle", e)}
+                          className="primary-cta"
+                          style={{ marginRight: "10px" }}
+                        >
+                          Cancle
+                        </Link>
+                      </>
+                    ) : (
+                      (activeIssues && activeIssues.length > 0) &&
                       (
                         <>
                           <Link
@@ -669,15 +1003,16 @@ export default function ServiceViewDetail({
 
                         </>
                       )
+                    )}
 
-                    }
+
                   </div>
                 </div>
               </div>
             </div>
           </section>
-        </div>
-      </main>
+        </div >
+      </main >
     </>
   );
 }

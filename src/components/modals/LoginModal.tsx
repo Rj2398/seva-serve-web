@@ -5,17 +5,21 @@ import Link from "next/link";
 import { globalServerRequest } from "@/actions/globalApi";
 import toast from "react-hot-toast";
 import OtpModal from "./OtpModal";
+import { generateFCMToken } from "@/utils/generateFCMToken";
+import { VscReferences } from "react-icons/vsc";
+
 
 const LoginModal = () => {
   const [isEmailLogin, setIsEmailLogin] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [referCode, setReferCode] = useState("");
+
 
   const handleContinue = async () => {
     // 1. FRONTEND VALIDATION
     if (isEmailLogin) {
-      // EMAIL VALIDATION
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
       if (!inputValue) {
@@ -28,7 +32,6 @@ const LoginModal = () => {
         return;
       }
     } else {
-      // PHONE VALIDATION
       const phoneRegex = /^[0-9]{10}$/;
 
       if (!inputValue) {
@@ -42,34 +45,51 @@ const LoginModal = () => {
       }
     }
 
-    // Clear previous errors and set loading to true
     setError("");
-    setLoading(true);
 
-    // 2. SETUP ENDPOINT AND DYNAMIC PAYLOAD
-    const endpoint = "auth/otp/request/customer";
-    const payload = isEmailLogin
-      ? { value: inputValue, channel: "email", role: "customer" }
-      : { value: inputValue, channel: "phone", role: "customer" }; // Fixed channel to "sms" for phone
-
-    // 3. EXECUTE API CALL INSIDE TRY/CATCH
     try {
+      // ✅ Generate FCM Token
+      const fcmToken = await generateFCMToken();
+
+      setLoading(true);
+
+      const endpoint = "auth/otp/request/customer";
+
+      const payload = isEmailLogin
+        ? {
+          value: inputValue,
+          channel: "email",
+          role: "customer",
+          fcmToken: fcmToken || "",
+          referralCode: referCode.trim(),
+          // referrerId:257,
+        }
+        : {
+          value: inputValue,
+          channel: "phone",
+          role: "customer",
+          fcmToken: fcmToken || "",
+          referralCode: referCode.trim(),
+          // referrerId:257,
+        };
+
+      console.log("OTP Request Payload:", payload);
+
       const response = await globalServerRequest({
-        endpoint: endpoint,
+        endpoint,
         method: "POST",
-        payload: payload,
+        payload,
       });
 
-      // Turn off loading as soon as the response arrives
       setLoading(false);
 
       if (response.success) {
-        toast.success("OTP sent successfully!"); // Changed message since this is an OTP request screen
+        toast.success("OTP sent successfully!");
+
         sessionStorage.setItem(
           "userData",
           JSON.stringify(response?.data?.data)
         );
-        // localStorage.setItem("userData", JSON.stringify(response?.data?.data));
 
         // Hide Screen 1
         const currentModal = document.getElementById("login-screen-1");
@@ -79,30 +99,29 @@ const LoginModal = () => {
           bootstrapModal?.hide();
         }
 
-        // Show Screen 2 (OTP Entering Screen)
+        // Show Screen 2
         const nextModal = document.getElementById("login-screen-2");
         if (nextModal) {
           const nextInstance = new window.bootstrap.Modal(nextModal);
           nextInstance.show();
+          window.dispatchEvent(new Event("start-otp-timer"));
         }
 
         setInputValue("");
+        setReferCode("");
       } else {
-        // Use the actual error returned by your globalServerRequest utility
         toast.error(
           response.error || "Something went wrong. Please try again."
         );
         setError(response.error || "Something went wrong. Please try again.");
       }
     } catch (error) {
-      // Handles unexpected code crashes or critical network failures
       setLoading(false);
       toast.error("Login failed! Please check your connection.");
       setError("An unexpected error occurred.");
       console.error("Login Handler Error:", error);
     }
   };
-
   const closeModalBeforeNavigation = (modalId: string) => {
     const currentModal = document.getElementById(modalId);
     if (currentModal) {
@@ -258,18 +277,24 @@ const LoginModal = () => {
                         placeholder={
                           isEmailLogin ? "Email Address" : "Phone Number"
                         }
+                        maxLength={isEmailLogin ? 50 : 10}
+                        pattern={isEmailLogin ? undefined : "[0-9]*"}
+                        inputMode={isEmailLogin ? "email" : "numeric"}
+                        autoComplete={isEmailLogin ? "email" : "tel"}
+                        // required
                         value={inputValue}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                           if (isEmailLogin) {
                             // EMAIL INPUT
                             setInputValue(e.target.value);
+                            setError(""); // Clear error on input change
                           } else {
                             // PHONE INPUT
                             const onlyNumbers = e.target.value.replace(
                               /\D/g,
                               ""
                             );
-
+                            setError(""); // Clear error on input change
                             setInputValue(onlyNumbers);
                           }
                         }}
@@ -295,6 +320,19 @@ const LoginModal = () => {
                         {error}
                       </p>
                     )}
+
+                    <div className="phone-number mt-3">
+                      <VscReferences style={{ position: "absolute", left: "13px", top: "50%", transform: "translateY(-50%)", color: "#999" }} />
+                      <input
+                        type="text"
+                        placeholder="Enter Referral Code (Optional)"
+                        value={referCode}
+                        maxLength={20}
+                        onChange={(e) => setReferCode(e.target.value)}
+                      />
+
+                    </div>
+
                     <button
                       type="button"
                       // data-bs-toggle="modal"

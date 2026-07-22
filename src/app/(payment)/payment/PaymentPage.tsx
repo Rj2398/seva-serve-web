@@ -102,8 +102,10 @@ const PaymentPage = () => {
                         </h6>
 
                         <h6>
-                          Coupon Offer <span className="offer-tag">SEVA10</span>
-                          <b>$0</b>
+                          Coupon Offer <span className={checkoutData?.job_summary?.coupon_discount?.coupon_code !== null ? "offer-tag" : ""}>
+                            {checkoutData?.job_summary?.coupon_discount?.coupon_code}
+                          </span>
+                          <b>${checkoutData?.job_summary?.coupon_discount?.discount_amount}</b>
                         </h6>
 
                         <h6 className="mb-0" style={{ fontSize: "larger" }}>
@@ -205,21 +207,21 @@ const PaymentPage = () => {
                         href={
                           checkoutData?.hasCard
                             ? {
-                                pathname: "/payment-method",
-                                query: {
-                                  booking_id: bookingId || "",
-                                  initialpayment:
-                                    checkoutData?.job_summary?.initial_deposit
-                                      ?.amount,
-                                  paymenttype: "initial",
-                                },
-                              }
+                              pathname: "/payment-method",
+                              query: {
+                                booking_id: bookingId || "",
+                                initialpayment:
+                                  checkoutData?.job_summary?.initial_deposit
+                                    ?.amount,
+                                paymenttype: "initial",
+                              },
+                            }
                             : {
-                                pathname: "/add-new-card",
-                                query: {
-                                  booking_id: bookingId || "",
-                                },
-                              }
+                              pathname: "/add-new-card",
+                              query: {
+                                booking_id: bookingId || "",
+                              },
+                            }
                         }
                         className="primary-cta"
                       >

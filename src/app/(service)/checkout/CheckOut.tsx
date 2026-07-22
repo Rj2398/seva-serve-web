@@ -3,20 +3,29 @@ import React, { Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 
+interface CheckOutProps {
+  bookingData?: any;
+}
+
 // 1. Move your main logic to an internal component that safely consumes useSearchParams()
-const CheckOutContent = () => {
+const CheckOutContent = ({ bookingData }: CheckOutProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  console.log("checkoutbookingData", bookingData);
+
   // Extract values from the query parameters
-  const bookingId = searchParams.get("booking_id");
+  const bookingId = searchParams.get("booking_id") || searchParams.get('bookingId');
+  console.log("bookingId", bookingId)
   const paymenttype = searchParams.get("paymenttype");
 
   // Parse strings safely into numbers for calculation and display
-  const initialPayment = parseFloat(searchParams.get("initialpayment") || "0");
-  const remainingPayment = parseFloat(
-    searchParams.get("remaingPayment") || "0"
-  );
+  const initialPayment = bookingData?.bookingCostDetails?.depositAmount
+    || parseFloat(searchParams.get("initialpayment") || "0");
+  const remainingPayment = bookingData?.bookingCostDetails?.remainingCost
+    || parseFloat(searchParams.get("remaingPayment") || "0");
+
+
 
   // Dynamically calculate total cost
   const totalCost = initialPayment + remainingPayment;
@@ -107,10 +116,11 @@ const CheckOutContent = () => {
                     href={{
                       pathname: "/payment-method",
                       query: {
-                        booking_id: bookingId,
+                        booking_id: bookingId || bookingData?.bookingId,
                         initialpayment: initialPayment,
                         remaingPayment: remainingPayment,
                         paymenttype: paymenttype,
+                        quoteId: bookingData?.quoteId
                       },
                     }}
                     className="primary-cta"
@@ -128,14 +138,14 @@ const CheckOutContent = () => {
 };
 
 // 2. Export the primary page components wrapped inside a Suspense Boundary to fix the build error
-export default function CheckOut() {
+export default function CheckOut({ bookingData }: CheckOutProps) {
   return (
     <Suspense
       fallback={
         <div className="text-center p-5">Loading checkout details...</div>
       }
     >
-      <CheckOutContent />
+      <CheckOutContent bookingData={bookingData} />
     </Suspense>
   );
 }

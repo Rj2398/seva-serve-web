@@ -16,10 +16,13 @@ async function ServicePageContent({ searchParams }: PageProps) {
   const categoryId = params.categoryId;
   const serviceId = params.serviceId;
 
+  console.log("serviceId", serviceId)
+
   let initialServiceData = null;
 
   if (categoryId || serviceId) {
     try {
+      console.log("hello 1")
       // Try POST first
       let response = await globalServerRequest({
         endpoint: "services/getCategoryService",
@@ -32,8 +35,11 @@ async function ServicePageContent({ searchParams }: PageProps) {
         }
       });
 
+      console.log("hello 2", response)
+
       // Fallback to GET if POST was unsuccessful
       if (!response.success) {
+        console.log("response 1", response)
         const queryParams = [];
         if (categoryId) queryParams.push(`category_id=${categoryId}&categoryId=${categoryId}`);
         if (serviceId) queryParams.push(`service_id=${serviceId}&serviceId=${serviceId}`);
@@ -46,7 +52,9 @@ async function ServicePageContent({ searchParams }: PageProps) {
       }
 
       if (response.success) {
+        console.log("hello 3", response)
         initialServiceData = response.data?.data || response.data;
+        console.log("initialServiceData", initialServiceData)
       }
     } catch (e) {
       console.error("Failed to pre-fetch service details on server:", e);

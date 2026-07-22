@@ -18,6 +18,8 @@ import DeleteMyAccountModal from "@/components/modals/DeleteMyAccountModal";
 import NewServiceRejectionModal from "@/components/modals/bookingmodals/NewServiceRejectionModal";
 import RateSevaServe from "@/components/modals/bookingmodals/RateSevaServe";
 import DeleteAccountModal from "@/components/modals/deleteAccountModal";
+import ProtectedRoutes from "@/components/common/ProtectedRoutes";
+import { initializeFirebaseNotifications } from "@/utils/notification";
 
 export default function ClientProviders({
   children,
@@ -27,10 +29,17 @@ export default function ClientProviders({
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
 
+
+
   // Force component to wait until mounted on client to prevent structural hydration mismatches
   useEffect(() => {
+ 
     setMounted(true);
   }, []);
+
+useEffect(() => {
+  initializeFirebaseNotifications();
+}, []);
 
   useEffect(() => {
     if (!mounted) return;
@@ -149,10 +158,12 @@ export default function ClientProviders({
     <StoreProvider>
       {!mounted ? (
         // Render a flat stream matching server-side HTML to prevent hydration drift
-        <>{children}</>
+
+        <> <ProtectedRoutes>{children}</ProtectedRoutes> </>
       ) : (
         <>
           <Header />
+          
           {children}
           <Footer />
 
