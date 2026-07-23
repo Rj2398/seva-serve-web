@@ -60,7 +60,7 @@ function PaymentMethodContent({ initialCardsData }: CardProps) {
   const router = useRouter();
   const [cards, setCards] = useState<Card[]>(initialCardsData?.cards || []);
 
-  const [selectedCard, setSelectedCard] = useState<any | number | null>(
+  const [selectedCard, setSelectedCard] = useState<string | number | null>(
     initialCardsData?.cards && initialCardsData.cards.length > 0
       ? initialCardsData.cards[0].card_id || initialCardsData.cards[0].id
       : null
@@ -120,7 +120,7 @@ function PaymentMethodContent({ initialCardsData }: CardProps) {
     }
     const formData = new FormData();
     formData.append("subscription_plan_id", planId);
-    formData.append("card_id", selectedCard);
+    formData.append("card_id", String(selectedCard));
     formData.append("type", planType);
     formData.append("amount", planAmount); // Sahi calculated amount append karein
 
@@ -151,7 +151,7 @@ function PaymentMethodContent({ initialCardsData }: CardProps) {
         const fetchedCards: Card[] = response.data?.data || response.data || [];
         setCards(fetchedCards);
         if (fetchedCards.length > 0) {
-          setSelectedCard((prev) => {
+          setSelectedCard((prev: string | number | null) => {
             const exists = fetchedCards.some(
               (c: Card) => (c.card_id || c.id) === prev
             );
