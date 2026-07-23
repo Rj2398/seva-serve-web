@@ -29,6 +29,7 @@ interface ContractorTimeRequest {
 }
 
 interface BookingData {
+  bookingId?: string | number;
   categoryName?: string;
   services?: ServiceItem[];
   contractorTimeRequest?: ContractorTimeRequest;
@@ -235,7 +236,7 @@ const ContractorRequest = ({ booking }: ContractorRequestProps) => {
       <DatePopup
         isOpen={showDatePicker}
         setIsOpen={setShowDatePicker}
-        booking_Id={booking?.bookingId || (booking as any)?.bookingId}
+        booking_Id={booking?.bookingId}
       />
     </>
   );

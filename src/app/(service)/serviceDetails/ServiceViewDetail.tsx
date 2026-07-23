@@ -96,7 +96,7 @@ export default function ServiceViewDetail({
   const [loadedData, setLoadedData] = useState<{
     subCategoryId: number | null;
     issueId: number | null;
-    specificIssueId: number | null;
+    specificIssueId: number[];
     description: string;
     mediaUrls: string[];
   } | null>(null);
@@ -130,8 +130,8 @@ export default function ServiceViewDetail({
           if (savedData) {
 
             const matchedSubCategory = savedData?.subCategories?.find(
-              (sub) => sub.id == subCategoryId
-            );
+               (sub: any) => sub.id == subCategoryId
+             );
 
             console.log("matchedSubCategory", matchedSubCategory)
 
@@ -150,7 +150,7 @@ export default function ServiceViewDetail({
                 specificIssueId: savedSpecificIssueIds,
                 description: matchedSubCategory.problemDescription || "",
                 mediaUrls: Array.isArray(matchedSubCategory.media)
-                  ? matchedSubCategory.media.map(m => m.url)
+                  ? matchedSubCategory.media.map((m: any) => m.url)
                   : [],
               });
 
@@ -189,7 +189,7 @@ export default function ServiceViewDetail({
                 if (matchedSubCategory.media && Array.isArray(matchedSubCategory.media)) {
                   setUploadedImage((prev) => ({
                     ...prev,
-                    [savedIssueId]: matchedSubCategory.media.map((item) => item.url),
+                    [savedIssueId]: matchedSubCategory.media.map((item: any) => item.url),
                   }));
                 }
               }
@@ -230,8 +230,6 @@ export default function ServiceViewDetail({
     const loadedSpecificIssueIds = loadedData?.specificIssueId || [];
 
     // Compare specific issue
-    if (Number(currentSpecificIssueId || 0) !== Number(loadedData.specificIssueId || 0)) return true;
-
     if (currentSpecificIssueId.length !== loadedSpecificIssueIds.length) return true;
     const isMismatch = currentSpecificIssueId.some(id => !loadedSpecificIssueIds.includes(id));
     if (isMismatch) return true;
@@ -519,7 +517,7 @@ export default function ServiceViewDetail({
           setProblemDesc((prev) => ({ ...prev, [activeIssueId]: "" }));
           setUploadedImage((prev) => ({ ...prev, [activeIssueId]: [] }));
           setUploadedFiles((prev) => ({ ...prev, [activeIssueId]: [] }));
-          setSelectedSpecificIssueId((prev) => ({ ...prev, [activeIssueId]: null }));
+          setSelectedSpecificIssueId((prev) => ({ ...prev, [activeIssueId]: [] }));
         }
         setActiveIssueId(null);
       } catch (error: any) {
@@ -647,7 +645,7 @@ export default function ServiceViewDetail({
           setProblemDesc((prev) => ({ ...prev, [activeIssueId]: "" }));
           setUploadedImage((prev) => ({ ...prev, [activeIssueId]: [] }));
           setUploadedFiles((prev) => ({ ...prev, [activeIssueId]: [] }));
-          setSelectedSpecificIssueId((prev) => ({ ...prev, [activeIssueId]: null }));
+          setSelectedSpecificIssueId((prev) => ({ ...prev, [activeIssueId]: [] }));
         }
         setActiveIssueId(null);
       } catch (error: any) {
@@ -761,7 +759,7 @@ export default function ServiceViewDetail({
                                 : ""
                             }
                             key={item?.id}
-                            disabled={is_quote_edit == 1 && String(subCategoryId) !== String(item?.id)}
+                            disabled={is_quote_edit === "1" && String(subCategoryId) !== String(item?.id)}
                           >
                             {item?.name}
                           </button>
@@ -963,7 +961,7 @@ export default function ServiceViewDetail({
                       )}
                     </div>
 
-                    {is_quote_edit == 1 ? (
+                    {is_quote_edit === "1" ? (
                       <>
                         <Link
                           href=""

@@ -7,7 +7,6 @@ import WelcomeModal from "@/components/modals/WelcomeModal";
 import AddCardModal from "@/components/modals/AddCardModal";
 import DatePopup from "@/components/modals/bookingmodals/DatePopup";
 import RescheduleRequestSubmit from "@/components/modals/bookingmodals/RescheduleRequestSubmit";
-import CancelBooking from "@/components/modals/bookingmodals/CancelBooking";
 import ServiceRejected from "@/components/modals/bookingmodals/ServiceRejected";
 import ServiceAccepted from "@/components/modals/bookingmodals/ServiceAccepted";
 import NewServiceRejectionModal from "@/components/modals/bookingmodals/NewServiceRejectionModal";
@@ -996,7 +995,6 @@ const ClientComponent = ({ data }: homeprops) => {
       <ServiceRejected />
       <NewServiceRejectionModal serviceId={serviceId} />
       <ServiceAccepted serviceId={serviceId} />
-      <CancelBooking />
 
       {
         showShareMenu && (

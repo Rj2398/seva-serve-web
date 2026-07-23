@@ -13,6 +13,7 @@ interface UserState {
   requestId: number;
   category: { id: number; name: string };
   subCategory: { id: number; name: string };
+  subCategories?: any[];
   issue: Array<{ id: number; name: string }>;
   specificIssue: Array<{ id: number; name: string }>;
   description: string;
@@ -461,7 +462,7 @@ const SummaryEstimate = () => {
                                 </span>
                                 {/* Edit Link */}
                                 <Link
-                                  href={`/serviceDetails?categoryId=${summary_estimate?.category?.id || ""}&requestedId=${activeRequestId || ""}&subCategoryId=${subCat?.id || ""}${is_quote == 1 ? "&is_quote_edit=1" : ""}`}
+                                  href={`/serviceDetails?categoryId=${summary_estimate?.category?.id || ""}&requestedId=${activeRequestId || ""}&subCategoryId=${subCat?.id || ""}${is_quote === "1" ? "&is_quote_edit=1" : ""}`}
                                   className="ml-2"
                                   onClick={(e) => e.stopPropagation()} // Header toggle event ko rokne ke liye
                                 >
@@ -498,7 +499,7 @@ const SummaryEstimate = () => {
                                         ))}
                                       </ul>
                                     </div>
-                                    <Link href={`/serviceDetails?categoryId=${summary_estimate?.category?.id || ""}&requestedId=${activeRequestId || ""}&subCategoryId=${subCat?.id || ""}${is_quote == 1 ? "&is_quote_edit=1" : ""}`}>
+                                    <Link href={`/serviceDetails?categoryId=${summary_estimate?.category?.id || ""}&requestedId=${activeRequestId || ""}&subCategoryId=${subCat?.id || ""}${is_quote === "1" ? "&is_quote_edit=1" : ""}`}>
                                       <img src="images/inner-page/edit-icon-c.svg" alt="Edit" style={{ width: '14px' }} />
                                     </Link>
                                   </div>
@@ -512,7 +513,7 @@ const SummaryEstimate = () => {
                                         {subCat?.problemDescription || "No description provided"}
                                       </p>
                                     </div>
-                                    <Link href={`/serviceDetails?categoryId=${summary_estimate?.category?.id || ""}&requestedId=${activeRequestId || ""}&subCategoryId=${subCat?.id || ""}${is_quote == 1 ? "&is_quote_edit=1" : ""}`}>
+                                    <Link href={`/serviceDetails?categoryId=${summary_estimate?.category?.id || ""}&requestedId=${activeRequestId || ""}&subCategoryId=${subCat?.id || ""}${is_quote === "1" ? "&is_quote_edit=1" : ""}`}>
                                       <img src="images/inner-page/edit-icon-c.svg" alt="Edit" style={{ width: '14px' }} />
                                     </Link>
                                   </div>
@@ -556,7 +557,7 @@ const SummaryEstimate = () => {
                       </div>
                       {/* Action Buttons */}
                       {
-                        (is_quote == 1) ? (
+                        (is_quote === "1") ? (
                           <div className="request-btn">
                             <button
                               type="button"

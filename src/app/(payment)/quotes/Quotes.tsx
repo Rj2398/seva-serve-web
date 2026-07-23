@@ -12,7 +12,7 @@ export default function Quotes() {
   const router = useRouter();
   const is_requested = searchParams.get("is_requested");
 
-  const [activeTab, setActiveTab] = useState(is_requested == 1 ? "requested" : "received");
+  const [activeTab, setActiveTab] = useState(is_requested === "1" ? "requested" : "received");
   const [quotes, setQuotes] = useState<any[]>([]);
 
   console.log(quotes, "quotes****************");
