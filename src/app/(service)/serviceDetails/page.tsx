@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { Suspense } from "react";
 import ServiceViewDetail from "./ServiceViewDetail";
 import { globalServerRequest } from "@/actions/globalApi";
+import LogoLoader from "@/components/common/LogoLoader";
 
 interface PageProps {
   searchParams: Promise<{
@@ -69,7 +70,7 @@ export default function ServicePage({ searchParams }: PageProps) {
     <>
       <div className="flex min-h-screen items-center justify-center bg-zinc-50 px-4 dark:bg-zinc-950">
         {/* <Header/> */}
-        <Suspense fallback={<div className="text-zinc-500">Loading service details...</div>}>
+        <Suspense fallback={<div className="text-zinc-500"><LogoLoader /></div>}>
           <ServicePageContent searchParams={searchParams} />
         </Suspense>
       </div>

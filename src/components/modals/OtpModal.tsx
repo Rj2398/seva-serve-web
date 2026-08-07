@@ -60,6 +60,35 @@ const startOtpTimer = () => {
   }, 1000);
 };
 
+const value = loginValue || userData?.value;
+
+const displayValue = emailLogin
+  ? value
+  : value?.replace(/\d(?=\d{4})/g, "*");
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+  e.preventDefault();
+
+  const pastedData = e.clipboardData
+    .getData("text")
+    .replace(/\D/g, "")
+    .slice(0, 5);
+
+  if (!pastedData) return;
+
+  const newOtp = [...otp];
+
+  pastedData.split("").forEach((digit, index) => {
+    newOtp[index] = digit;
+  });
+
+  setOtp(newOtp);
+
+  // Focus the last filled input
+  const lastIndex = Math.min(pastedData.length - 1, 4);
+  document.getElementById(`otp-${lastIndex}`)?.focus();
+};
+
 useEffect(() => {
   const handleStartTimer = () => {
     startOtpTimer();
@@ -349,10 +378,15 @@ useEffect(() => {
                 </div>
               </div>
               <div className="right-slider-pop">
-                <h5>Verify Your Number</h5>
+                <h5>{emailLogin ? "Verify Your Email" : "Verify Your Number"}</h5>
+                {/* <p>
+                  Enter the 5-digit code we sent to <br />
+                  {emailLogin ? "" : "+1"} {loginValue || userData?.value || maskedPhone}
+      
+                </p> */}
                 <p>
                   Enter the 5-digit code we sent to <br />
-                  {emailLogin ? "" : "+1"} {loginValue || userData?.value}
+                  {emailLogin ? displayValue : `+1 ${displayValue}`}
                 </p>
                 <form>
                   <div className="input-multigrp">
@@ -366,6 +400,7 @@ useEffect(() => {
                         maxLength={1}
                         disabled={loading}
                         value={digit}
+                        onPaste={handlePaste}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                           handleChange(e.target.value, index)
                         }

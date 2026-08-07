@@ -160,8 +160,23 @@ interface Props {
 }
 
 const RefferalHistory = ({ initialReferralData }: Props) => {
-  const [historyData, setHistoryData] = useState(
-    initialReferralData.all.data?.data || []
+  const extractArray = (source: any) => {
+    if (!source) return [];
+    if (Array.isArray(source)) return source;
+    if (Array.isArray(source.data)) return source.data;
+    if (source.data && Array.isArray(source.data.data)) return source.data.data;
+    return [];
+  };
+
+  const extractPagination = (source: any) => {
+    if (!source) return null;
+    if (source.pagination) return source.pagination;
+    if (source.data && source.data.pagination) return source.data.pagination;
+    return null;
+  };
+
+  const [historyData, setHistoryData] = useState<any[]>(
+    extractArray(initialReferralData.all)
   );
   const [activeFilter, setActiveFilter] = useState<"All" | ReferralStatus>(
     "All"
@@ -204,7 +219,7 @@ const RefferalHistory = ({ initialReferralData }: Props) => {
   };
 
   const [pagination, setPagination] = useState(
-    initialReferralData.all.data?.pagination || {
+    extractPagination(initialReferralData.all) || {
       pageNo: 1,
       limit: 10,
       totalItems: 0,
@@ -233,15 +248,18 @@ const RefferalHistory = ({ initialReferralData }: Props) => {
       payload: {
         status,
         pageNo: page,
-        limit: 10,
+        limit: pagination.limit || 10,
       },
     });
 
     console.log(res);
 
     if (res.success) {
-      setHistoryData(res.data.data.data);
-      setPagination(res.data.data.pagination);
+      setHistoryData(extractArray(res.data));
+      const newPagination = extractPagination(res.data);
+      if (newPagination) {
+        setPagination(newPagination);
+      }
     }
   };
 
@@ -279,24 +297,20 @@ const RefferalHistory = ({ initialReferralData }: Props) => {
 
                 switch (filter) {
                   case "All":
-                    setHistoryData(initialReferralData.all.data?.data || []);
-                    setPagination(initialReferralData.all.data?.pagination);
+                    setHistoryData(extractArray(initialReferralData.all));
+                    if (extractPagination(initialReferralData.all)) setPagination(extractPagination(initialReferralData.all));
                     break;
                   case "Pending":
-                    setHistoryData(
-                      initialReferralData.pending.data?.data || []
-                    );
-                    setPagination(initialReferralData.pending.data?.pagination);
+                    setHistoryData(extractArray(initialReferralData.pending));
+                    if (extractPagination(initialReferralData.pending)) setPagination(extractPagination(initialReferralData.pending));
                     break;
                   case "Paid":
-                    setHistoryData(initialReferralData.paid.data?.data || []);
-                    setPagination(initialReferralData.paid.data?.pagination);
+                    setHistoryData(extractArray(initialReferralData.paid));
+                    if (extractPagination(initialReferralData.paid)) setPagination(extractPagination(initialReferralData.paid));
                     break;
                   case "Expired":
-                    setHistoryData(
-                      initialReferralData.expired.data?.data || []
-                    );
-                    setPagination(initialReferralData.expired.data?.pagination);
+                    setHistoryData(extractArray(initialReferralData.expired));
+                    if (extractPagination(initialReferralData.expired)) setPagination(extractPagination(initialReferralData.expired));
                     break;
                 }
               }}

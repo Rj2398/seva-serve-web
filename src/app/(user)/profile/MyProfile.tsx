@@ -12,6 +12,8 @@ interface MyProfileProps {
 
 const MyProfile = ({ initialData }: MyProfileProps) => {
   const [isEditing, setIsEditing] = useState(false);
+
+  console.log("isEditing", isEditing);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [verifyMode, setVerifyMode] = useState<"email" | "phone">("phone");
@@ -108,7 +110,7 @@ const MyProfile = ({ initialData }: MyProfileProps) => {
       toast.error("Name is required");
       return;
     }
-    if (!profileData.phone.trim()) {
+    if (!profileData.phone.trim() && !isEditing)  {               
       toast.error("Phone number is required");
       return;
     }

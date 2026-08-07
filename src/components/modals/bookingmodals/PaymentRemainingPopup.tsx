@@ -103,16 +103,11 @@ const PaymentRemainingPopup = ({
                       </button>
                       <Link
                         href={{
-                          pathname: "/checkout",
+                          pathname: `/payment`,
                           query: {
-                            booking_id: quote_id,
-                            initialpayment:
-                              checkoutData?.job_summary?.initial_deposit
-                                ?.amount,
-                            remaingPayment:
-                              checkoutData?.job_summary?.remaining_amount,
-
+                            booking_id: bookingId,
                             paymenttype: "full",
+                            bData: JSON.stringify(bookingPaymentInfo),
                           },
                         }}
                         className="primary-cta rgt"

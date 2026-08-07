@@ -18,6 +18,7 @@ import DeleteMyAccountModal from "@/components/modals/DeleteMyAccountModal";
 import NewServiceRejectionModal from "@/components/modals/bookingmodals/NewServiceRejectionModal";
 import RateSevaServe from "@/components/modals/bookingmodals/RateSevaServe";
 import DeleteAccountModal from "@/components/modals/deleteAccountModal";
+import NetworkErrorModal from "@/components/modals/NetworkErrorModal";
 import ProtectedRoutes from "@/components/common/ProtectedRoutes";
 import { initializeFirebaseNotifications } from "@/utils/notification";
 
@@ -28,8 +29,7 @@ export default function ClientProviders({
 }) {
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
-
-
+  const [networkErrorMsg, setNetworkErrorMsg] = useState("");
 
   // Force component to wait until mounted on client to prevent structural hydration mismatches
   useEffect(() => {
@@ -39,6 +39,17 @@ export default function ClientProviders({
 
 useEffect(() => {
   initializeFirebaseNotifications();
+  
+  const handleNetworkError = (e: Event) => {
+    const customEvent = e as CustomEvent;
+    if (customEvent.detail) {
+      setNetworkErrorMsg(customEvent.detail);
+    } else {
+      setNetworkErrorMsg("Network connection failed.");
+    }
+  };
+  window.addEventListener("networkError", handleNetworkError);
+  return () => window.removeEventListener("networkError", handleNetworkError);
 }, []);
 
   useEffect(() => {
@@ -162,10 +173,22 @@ useEffect(() => {
         <> <ProtectedRoutes>{children}</ProtectedRoutes> </>
       ) : (
         <>
-          <Header />
-          
-          {children}
-          <Footer />
+          <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+            <Header />
+            
+            <main style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+            {networkErrorMsg ? (
+              <NetworkErrorModal 
+                message={networkErrorMsg} 
+                onRetry={() => setNetworkErrorMsg("")} 
+              />
+            ) : (
+              children
+            )}
+          </main>
+            
+            <Footer />
+          </div>
 
           {/* Global Modals */}
           <LoginModal />

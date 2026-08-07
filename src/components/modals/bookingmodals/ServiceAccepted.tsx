@@ -8,28 +8,49 @@ import toast from "react-hot-toast";
 
 interface ServiceAcceptedProps {
   serviceId: string;
+  isAddactional: boolean
+  additionalId: string
 }
 
-const ServiceAccepted = ({ serviceId }: ServiceAcceptedProps) => {
+const ServiceAccepted = ({ serviceId, isAddactional, additionalId }: ServiceAcceptedProps) => {
 
   const router = useRouter();
 
   const handleConfirm = async () => {
-    let response;
     try {
-      response = await globalServerRequest({
-        endpoint: `quotes/accept/${serviceId}`,
-        method: "PUT",
-        payload: { id: serviceId },
+      const updatedEndpoint = isAddactional ? `booking/approve-additional-servies-request` : `quotes/accept/${serviceId}`
+      const response = await globalServerRequest({
+        endpoint: updatedEndpoint,
+        method: isAddactional ? "POST" : "PUT",
+        payload: {
+          ...(isAddactional ? { booking_id: serviceId, status: 'approve', additional_work_id: additionalId } : { id: serviceId }),
+        }
       });
 
       if (response.success) {
-        router.push(`/payment?booking_id=${serviceId}`);
+        isAddactional ? router.push(`/view-booking-detail/?bookingId=${serviceId}`) : router.push(`/checkout/?booking_id=${serviceId}`);
       }
+      // if (isAddactional) {
+
+      //   if (response.success) {
+      //     router.push(`/view-booking-detail/?bookingId=${serviceId}`);
+      //   }
+      // } else {
+      //   response = await globalServerRequest({
+      //     endpoint: `quotes/accept/${serviceId}`,
+      //     method: "PUT",
+      //     payload: { id: serviceId },
+      //   });
+      //   if (response.success) {
+      //     ;
+      //   }
+      // }
+
+
     } catch (error) {
       console.error("Failed to accept booking:", error);
     }
-  };
+  }
 
   return (
     <div
@@ -59,16 +80,24 @@ const ServiceAccepted = ({ serviceId }: ServiceAcceptedProps) => {
                 alt=""
               />
               <h4>Services Accepted</h4>
-              <p>You’ve successfully accepted the additional services.</p>
-              {/* <p>  The job details have been updated and work will continue as scheduled.</p> */}
+              {isAddactional ? <>
+                <p>You’ve successfully accepted the additional services.</p>
+                <p>  The job details have been updated and work will continue as scheduled.</p>
+              </> : <>
+                <p>Now pay to start the work</p>
+              </>
+              }
+
               <Link
                 href=""
                 style={{ cursor: "pointer" }}
                 onClick={handleConfirm}
                 className="primary-cta requ-suc same"
               >
-                Confirm & Pay
+                {isAddactional ? "Back to booking" : "Confirm & Pay"}
               </Link>
+
+
             </div>
           </div>
         </div>

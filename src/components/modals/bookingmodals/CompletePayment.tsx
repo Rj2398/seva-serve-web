@@ -22,10 +22,10 @@ const CompletePayment = ({ bookingTrackingData, bookingId }: BookingUpdateProps)
               <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
               <h5 className="modal-title">Complete Your Payment</h5>
             </div>
-            <div className="modal-body">
+         <div className="modal-body">
               <div className="welcome-seva-ser">
                 <p>You’ve paid <span>${bookingTrackingData?.depositAmount}</span> The remaining balance is <span>${bookingTrackingData?.remainingCost}</span>, which you can pay now.</p>
-                <Link href={`/checkout?bookingId=${bookingId}&paymenttype=full`} className="primary-cta requ-suc same">Pay Now</Link>
+                <Link href={`/payment?bookingId=${bookingId}&paymenttype=full`} className="primary-cta requ-suc same">Pay Now</Link>
               </div>
             </div>
 

@@ -5,12 +5,14 @@ import { useRouter } from "next/navigation";
 import { globalServerRequest } from "@/actions/globalApi";
 import toast from "react-hot-toast";
 import AddCardModal from "@/components/modals/AddCardModal";
+import VerifyProfile from "@/components/modals/verifyProfile";
 
 const EditProfile = () => {
   const router = useRouter();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [showAddCardModal, setShowAddCardModal] = useState<boolean>(false);
+  const [verifyMode, setVerifyMode] = useState<"email" | "phone">("phone");
 
   const [profileData, setProfileData] = useState({
     name: "",
@@ -53,6 +55,19 @@ const EditProfile = () => {
         ...prev,
         profile_image: imageUrl,
       }));
+    }
+  };
+
+  const handleOpenVerifyModal = (mode: "email" | "phone") => {
+    setVerifyMode(mode);
+    if (typeof window !== "undefined" && (window as any).bootstrap) {
+      const modal = document.getElementById("verify-profile-screen-1");
+      if (modal) {
+        const bootstrapModal =
+          (window as any).bootstrap.Modal.getInstance(modal) ||
+          new (window as any).bootstrap.Modal(modal);
+        bootstrapModal.show();
+      }
     }
   };
 
@@ -206,6 +221,8 @@ const EditProfile = () => {
                                 value={profileData.phone}
                                 onChange={handleChange}
                                 disabled={loading}
+                                readOnly
+                                onClick={() => handleOpenVerifyModal("phone")}
                               />
                             </div>
 
@@ -221,6 +238,8 @@ const EditProfile = () => {
                                 value={profileData.email}
                                 onChange={handleChange}
                                 disabled={loading}
+                                readOnly
+                                onClick={() => handleOpenVerifyModal("email")}
                               />
                             </div>
                           </div>
@@ -243,6 +262,7 @@ const EditProfile = () => {
         </section>
       </div>
       <AddCardModal isOpen={showAddCardModal} setIsOpen={setShowAddCardModal} />
+      <VerifyProfile initialMode={verifyMode} />
     </main>
   );
 };

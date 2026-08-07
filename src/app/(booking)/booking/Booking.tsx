@@ -15,7 +15,7 @@ import ServiceAccepted from "@/components/modals/bookingmodals/ServiceAccepted";
 import ServiceRejected from "@/components/modals/bookingmodals/ServiceRejected";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import toast from "react-hot-toast";
 
 
@@ -57,6 +57,14 @@ export default function Booking({ initialBookingData }: BookingProps) {
   const [showCancle, setShowCancle] = useState<boolean>(false);
   const [selectedBookingData, setSelectedBookingData] = useState<any>(null)
 
+  const [expandedQuotes, setExpandedQuotes] = useState<Record<number, boolean>>(
+    {}
+  );
+
+  //   const [expandedAdditional, setExpandedAdditional] = useState<
+  //   Record<number, boolean>
+  // >({});
+
   const [quote_id, setQuoteId] = useState<any>();
   const [bookingPaymentInfo, setBookingPaymentInfo] = useState<any>(null);
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
@@ -64,7 +72,7 @@ export default function Booking({ initialBookingData }: BookingProps) {
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [showLoadMore, setShowLoadMore] = useState(false);
-  const [btnHover, setBtnHover] = useState(false);
+  const observerTarget = useRef<HTMLDivElement | null>(null);
 
   console.log("myBookingData", myBookingData);
 
@@ -81,20 +89,26 @@ export default function Booking({ initialBookingData }: BookingProps) {
 
       const [response] = await Promise.all([
         globalServerRequest({
-          endpoint: `booking/reschedule`,
+          // endpoint: `booking/reschedule`,
+          endpoint: ``,
           method: "POST",
           payload: {
             bookingId: bookingId,
             addressId: payload.address,
-
             availabilitySlots: payload.availabilitySlots,
           },
         }),
       ]);
 
       if (response?.success) {
+        await fetchBookingData(1);
         toast.success("Booking rescheduled successfully!");
         setShowDatePicker(false);
+      }
+      const modalElement = document.getElementById("select-date-time-popup") || document.getElementById("#select-date-time-popup");
+      if (modalElement) {
+        const modal = new (window as any).bootstrap.Modal(modalElement);
+        modal.hide();
       }
     } catch (error) {
       console.error("Error rescheduling booking:", error);
@@ -103,11 +117,33 @@ export default function Booking({ initialBookingData }: BookingProps) {
   };
 
 
-  const handleCancleBooking = async (data: any) => {
-    console.log("data on cnacle click in booking", data)
+
+  const handleContractorRequest = async () => {
+    await fetchBookingData(1);
   }
 
-  const fetchBookingData = async (page: number) => {
+  const handleCancel = async (reason: string) => {
+    try {
+      const response = await globalServerRequest({
+        endpoint: `booking/cancel-booking`,
+        method: "POST",
+        payload: {
+          booking_id: selectedBookingData?.bookingId,
+          reason: reason,
+        },
+      });
+      if (response?.success) {
+        toast.success("Booking cancelled successfully!");
+        setShowCancle(false);
+        setSelectedBookingData(null);
+      }
+    } catch (error) {
+      console.error("Error cancelling booking:", error);
+      toast.error("Failed to cancel booking. Please try again.");
+    }
+  }
+
+  const fetchBookingData = async (page: number, currentTab: string = activeTab) => {
     try {
       setLoading(true);
 
@@ -115,7 +151,7 @@ export default function Booking({ initialBookingData }: BookingProps) {
         endpoint: "booking",
         method: "POST",
         payload: {
-          type: activeTab,
+          type: currentTab,
           pageNo: page,
           limit: 2,
         },
@@ -128,11 +164,11 @@ export default function Booking({ initialBookingData }: BookingProps) {
 
         setMyBookingData((prev: any) => ({
           ...prev,
-          [activeTab]: {
+          [currentTab]: {
             bookings:
               page === 1
                 ? newBookings
-                : [...(prev[activeTab]?.bookings || []), ...newBookings],
+                : [...(prev[currentTab]?.bookings || []), ...newBookings],
             pagination,
           },
         }));
@@ -156,8 +192,56 @@ export default function Booking({ initialBookingData }: BookingProps) {
   };
 
   useEffect(() => {
-    fetchBookingData(1);
-  }, [activeTab]);
+    fetchBookingData(pageNo, activeTab);
+  }, [pageNo, activeTab]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading) {
+          setPageNo((prev) => prev + 1);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+
+    const currentTarget = observerTarget.current;
+    return () => {
+      if (currentTarget) {
+        observer.unobserve(currentTarget);
+      }
+    };
+  }, [hasMore, loading]);
+
+  const handleLoadRescheduleRequest = async (item: any) => {
+    try {
+      console.log("item", item)
+      setbookingId(item?.bookingId);
+      setQuoteId(item?.quoteId);
+      setShowDatePicker(true);
+
+      setTimeout(() => {
+        const modalElement = document.getElementById("select-date-time-popup");
+
+        if (modalElement) {
+          const bootstrap = (window as any).bootstrap;
+          if (bootstrap) {
+            const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+            modal.show();
+          }
+        } else {
+          console.warn("Modal element '#select-date-time-popup' is not avilible in the DOM.");
+        }
+      }, 0);
+
+    } catch (error) {
+      console.error("Error loading reschedule request:", error);
+    }
+  };
 
   return (
     <>
@@ -199,6 +283,7 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                   onClick={() => {
                                     setActiveTab(item.toLowerCase()); // ya previous/cancelled
                                     setPageNo(1);
+                                    setHasMore(false);
                                     setShowLoadMore(false);
                                     // fetchBookingData(1);
                                   }}
@@ -219,48 +304,82 @@ export default function Booking({ initialBookingData }: BookingProps) {
                           role="tabpanel"
                           aria-labelledby="customTabs-upcoming-tab"
                         >
-                          {booking?.length > 0 ? (
-                            booking?.map((item: any, index: number) => (
-                              <div
-                                className="my-inner-boking-top"
-                                key={item?.bookingId || index}
-                              >
-                                <div className="my-quotes-inner">
-                                  <div className="my-booking-wrpper">
-                                    <div className="booking-left-img">
-                                      <img
-                                        src={item?.categoryImageUrl || ""}
-                                        alt=""
+                          {booking && booking.length > 0 ? (
+                            booking.map((item: any, index: number) => {
+                              const isServicesOpen = !!expandedQuotes[index];
+                              // const isAdditionalOpen = !!expandedAdditional[index];
+                              const isCompleted = item?.status === "completed";
+                              const isCancelled = item?.status === "contractor_cancel" || item?.status === "customer_cancel";
+                              const isUpcoming = item?.status === "upcoming";
+                              const isOngoing = item?.status === "ongoing";
+                              const isContractorReschedule =
+                                item?.reschedule_request !== null &&
+                                item?.reschedule_request?.requested_by === "contractor" &&
+                                item?.reschedule_request?.is_requested === true
+                              const isAccpectedDate = item?.reschedule_request !== null &&
+                                item?.reschedule_request?.is_accepted_customer === true
 
-                                      />
-                                    </div>
-                                    <div className="plumbing">
-                                      <div className="plumbing-top">
-                                        {item?.status == "completed" && (
-                                          <p className="plm cmp">
-                                            {item?.categoryName}
-                                            <img
-                                              src="images/home/up-right-arrow.svg"
-                                              alt=""
-                                            />{" "}
-                                            <span>
-                                              Completed{" "}
-                                              <img
-                                                src="images/inner-page/complete-check-icon.svg"
-                                                alt=""
-                                              />
-                                            </span>
-                                          </p>
-                                        )}
+                              const isGivenRating = Number(item?.rating) > 0;
+                              const canRescheduleBooking = !item?.is_previous_rescheduled;
 
-                                        {item?.status ==
-                                          "contractor_cancel" && (
+                              console.log("isContractorReschedule", isContractorReschedule)
+                              console.log("isGivenRating", isGivenRating)
+                              return (
+                                <div
+                                  className="my-inner-boking-top"
+                                  key={item?.bookingId || index}
+                                >
+                                  <div className="my-quotes-inner">
+                                    <div className="my-booking-wrpper">
+                                      {/* Category Image */}
+                                      <div className="booking-left-img">
+                                        <img
+                                          src={item?.categoryImageUrl || ""}
+                                          alt={item?.categoryName || "Category"}
+                                        />
+                                      </div>
+                                      <div className="plumbing">
+                                        {/* Header / Status Banner */}
+                                        <div className="plumbing-top">
+                                          {isCompleted && (
+                                            <>
+                                              <p className="plm cmp">
+                                                {item?.categoryName}
+                                                <img src="images/home/up-right-arrow.svg" alt="" />{" "}
+                                                <span>
+                                                  Completed{" "}
+                                                  <img
+                                                    src="images/inner-page/complete-check-icon.svg"
+                                                    alt=""
+                                                  />
+                                                </span>
+                                              </p>
+                                              {
+                                                item?.rating > 0 && (
+                                                  <p className="right">
+                                                    You rated
+                                                    <img
+                                                      src="images/inner-page/review_star.png"
+                                                      // className="img-left"
+                                                      alt=""
+                                                      style={{
+                                                        height: '14px',
+                                                        width: "14px",
+                                                        marginRight: '2px',
+                                                        marginLeft: '8px',
+                                                        marginBottom: '5px'
+                                                      }}
+                                                    />
+                                                    {item?.rating}
+                                                  </p>
+                                                )
+                                              }
+                                            </>
+                                          )}
+                                          {isCancelled && (
                                             <p className="plm cmp">
                                               {item?.categoryName}
-                                              <img
-                                                src="images/home/up-right-arrow.svg"
-                                                alt=""
-                                              />{" "}
+                                              <img src="images/home/up-right-arrow.svg" alt="" />{" "}
                                               <span>
                                                 Cancelled{" "}
                                                 <img
@@ -270,176 +389,221 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                               </span>
                                             </p>
                                           )}
-                                      </div>
-
-                                      {item?.status == "upcoming" ||
-                                        item?.status == "ongoing" ? (
-                                        <div className="plumbing-top">
-                                          <p className="plm">
-                                            {item?.categoryName}
-                                            <img
-                                              src="images/home/up-right-arrow.svg"
-                                              alt=""
-                                            />
-                                          </p>
-
-                                          <div className="add-progress">
-                                            <p className="right">
-                                              <img
-                                                src="images/inner-page/in-progress.svg"
-                                                alt=""
-                                              />
-                                              {item?.status}
-                                            </p>
-                                          </div>
                                         </div>
-                                      ) : (
-                                        ""
-                                      )}
-
-                                      <p className="sub-cate">
-                                        {
-                                          item?.bookingDateTime ? (
-                                            <>
-                                              {`${new Date(item.bookingDateTime).toLocaleDateString("en-US", {
-                                                month: "short",
-                                                day: "numeric",
-                                                year: "numeric",
-                                              })} • ${new Date(item.bookingDateTime).toLocaleTimeString("en-US", {
-                                                hour: "2-digit",
-                                                minute: "2-digit",
-                                                hour12: true,
-                                              })}`}
-                                            </>
+                                        {(isUpcoming || isOngoing) && (
+                                          <div className="plumbing-top">
+                                            <p className="plm">
+                                              {item?.categoryName}
+                                              <img src="images/home/up-right-arrow.svg" alt="" />
+                                            </p>
+                                            <div className="add-progress">
+                                              <p className="right">
+                                                <img
+                                                  src="images/inner-page/in-progress.svg"
+                                                  alt=""
+                                                />
+                                                {item?.status}
+                                              </p>
+                                            </div>
+                                          </div>
+                                        )}
+                                        {/* Booking Date & Time */}
+                                        <p className="sub-cate">
+                                          {item?.bookingDateTime ? (
+                                            `${new Date(item.bookingDateTime).toLocaleDateString("en-US", {
+                                              month: "short",
+                                              day: "numeric",
+                                              year: "numeric",
+                                            })} • ${new Date(item.bookingDateTime).toLocaleTimeString("en-US", {
+                                              hour: "2-digit",
+                                              minute: "2-digit",
+                                              hour12: true,
+                                            })}`
                                           ) : (
                                             "-"
-                                          )
-                                        }
-                                        {/* {item.booking_time} */}
-                                      </p>
-                                      {(item?.status === "contractor_cancel" ||
-                                        item?.status == "completed") && (
+                                          )}
+                                        </p>
+                                        {/* Amount display for finished/canceled jobs */}
+                                        {(isCancelled || isCompleted) && (
                                           <p className="service-cost">
                                             Amount :
-                                            <span>
-                                              {`$ ${item?.payment.totalAmount}` ||
-                                                "$0"}
-                                            </span>
+                                            <span>{`$ ${item?.payment?.totalAmount ?? 0}`}</span>
                                           </p>
                                         )}
-                                      <p className="sub-cate">
-                                        Services Selected
-                                      </p>
+                                        {/* Selected Services List */}
+                                        <p className="sub-cate">Selected Services</p>
+                                        <div className="service-list-type">
 
-                                      <div className="service-list-type">
-                                        {/* <ol className="main-category">
-                                          {item?.services?.map(
-                                            (
-                                              service: string,
-                                              index: number
-                                            ) => (
-                                              <li key={index}>{service}</li>
-                                            )
-                                          )}
-                                        </ol> */}
-
-                                        <ol className="main-category">
-                                          {item?.services?.map(
-                                            (service: any, index: number) => (
-                                              <li key={index}>
-                                                {service?.name ||
-                                                  service?.serviceName ||
-                                                  "Service"}
+                                          <ol className="main-category">
+                                            {/* 1. First Service (Always Visible) */}
+                                            {item?.services?.slice(0, 1).map((service: any, idx: number) => (
+                                              <li key={`first-${idx}`}>
+                                                {service?.name || service?.serviceName || "Service"}
                                               </li>
-                                            )
-                                          )}
-                                        </ol>
+                                            ))}
 
-                                        {/* {item?.status === "upcoming" ||
-                                          (item?.status === "completed" && (
-                                            <ol className="main-category booking">
-                                              <li className="more-service">
-                                                + 1 more service
-                                              </li>
-                                              <div className="service-data">
-                                                <ol className="main-category">
-                                                  <li>Sink Installation</li>
-                                                  <li>Toilet Blockage</li>
-                                                </ol>
-                                              </div>
-                                              <li className="less-service">
-                                                Less service
-                                              </li>
-                                            </ol>
-                                          ))} */}
-
-                                        <div className="service-quotes">
-                                          {(item?.status === "upcoming" ||
-                                            item?.status == "ongoing") && (
-                                              <p className="service-cost">
-                                                Amount :
-                                                <span>
-                                                  {`$ ${item?.payment?.totalAmount}` ||
-                                                    "$0"}
-                                                </span>
-                                              </p>
-                                            )}
-                                          {item?.reschedule_request !== null
-                                            ? (
-                                              item?.status === "ongoing" && (
-                                                <div className="home-quotes-cta">
-                                                  <Link
-                                                    href={`/view-booking-detail?bookingId=${item?.bookingId}`}
-                                                    className="reject-btn"
-                                                  >
-                                                    View Details
-                                                  </Link>
-                                                  <button
-                                                    className="primary-cta rgt"
-                                                    data-bs-target="#contractorTime"
-                                                    data-bs-toggle="modal"
+                                            {/* MORE / LESS SERVICES LOGIC INSIDE THE SAME OL */}
+                                            {item?.services?.length > 1 && (
+                                              <>
+                                                {/* 2. "+ X more services" Button */}
+                                                {!isServicesOpen && (
+                                                  <li
+                                                    className="more-service"
+                                                    style={{
+                                                      cursor: "pointer",
+                                                      listStyleType: "none",
+                                                      marginLeft: "-20px",
+                                                    }}
                                                     onClick={() =>
-                                                      setSelectedBooking(item)
+                                                      setExpandedQuotes((prev) => ({
+                                                        ...prev,
+                                                        [index]: true,
+                                                      }))
                                                     }
                                                   >
-                                                    View Contractor Request
-                                                  </button>
-                                                </div>
+                                                    + {item.services.length - 1} more services
+                                                  </li>
+                                                )}
+
+                                                {/* 3. Expanded Services List */}
+                                                {isServicesOpen && (
+                                                  <>
+                                                    {item?.services?.slice(1).map((service: any, idx: number) => (
+                                                      <li key={`more-${idx}`}>
+                                                        {service?.name || service?.serviceName || "Service"}
+                                                      </li>
+                                                    ))}
+
+                                                    {/* 4. "Less services" Button */}
+                                                    <li
+                                                      style={{
+                                                        cursor: "pointer",
+                                                        fontWeight: "bold",
+                                                        listStyleType: "none",
+                                                        marginLeft: "-20px",
+                                                        marginTop: "10px",
+                                                      }}
+                                                      onClick={() =>
+                                                        setExpandedQuotes((prev) => ({
+                                                          ...prev,
+                                                          [index]: false,
+                                                        }))
+                                                      }
+                                                    >
+                                                      Less services
+                                                    </li>
+                                                  </>
+                                                )}
+                                              </>
+                                            )}
+                                          </ol>
+
+                                          <div className="service-quotes">
+                                            {/* Amount display for active jobs */}
+                                            {(isUpcoming || isOngoing) && (
+                                              <p className="service-cost">
+                                                Amount :
+                                                <span>{`$ ${item?.payment?.totalAmount ?? 0}`}</span>
+                                              </p>
+                                            )}
+
+                                            {/* Actions & Dynamic CTA buttons */}
+                                            {isContractorReschedule ? (
+                                              isUpcoming ? (
+                                                isAccpectedDate ? (
+                                                  <div className="service-quotes my-booking">
+                                                    <div className="home-quotes-cta">
+                                                      <button
+                                                        className="reject-btn"
+                                                        onClick={() => {
+                                                          setSelectedBookingData(item);
+                                                          setShowCancle(true);
+                                                        }}
+                                                      >
+                                                        Cancel
+                                                      </button>
+                                                      <Link
+                                                        href={`/view-booking-detail?bookingId=${item?.bookingId}`}
+                                                        className="reject-btn"
+                                                      >
+                                                        View Details
+                                                      </Link>
+                                                    </div>
+                                                  </div>
+                                                ) : (
+                                                  <div className="home-quotes-cta">
+                                                    <Link
+                                                      href={`/view-booking-detail?bookingId=${item?.bookingId}`}
+                                                      className="reject-btn"
+                                                    >
+                                                      View Details
+                                                    </Link>
+                                                    <button
+                                                      className="primary-cta rgt"
+                                                      data-bs-target="#contractorTime"
+                                                      data-bs-toggle="modal"
+                                                      onClick={() => setSelectedBooking(item)}
+                                                    >
+                                                      View Contractor Request
+                                                    </button>
+                                                  </div>
+                                                )
+                                              ) : (
+                                                isOngoing && (
+                                                  <div className="service-quotes my-booking">
+                                                    <div className="home-quotes-cta">
+                                                      <button
+                                                        className="reject-btn"
+                                                        onClick={() => {
+                                                          setSelectedBookingData(item);
+                                                          setShowCancle(true);
+                                                        }}
+                                                      >
+                                                        Cancel
+                                                      </button>
+                                                      <Link
+                                                        href={`/view-booking-detail?bookingId=${item?.bookingId}`}
+                                                        className="reject-btn"
+                                                      >
+                                                        View Details
+                                                      </Link>
+                                                    </div>
+                                                  </div>
+                                                )
                                               )
-                                            ) : item?.status === "upcoming" ? (
+                                            ) : isUpcoming ? (
                                               <div className="service-quotes my-booking">
                                                 <div className="home-quotes-cta">
                                                   <button
                                                     className="reject-btn"
-                                                    // data-bs-target="#cancelBookingPopup"
-                                                    // data-bs-toggle="modal"
                                                     onClick={() => {
-                                                      setSelectedBookingData(item)
-                                                      setShowCancle(true)
+                                                      setSelectedBookingData(item);
+                                                      setShowCancle(true);
                                                     }}
                                                   >
                                                     Cancel
                                                   </button>
-                                                  {canReschedule(
-                                                    item?.bookingDateTime
-                                                  ) ? (
+                                                  {canReschedule(item?.bookingDateTime) ? (
                                                     <button
                                                       className="primary-cta rgt"
-                                                      onClick={() => {
-                                                        setShowDatePicker(true),
-                                                          setbookingId(
-                                                            item?.bookingId
-                                                          );
-                                                        setQuoteId(item?.quoteId);
-                                                      }}
-                                                      data-bs-target="#select-date-time-popup"
-                                                      data-bs-toggle="modal"
+                                                      onClick={() =>
+                                                        canRescheduleBooking ? handleLoadRescheduleRequest(item) : toast.error("You have already rescheduled this booking once. Further rescheduling is not allowed.")
+                                                      }
+                                                      disabled={!canRescheduleBooking}
+                                                    // onClick={() => {
+                                                    //   setShowDatePicker(true);
+                                                    //   setbookingId(item?.bookingId);
+                                                    //   setQuoteId(item?.quoteId);
+                                                    // }}
+                                                    // data-bs-target="#select-date-time-popup"
+                                                    // data-bs-toggle="modal"
+
                                                     >
                                                       <img
                                                         src="images/inner-page/clock-booking.svg"
                                                         className="img-left"
                                                         alt=""
-                                                      />{" "}
+                                                      />
                                                       Reschedule
                                                     </button>
                                                   ) : (
@@ -453,15 +617,13 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                                 </div>
                                               </div>
                                             ) : (
-                                              item?.status === "ongoing" && (
+                                              isOngoing && (
                                                 <div className="home-quotes-cta">
                                                   <button
                                                     className="reject-btn"
-                                                    // data-bs-target="#cancelBookingPopup"
-                                                    // data-bs-toggle="modal"
                                                     onClick={() => {
-                                                      setSelectedBookingData(item)
-                                                      setShowCancle(true)
+                                                      setSelectedBookingData(item);
+                                                      setShowCancle(true);
                                                     }}
                                                   >
                                                     Cancel
@@ -472,136 +634,101 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                                   >
                                                     View Details
                                                   </Link>
-
                                                 </div>
                                               )
                                             )}
+                                          </div>
+
+                                          {/* Payment & Feedback status triggers */}
+                                          {item?.payment?.isPaid === false ? (
+                                            isCompleted && (
+                                              <div className="service-quotes my-booking">
+                                                <div className="home-quotes-cta">
+                                                  {
+                                                    !isGivenRating && (
+                                                      <button
+                                                        className="reject-btn"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#rate-contractor-popup"
+                                                        disabled={!isGivenRating}
+                                                        onClick={() => {
+                                                          setbookingId(item?.bookingId);
+                                                          setQuoteId(item?.quoteId);
+                                                        }}
+                                                      >
+                                                        Add Feedback
+                                                      </button>
+                                                    )
+                                                  }
+                                                  <a
+                                                    href="#pay-remaining-popup"
+                                                    data-bs-toggle="modal"
+                                                    className="primary-cta rgt"
+                                                    onClick={() => {
+                                                      setbookingId(item?.bookingId);
+                                                      setBookingPaymentInfo(item?.payment);
+                                                      setQuoteId(item?.quoteId);
+                                                    }}
+                                                  >
+                                                    Confirm & Pay
+                                                    <img
+                                                      src="images/modal/right-arrow-icon.svg"
+                                                      className="img-right"
+                                                      alt=""
+                                                    />
+                                                  </a>
+                                                </div>
+                                              </div>
+                                            )
+                                          ) : (
+                                            isCompleted && (
+                                              <div className="service-quotes my-booking">
+                                                <div className="home-quotes-cta">
+                                                  {
+                                                    !isGivenRating && (
+                                                      <button
+                                                        className="reject-btn"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#rate-contractor-popup"
+                                                        disabled={!isGivenRating}
+                                                        onClick={() => {
+                                                          setbookingId(item?.bookingId);
+                                                          setQuoteId(item?.quoteId);
+                                                        }}
+                                                      >
+                                                        Add Feedback
+                                                      </button>
+                                                    )
+                                                  }
+                                                  <button className="primary-cta rgt">
+                                                    <img
+                                                      src="images/inner-page/download-icon.svg"
+                                                      className="img-left"
+                                                      alt=""
+                                                    />
+                                                    Download Invoice
+                                                  </button>
+                                                </div>
+                                              </div>
+                                            )
+
+                                          )}
                                         </div>
-                                        {item?.payment?.isPaid === false ? (
-                                          item?.status === "completed" && (
-                                            <div className="service-quotes my-booking">
-                                              {/* <!-- <p className="service-cost">Cost:<span>$149</span></p> --> */}
-                                              <div className="home-quotes-cta">
-                                                <button
-                                                  className="reject-btn"
-                                                  data-bs-toggle="modal"
-                                                  data-bs-target="#rate-contractor-popup"
-                                                  onClick={() => {
-                                                    setbookingId(
-                                                      item?.bookingId
-                                                    );
-                                                    setQuoteId(item?.quoteId);
-                                                  }}
-                                                >
-                                                  Add Feedback
-                                                </button>
-                                                <a
-                                                  href="#pay-remaining-popup"
-                                                  data-bs-toggle="modal"
-                                                  className="primary-cta rgt"
-                                                  onClick={() => {
-                                                    setbookingId(
-                                                      item?.bookingId
-                                                    ),
-                                                      setBookingPaymentInfo(
-                                                        item?.payment
-                                                      );
-                                                    setQuoteId(item?.quoteId);
-                                                  }}
-                                                >
-                                                  Confirm & Pay
-                                                  <img
-                                                    src="images/modal/right-arrow-icon.svg"
-                                                    className="img-right"
-                                                    alt=""
-                                                  />
-                                                </a>
-                                              </div>
-                                            </div>
-                                          )
-                                        ) : (
-                                          item?.status == "completed" && (
-                                            <div className="service-quotes my-booking">
-                                              <div className="home-quotes-cta">
-                                                <button
-                                                  className="primary-cta rgt"
-                                                // data-bs-target="#rescheduleRequest" data-bs-toggle="modal"
-                                                >
-                                                  <img
-                                                    src="images/inner-page/download-icon.svg"
-                                                    className="img-left"
-                                                    alt=""
-                                                  />{" "}
-                                                  Download Invoice
-                                                </button>
-                                              </div>
-                                            </div>
-                                          )
-                                        )}
                                       </div>
+
                                     </div>
                                   </div>
                                 </div>
-                              </div>
-                            ))
+                              );
+                            })
                           ) : (
-                            <p
-                              className="no-data"
-                              style={{ textAlign: "center" }}
-                            >
+                            <p className="no-data" style={{ textAlign: "center" }}>
                               No Booking Data Available
                             </p>
                           )}
-                          {showLoadMore && hasMore && (
-                            <div className="text-center mt-4 mb-2">
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  // setShowLoadMore(false);
-                                  const nextPage = pageNo + 1;
-                                  setPageNo(nextPage);
-                                  fetchBookingData(nextPage);
-                                }}
-                                disabled={loading}
-                                style={{
-                                  borderRadius: "20px",
-                                  fontSize: "13px",
-                                  fontWeight: "500",
-                                  padding: "8px 24px",
-                                  border: "1px solid var(--primary-color)",
-                                  background: "transparent",
-                                  // color: "var(--primary-color)",
-                                  transition: "all 0.2s ease-in-out",
-                                  cursor: "pointer",
-                                  display: "inline-flex",
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                  outline: "none",
-                                  backgroundColor: btnHover ? "var(--primary-color)" : "transparent",
-                                  color: btnHover ? "var(--white)" : "var(--primary-color)"
-                                }}
-                                onMouseEnter={(e) => {
-                                  setBtnHover(true);
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.currentTarget.style.background = "transparent";
-                                  e.currentTarget.style.color = "var(--primary-color)";
-                                }}
-                              >
-                                {loading ? (
-                                  <>
-                                    <span
-                                      className="spinner-border spinner-border-sm me-2"
-                                      role="status"
-                                      aria-hidden="true"
-                                      style={{ width: "12px", height: "12px" }}
-                                    ></span>
-                                    Loading...
-                                  </>
-                                ) : (
-                                  "Load More"
-                                )}
-                              </button>
+                          {hasMore && (
+                            <div ref={observerTarget} style={{ height: '40px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                              {loading && <div className="spinner-border text-danger spinner-border-sm" role="status"><span className="visually-hidden">Loading...</span></div>}
                             </div>
                           )}
                         </div>
@@ -746,8 +873,8 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                         {/* <!-- <button className="reject-btn">Cancel</button> --> */}
                                         <button
                                           className="primary-cta rgt"
-                                          data-bs-target="#rescheduleRequest"
-                                          data-bs-toggle="modal"
+                                        // data-bs-target="#rescheduleRequest"
+                                        // data-bs-toggle="modal"
                                         >
                                           <img
                                             src="images/inner-page/download-icon.svg"
@@ -824,9 +951,9 @@ export default function Booking({ initialBookingData }: BookingProps) {
                 </div>
               </div>
             </div>
-          </section>
-        </div>
-      </main>
+          </section >
+        </div >
+      </main >
       <DatePopup
         isOpen={showDatePicker}
         setIsOpen={setShowDatePicker}
@@ -835,7 +962,7 @@ export default function Booking({ initialBookingData }: BookingProps) {
 
       {/* <ServiceAccepted  />
       <ServiceRejected /> */}
-      <ContractorRequest booking={selectedBooking} />
+      <ContractorRequest booking={selectedBooking} onConfirm={handleContractorRequest} />
       <RescheduleRequestSubmit />
       <PaymentRemainingPopup
         bookingPaymentInfo={bookingPaymentInfo}
@@ -852,14 +979,11 @@ export default function Booking({ initialBookingData }: BookingProps) {
       <CancelBooking
         isOpen={showCancle}
         setIsOpen={setShowCancle}
-        onReschedule={() => {
-          setShowCancle(false);
-          setShowDatePicker(true);
-        }}
+        onCancel={handleCancel}
       />
 
       <ConfirmCancelBooking />
-      <RateContractorPopup bookingId={bookingId} />
+      <RateContractorPopup bookingId={bookingId} callBooking={() => fetchBookingData(1)} />
       {/* <NewServiceRejectionModal /> */}
     </>
   );

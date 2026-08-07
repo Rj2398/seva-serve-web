@@ -16,6 +16,11 @@ const VerifyProfile = ({ initialMode = "phone" }: VerifyProfileProps) => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const phoneRegex = /^(?:\+1\s?)?(?:\([2-9]\d{2}\)|[2-9]\d{2})[-.\s]?[2-9]\d{2}[-.\s]?\d{4}$/;
+
+  const isvalidInput = isEmailLogin ? emailRegex.test(inputValue) : phoneRegex.test(inputValue);
+
   useEffect(() => {
     setIsEmailLogin(initialMode === "email");
     setInputValue("");
@@ -24,29 +29,27 @@ const VerifyProfile = ({ initialMode = "phone" }: VerifyProfileProps) => {
 
   const handleContinue = async () => {
     // 1. FRONTEND VALIDATION
-    if (isEmailLogin) {
-      // EMAIL VALIDATION
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const rawValue = isEmailLogin ? inputValue : inputValue.replace(/\D/g, "");
 
-      if (!inputValue) {
+    if (isEmailLogin) {
+      if (!rawValue) {
         setError("Email is required");
         return;
       }
 
-      if (!emailRegex.test(inputValue)) {
+      if (!emailRegex.test(rawValue)) {
         setError("Please enter valid email");
         return;
       }
     } else {
-      // PHONE VALIDATION
-      const phoneRegex = /^[0-9]{10}$/;
+      const basicPhoneRegex = /^[0-9]{10}$/;
 
-      if (!inputValue) {
+      if (!rawValue) {
         setError("Phone number is required");
         return;
       }
 
-      if (!phoneRegex.test(inputValue)) {
+      if (!basicPhoneRegex.test(rawValue)) {
         setError("Please enter valid 10 digit phone number");
         return;
       }
@@ -58,17 +61,17 @@ const VerifyProfile = ({ initialMode = "phone" }: VerifyProfileProps) => {
 
     try {
       const type = isEmailLogin ? "email" : "phone";
-      const endpoint = `profile/profile-update?type=${type}&value=${inputValue}`;
+      const endpoint = `profile/profile-update?type=${type}&value=${rawValue}`;
 
       const response = await globalServerRequest({
         endpoint: endpoint,
-        method: "POST", 
+        method: "POST",
       });
-      
+
       setLoading(false);
 
       if (response.success) {
-        toast.success(response.data?.message || response.data?.messages || "OTP sent successfully!"); 
+        toast.success(response.data?.message || response.data?.messages || "OTP sent successfully!");
 
         // Hide Screen 1
         const currentModal = document.getElementById("verify-profile-screen-1");
@@ -83,6 +86,10 @@ const VerifyProfile = ({ initialMode = "phone" }: VerifyProfileProps) => {
         if (nextModal) {
           const nextInstance = new window.bootstrap.Modal(nextModal);
           nextInstance.show();
+        }
+
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new Event("start-verify-profile-timer"));
         }
       } else {
         toast.error(response.error || "Failed to send OTP. Please try again.");
@@ -255,14 +262,20 @@ const VerifyProfile = ({ initialMode = "phone" }: VerifyProfileProps) => {
                           if (isEmailLogin) {
                             // EMAIL INPUT
                             setInputValue(e.target.value);
+                            setError("");
                           } else {
-                            // PHONE INPUT
-                            const onlyNumbers = e.target.value.replace(
-                              /\D/g,
-                              ""
-                            );
-
-                            setInputValue(onlyNumbers);
+                            // PHONE INPUT (US FORMAT)
+                            const onlyNumbers = e.target.value.replace(/\D/g, "").substring(0, 10);
+                            let formatted = onlyNumbers;
+                            // if (onlyNumbers.length > 6) {
+                            //   formatted = `(${onlyNumbers.slice(0, 3)}) ${onlyNumbers.slice(3, 6)}-${onlyNumbers.slice(6)}`;
+                            // } else if (onlyNumbers.length > 3) {
+                            //   formatted = `(${onlyNumbers.slice(0, 3)}) ${onlyNumbers.slice(3)}`;
+                            // } else if (onlyNumbers.length > 0) {
+                            //   formatted = `(${onlyNumbers}`;
+                            // }
+                            setError("");
+                            setInputValue(formatted);
                           }
                         }}
                       />
@@ -289,7 +302,7 @@ const VerifyProfile = ({ initialMode = "phone" }: VerifyProfileProps) => {
                     )}
                     <button
                       type="button"
-                      disabled={loading}
+                      disabled={!isvalidInput || loading}
                       onClick={handleContinue}
                       className="continue-btn"
                     >
@@ -331,7 +344,7 @@ const VerifyProfile = ({ initialMode = "phone" }: VerifyProfileProps) => {
                       href="/termcondition"
                       onClick={() =>
                         closeModalBeforeNavigation("verify-profile-screen-1")
-                      } 
+                      }
                     >
                       Terms &
                     </Link>
@@ -339,7 +352,7 @@ const VerifyProfile = ({ initialMode = "phone" }: VerifyProfileProps) => {
                       href="/privacypolicy"
                       onClick={() =>
                         closeModalBeforeNavigation("verify-profile-screen-1")
-                      } 
+                      }
                     >
                       Privacy Policy
                     </Link>

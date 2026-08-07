@@ -20,16 +20,27 @@ export default function ChoosePlan({ initialPlanData }: PlanProps) {
 
   const couponCode = myPlans.plans.coupon;
 
-  const [selectedPlan, setSelectedPlan] = useState<number | null>(2);
+  const [selectedPlan, setSelectedPlan] = useState<number | string | null>(() => {
+    const subscription = myPlans?.plans?.subscription;
+    return (subscription?.status === "active") ? subscription.plan_id : null;
+  });
 
   const [copied, setCopied] = useState(false);
 
   const handleSubscribe = (plan: any) => {
     // URL parameters build karein (Safe navigation ?. ke saath)
+
+    console.log("plan", plan)
     const planId = plan?.id || "";
     const planType = plan?.type || "";
     const planAmount = plan?.price?.amount || "";
     const hasCard = plan?.hasCard;
+    const subscription = myPlans?.plans?.subscription;
+    const isActivePlan = subscription?.status === "active" && subscription?.plan_id === planId;
+
+    if (isActivePlan) {
+      return;
+    }
 
     router.push(
       hasCard
@@ -37,6 +48,9 @@ export default function ChoosePlan({ initialPlanData }: PlanProps) {
         : `/add-new-card?subscription_plan_id=${planId}&type=${planType}&amount=${planAmount}`
     );
   };
+
+  const isExpired =
+    new Date(myPlans?.plans?.subscription?.end_date) < new Date();
 
   // COPY COUPON
   const handleCopy = async () => {
@@ -73,9 +87,8 @@ export default function ChoosePlan({ initialPlanData }: PlanProps) {
                     {plansData?.map((plan: any) => (
                       <div
                         key={plan.id}
-                        className={`yearly-cards ${
-                          selectedPlan === plan.id ? "active" : ""
-                        }`}
+                        className={`yearly-cards ${selectedPlan === plan.id ? "active" : ""
+                          }`}
                         onClick={() => setSelectedPlan(plan.id)}
                         style={{ cursor: "pointer" }}
                       >
@@ -110,8 +123,16 @@ export default function ChoosePlan({ initialPlanData }: PlanProps) {
 
                             handleSubscribe(plan);
                           }}
+                          disabled={myPlans?.plans?.subscription?.status === "active" && myPlans?.plans?.subscription?.plan_id === plan.id}
+                          style={(myPlans?.plans?.subscription?.status === "active" && myPlans?.plans?.subscription?.plan_id === plan.id) ? { opacity: 0.6, cursor: "not-allowed" } : {}}
                         >
-                          Subscribe Now
+                          {
+                            myPlans?.plans?.subscription?.plan_id === plan.id
+                              ? isExpired
+                                ? "Renew Subscription"
+                                : "Current Plan"
+                              : "Subscribe Now"
+                          }
                           <img
                             src="images/inner-page/right-subcription.svg"
                             alt=""

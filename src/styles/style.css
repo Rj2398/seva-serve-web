@@ -3918,6 +3918,22 @@ a.hel-cta {
   color: #000;
 }
 
+#confirm-add-to-cart-popup .welcome-seva-ser p {
+  font-size: 16px;
+  color: #991318;
+}
+
+#confirm-add-to-cart-popup .welcome-seva-ser button {
+  width: fit-content;
+  background: none;
+  outline: none;
+  border: none;
+  margin: auto;
+  font-weight: 500;
+  font-size: 14px;
+  color: #000;
+}
+
 /* EDIT-ADDRESS-POPUP */
 
 /* SERVICES-PAGE */

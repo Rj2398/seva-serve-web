@@ -53,7 +53,7 @@ function PaymentMethodContent({ initialCardsData }: CardProps) {
   const planId: any = searchParams.get("subscription_plan_id");
   const planType: any = searchParams.get("type");
   const planAmount: any = searchParams.get("amount");
-  const quoteId: any = searchParams.get("quoteId");
+  const quoteId: any = searchParams.get("quoteId") || searchParams.get("quote_id");
 
   console.log("quoteId", quoteId)
 
@@ -244,12 +244,12 @@ function PaymentMethodContent({ initialCardsData }: CardProps) {
                     Payment Method
                   </h2>
                   <div className="add-card">
-                    <Link
-                      href={
-                        !bookingId
-                          ? `/add-new-card?subscription_plan_id=${planId}&type=${planType}&amount=${planAmount}`
-                          : `/add-new-card?booking_id=${bookingId}&initialpayment=${initialpayment}&remaingPayment=${remainingPayment}&paymenttype=${paymenttype}`
-                      }
+                      <Link
+                        href={
+                          !(bookingId || quoteId)
+                            ? `/add-new-card?subscription_plan_id=${planId}&type=${planType}&amount=${planAmount}`
+                            : `/add-new-card?booking_id=${bookingId || ""}&quote_id=${quoteId || ""}&initialpayment=${initialpayment}&remaingPayment=${remainingPayment}&paymenttype=${paymenttype}`
+                        }
                       className="primary-cta"
                     >
                       <img src="images/inner-page/add-rounded.svg" alt="" />
@@ -366,7 +366,7 @@ function PaymentMethodContent({ initialCardsData }: CardProps) {
                       className="primary-cta"
                       disabled={cards.length === 0 || isPaying}
                       onClick={() =>
-                        bookingId ? handlePayment() : handleSubscription()
+                        (bookingId || quoteId) ? handlePayment() : handleSubscription()
                       }
                     >
                       {isPaying ? (

@@ -7,10 +7,13 @@ import { globalServerRequest } from '@/actions/globalApi';
 
 interface ServiceAcceptedProps {
   serviceId?: string;
+  // onConfirm?: () => void;
+  onConfirm?: (reason: string, isAddactional: boolean) => void;
+  isAddactional?: boolean
 }
 
 
-export default function NewServiceRejectionModal({ serviceId = "" }: ServiceAcceptedProps) {
+export default function NewServiceRejectionModal({ serviceId = "", onConfirm, isAddactional }: ServiceAcceptedProps) {
 
   const [reason, setReason] = React.useState<string>("");
 
@@ -31,51 +34,48 @@ export default function NewServiceRejectionModal({ serviceId = "" }: ServiceAcce
       toast.error("Please provide a reason for rejection.");
       return;
     }
+    if (onConfirm) onConfirm(reason, isAddactional ?? false);
+    // try {
+    //   const response = await globalServerRequest({
+    //     endpoint: `quotes/reject/${serviceId}`,
+    //     method: "PUT",
+    //     payload: { rejection_reason: reason }
+    //   });
 
-    try {
-      const response = await globalServerRequest({
-        endpoint: `quotes/reject/${serviceId}`,
-        method: "PUT",
-        payload: { rejection_reason: reason }
-      });
+    //   console.log(" rejected services response  ", response)
+    //   if (response.success) {
 
-      console.log(" rejected services response  ", response)
-      if (response.success) {
+    //     window.dispatchEvent(new Event("quoteUpdated"));
 
-        window.dispatchEvent(new Event("quoteUpdated"));
+    //     const bootstrap = (window as any).bootstrap;
 
-        const bootstrap = (window as any).bootstrap;
+    //     const currentModalEl = document.getElementById("servicesRejection");
+    //     const confirmModalEl = document.getElementById("#servicesRejected");
 
-        const currentModalEl = document.getElementById("servicesRejection");
-        const confirmModalEl = document.getElementById("#servicesRejected");
+    //     if (!currentModalEl) return;
 
-        if (!currentModalEl) return;
-
-        const currentModal =
-          bootstrap?.Modal?.getInstance(currentModalEl) ||
-          bootstrap?.Modal?.getOrCreateInstance(currentModalEl);
-
-        currentModal.hide();
-
-        if (confirmModalEl) {
-          currentModalEl.addEventListener(
-            "hidden.bs.modal",
-            () => {
-              const confirmModal =
-                bootstrap?.Modal?.getOrCreateInstance(confirmModalEl);
-
-              confirmModal?.show();
-            },
-            { once: true }
-          );
-        }
-      } else {
-        toast.error("Failed to reject service. Please try again.");
-      }
-    } catch (error) {
-      console.error("Rejection Error:", error);
-      toast.error("An error occurred while rejecting the service.");
-    }
+    //     const currentModal =
+    //       bootstrap?.Modal?.getInstance(currentModalEl) ||
+    //       bootstrap?.Modal?.getOrCreateInstance(currentModalEl);
+    //     currentModal.hide();
+    //     if (confirmModalEl) {
+    //       currentModalEl.addEventListener(
+    //         "hidden.bs.modal",
+    //         () => {
+    //           const confirmModal =
+    //             bootstrap?.Modal?.getOrCreateInstance(confirmModalEl);
+    //           confirmModal?.show();
+    //         },
+    //         { once: true }
+    //       );
+    //     }
+    //   } else {
+    //     toast.error("Failed to reject service. Please try again.");
+    //   }
+    // } catch (error) {
+    //   console.error("Rejection Error:", error);
+    //   toast.error("An error occurred while rejecting the service.");
+    // }
   };
 
   return (

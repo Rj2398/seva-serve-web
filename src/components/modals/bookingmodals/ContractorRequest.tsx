@@ -37,6 +37,7 @@ interface BookingData {
 
 interface ContractorRequestProps {
   booking: BookingData | null | undefined; // Safe for null/uninitialized states
+  onConfirm: () => void
 }
 
 const formatSlot = (slot: any): string => {
@@ -82,7 +83,7 @@ const formatSlot = (slot: any): string => {
   }
 };
 
-const ContractorRequest = ({ booking }: ContractorRequestProps) => {
+const ContractorRequest = ({ booking, onConfirm }: ContractorRequestProps) => {
   console.log(booking, "jdsfdksfjkfj");
   const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
 
@@ -104,10 +105,10 @@ const ContractorRequest = ({ booking }: ContractorRequestProps) => {
         booking_id: booking?.bookingId,
       },
     });
-
     console.log(res?.data, "resresresres");
     if (res.success) {
       toast.success(res?.data?.message || "Booking rejected successfully");
+      onConfirm()
     } else {
       toast.error(res.error);
     }
@@ -131,6 +132,7 @@ const ContractorRequest = ({ booking }: ContractorRequestProps) => {
     console.log(res?.data, "resresresres");
     if (res.success) {
       toast.success(res?.data?.message || "Booking accepted successfully");
+      onConfirm()
     } else {
       toast.error(res.error);
     }

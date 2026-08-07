@@ -283,7 +283,7 @@ const NewAddressModal: React.FC<NewAddressModalProps> = ({ selectedAddress, onSa
 
   const handleSuggestionClick = (suggestion: any) => {
     const { place_id, description, structured_formatting } = suggestion;
-    
+
     let currentGeocoder = geocoder.current;
     // @ts-ignore
     if (!currentGeocoder && window.google && window.google.maps) {
@@ -291,7 +291,7 @@ const NewAddressModal: React.FC<NewAddressModalProps> = ({ selectedAddress, onSa
       currentGeocoder = new window.google.maps.Geocoder();
       geocoder.current = currentGeocoder;
     }
-    
+
     if (!currentGeocoder) {
       toast.error("Google Maps API is not loaded yet");
       return;

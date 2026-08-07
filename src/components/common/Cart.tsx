@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import SidebarMenu from "../sidebar/SidebarMenu";
 import { globalServerRequest } from "@/actions/globalApi";
 import toast from "react-hot-toast";
 
 function Cart() {
   const router = useRouter();
+  const pathname = usePathname();
   const [cartData, setCartData] = useState<any[]>([]);
   const [loginStatus, setLoginStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -13,6 +14,7 @@ function Cart() {
   const [hasMore, setHasMore] = useState<boolean>(false);
   const [totalCount, setTotalCount] = useState<number>(0);
   const [btnHover, setBtnHover] = useState<boolean>(false);
+  const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
 
   console.log(cartData, "add to cart ***********");
 
@@ -92,7 +94,7 @@ function Cart() {
       setHasMore(false);
       setTotalCount(0);
     }
-  }, [loginStatus]);
+  }, [loginStatus, pathname]);
 
   useEffect(() => {
     const handleCartUpdate = () => {
@@ -143,6 +145,18 @@ function Cart() {
   }
 
 
+const toggleServices = (itemId: string | number) => {
+  setExpandedItems((prev) => ({
+    ...prev,
+    [itemId]: !prev[itemId],
+  }));
+};
+
+
+// const isExpanded = expandedItems[itemId];
+// const visibleSubCategories = isExpanded
+//   ? subCategories
+//   : subCategories.slice(0, 2);
 
   return (
     <>
@@ -212,6 +226,11 @@ function Cart() {
             data-bs-target="#offcanvasRightCartFill"
             aria-controls="offcanvasRight"
             style={{ cursor: "pointer" }}
+            onClick={() => {
+              if (loginStatus === "true") {
+                fetchCartData(1);
+              }
+            }}
           >
             <img
               src="/images/header/vector-img.svg"
@@ -280,6 +299,11 @@ function Cart() {
                     const subCategories = item.sub_categories || [];
                     const hasSubCategories = subCategories.length > 0;
 
+                    const isExpanded = expandedItems[itemId];
+                    const visibleSubCategories = isExpanded
+                      ? subCategories
+                      : subCategories.slice(0, 2);
+
                     return (
                       <div className="plumbing-wrp-cart" key={itemId}>
                         <div className="plumbing">
@@ -298,69 +322,138 @@ function Cart() {
 
                           <div className="service-list-type">
                             {hasSubCategories ? (
-                              <ol className="main-category">
-                                {subCategories.map(
-                                  (sub: any, subIdx: number) => (
-                                    <li
-                                      key={sub.id || subIdx}
-                                      className="bdr"
-                                    >
-                                      <div className="d-flex align-items-center justify-content-between w-100">
-                                        <span>{sub.name}</span>
+                              // <ol className="main-category">
+                              //   {visibleSubCategories.map(
+                              //     (sub: any, subIdx: number) => (
+                              //       <li
+                              //         key={sub.id || subIdx}
+                              //         className="bdr"
+                              //       >
+                              //         <div className="d-flex align-items-center justify-content-between w-100">
+                              //           <span>{sub.name}</span>
 
-                                        <button
-                                          type="button"
-                                          className="btn-close my-cross m-0 p-0"
-                                          style={{ border: 'none', background: 'none' }}
-                                          onClick={() => handleSubCategoryRemoveCart(sub.id, itemId)}
-                                        >
-                                          <img
-                                            src="/images/off-canvas/cross-icon-off-canvas.svg"
-                                            alt="Close"
-                                          />
-                                        </button>
-                                      </div>
-                                      {sub.issues &&
-                                        Array.isArray(sub.issues) &&
-                                        sub.issues.map(
-                                          (
-                                            issueItem: any,
-                                            issueIdx: number
-                                          ) => (
-                                            <ul key={issueItem.id || issueIdx}>
-                                              <li>
-                                                {issueItem.name}
-                                                {issueItem.specificIssues &&
-                                                  Array.isArray(
-                                                    issueItem.specificIssues
-                                                  ) &&
-                                                  issueItem.specificIssues
-                                                    .length > 0 && (
-                                                    <ul>
-                                                      {issueItem.specificIssues.map(
-                                                        (
-                                                          spec: any,
-                                                          specIdx: number
-                                                        ) => (
-                                                          <li
-                                                            key={
-                                                              spec.id || specIdx
-                                                            }
-                                                          >
-                                                            {spec.name}
-                                                          </li>
-                                                        )
-                                                      )}
-                                                    </ul>
-                                                  )}
-                                              </li>
-                                            </ul>
-                                          )
-                                        )}
-                                    </li>
-                                  )
-                                )}
-                              </ol>
+                              //           <button
+                              //             type="button"
+                              //             className="btn-close my-cross m-0 p-0"
+                              //             style={{ border: 'none', background: 'none' }}
+                              //             onClick={() => handleSubCategoryRemoveCart(sub.id, itemId)}
+                              //           >
+                              //             <img
+                              //               src="/images/off-canvas/cross-icon-off-canvas.svg"
+                              //               alt="Close"
+                              //             />
+                              //           </button>
+                              //         </div>
+                              //         {sub.issues &&
+                              //           Array.isArray(sub.issues) &&
+                              //           sub.issues.map(
+                              //             (
+                              //               issueItem: any,
+                              //               issueIdx: number
+                              //             ) => (
+                              //               <ul key={issueItem.id || issueIdx}>
+                              //                 <li>
+                              //                   {issueItem.name}
+                              //                   {issueItem.specificIssues &&
+                              //                     Array.isArray(
+                              //                       issueItem.specificIssues
+                              //                     ) &&
+                              //                     issueItem.specificIssues
+                              //                       .length > 0 && (
+                              //                       <ul>
+                              //                         {issueItem.specificIssues.map(
+                              //                           (
+                              //                             spec: any,
+                              //                             specIdx: number
+                              //                           ) => (
+                              //                             <li
+                              //                               key={
+                              //                                 spec.id || specIdx
+                              //                               }
+                              //                             >
+                              //                               {spec.name}
+                              //                             </li>
+                              //                           )
+                              //                         )}
+                              //                       </ul>
+                              //                     )}
+                              //                 </li>
+                              //               </ul>
+                              //             )
+                              //           )}
+                              //       </li>
+                              //     )
+                              //   )}
+                              // </ol>
+
+                              <ol className="main-category">
+  {visibleSubCategories.map((sub: any, subIdx: number) => (
+    <li key={sub.id || subIdx} className="bdr">
+      <div className="d-flex align-items-center justify-content-between w-100">
+        <span>{sub.name}</span>
+
+        <button
+          type="button"
+          className="btn-close my-cross m-0 p-0"
+          style={{ border: "none", background: "none" }}
+          onClick={() => handleSubCategoryRemoveCart(sub.id, itemId)}
+        >
+          <img
+            src="/images/off-canvas/cross-icon-off-canvas.svg"
+            alt="Close"
+          />
+        </button>
+      </div>
+
+      {sub.issues &&
+        Array.isArray(sub.issues) &&
+        sub.issues.map((issueItem: any, issueIdx: number) => (
+          <ul key={issueItem.id || issueIdx}>
+            <li>
+              {issueItem.name}
+
+              {issueItem.specificIssues?.length > 0 && (
+                <ul>
+                  {issueItem.specificIssues.map(
+                    (spec: any, specIdx: number) => (
+                      <li key={spec.id || specIdx}>{spec.name}</li>
+                    )
+                  )}
+                </ul>
+              )}
+            </li>
+          </ul>
+        ))}
+    </li>
+  ))}
+
+  {/* Expand / Collapse Button */}
+      {subCategories.length > 2 && (
+        // <li className="more-service border-0">
+          <button  
+          // className="more-service"
+        type="button"
+        onClick={() => toggleServices(itemId)}
+        // className=" btn btn-link p-0"
+        style={{
+    background: "none",
+    border: "none",
+    padding: 0,
+    margin: 0,
+    color: "var(--primary-color)",
+    font: "inherit",
+    cursor: "pointer",
+    outline: "none",
+    boxShadow: "none",
+  }}
+      >
+        {isExpanded
+          ? "Less services"
+          : `+${subCategories.length - 2} more services`}
+      </button>
+        // </li>
+      )}
+    </ol>
                             ) : (
                               <ol className="main-category">
                                 {item.visibleServices?.map(

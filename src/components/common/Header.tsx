@@ -11,6 +11,8 @@ import { globalServerRequest } from "@/actions/globalApi";
 const Header = () => {
   const [loginStatus, setLoginStatus] = useState<string | null>(null);
   const [userData, setUserData] = useState<any>(null);
+  const [address, setAddress] = useState<string | null>(null);
+  console.log("Address state:", address);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const endpoint = loginStatus === "true" ? "home" : "home-without-login";
 
@@ -60,6 +62,59 @@ const Header = () => {
     };
   }, [endpoint]);
 
+  const getCurrentLocation = () => {
+    return new Promise<{
+      latitude: number;
+      longitude: number;
+    }>((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject("Geolocation is not supported");
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          resolve({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          });
+        },
+        (error) => reject(error),
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+        }
+      );
+    });
+  };
+
+  const handleCurrentLocation = async () => {
+    const location = await getCurrentLocation();
+
+    // const geocoder = new window.google.maps.Geocoder();
+    const geocoder = new (window as any).google.maps.Geocoder();
+
+    geocoder.geocode(
+      {
+        location: {
+          lat: location.latitude,
+          lng: location.longitude,
+        },
+      },
+      (results: any, status: any) => {
+        if (status === "OK" && results?.[0]) {
+          setAddress(results[0].formatted_address);
+        }
+      }
+    );
+  };
+
+
+  useEffect(() => {
+    if (loginStatus === "true") {
+      handleCurrentLocation();
+    }
+  }, [loginStatus]);
   // Closes the profile dropdown overlay when navigating
   const handleDropdownLinkClick = () => {
     const dropdownToggleBtn = document.querySelector(
@@ -73,8 +128,8 @@ const Header = () => {
   };
 
   // Safe variables based on common API setups (fallback if nested inside .user or flat)
-  const profileImage = userData?.user?.profileImage || userData?.profileImage;
-  const userName = userData?.user?.name || userData?.name || "User Account";
+  const profileImage = userData?.profileImage || "/images/header/user-icon.svg";
+  const userName = userData?.user?.name || userData?.name || "Hello Username";
   const userPhone = userData?.user?.phone || userData?.phone || "";
   let Address = null;
   if (typeof window !== "undefined") {
@@ -110,7 +165,7 @@ const Header = () => {
                   className="loca"
                 />
                 <span>
-                  {Address ? Address : "Current location not available"}
+                  {Address ? Address : address}
                 </span>
                 <img
                   src="/images/header/down-icon.svg"
@@ -393,9 +448,8 @@ const Header = () => {
         >
           <i
             id="bar-cross"
-            className={`fa-solid ${
-              isMobileMenuOpen ? "fa-circle-xmark" : "fa-bars"
-            }`}
+            className={`fa-solid ${isMobileMenuOpen ? "fa-circle-xmark" : "fa-bars"
+              }`}
           ></i>
         </div>
       </header>

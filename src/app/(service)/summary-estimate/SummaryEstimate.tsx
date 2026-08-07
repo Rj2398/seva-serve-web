@@ -105,6 +105,7 @@ const SummaryEstimate = () => {
       if (response?.success) {
         toast.success("Quote requested successfully!");
         window.dispatchEvent(new Event("cartUpdated"));
+        window.dispatchEvent(new Event("newNotification"));
         setShowReschedule(false);
         setIsOpenModal(true);
       } else {
@@ -138,7 +139,7 @@ const SummaryEstimate = () => {
                         >
                           <img src="images/home/left-arrow.svg" alt="Back" />
                         </a>
-                        Summary & Estimate
+                        {summary_estimate?.subCategories && summary_estimate.subCategories.length > 1 ? "View Details" : "Summary & Estimate"}
                       </h2>
                     </div>
 
@@ -294,15 +295,6 @@ const SummaryEstimate = () => {
                     <div className="selected-category">
                       <div className="category">
                         <p>Selected Category</p>
-                        {/* <Link
-                          href={`/serviceDetails?categoryId=${summary_estimate?.category?.id || ""
-                            }&requestedId=${activeRequestId || ""}`}
-                        >
-                          <img
-                            src="images/inner-page/edit-icon-c.svg"
-                            alt="Edit"
-                          />
-                        </Link> */}
                       </div>
                       <h4 style={{ fontSize: '20px', color: '#000' }}>{summary_estimate?.category?.name || "N/A"}</h4>
                     </div>
@@ -434,24 +426,22 @@ const SummaryEstimate = () => {
 
                         return (
                           <div key={subCat?.id || subCatIndex} className="d-flex flex-column gap-3">
-                            {/* 1. Dynamic Subcategory Header (Accordion Style Row) */}
                             <div
                               className="category-accordion-header d-flex justify-content-between align-items-center p-3 bg-white"
                               style={{ borderRadius: '30px', border: '1px solid #99131833', cursor: 'pointer' }}
                               onClick={() => toggleAccordion(subCatIndex)}
                             >
                               <div className="d-flex flex-column align-items-start w-100">
-                                {/* Label */}
+
                                 <p className="text-muted small mb-1 fw-semibold" style={{ fontSize: '13px' }}>
                                   Selected Sub category
                                 </p>
-                                {/* Dynamic Sub Category Name */}
+
                                 <h4 className="m-0 fw-bold text-black" style={{ fontSize: '15px', color: '#000' }}>
                                   {subCatIndex + 1}. {subCat?.name || "N/A"}
                                 </h4>
                               </div>
                               <div className="d-flex align-items-center gap-2">
-                                {/* Collapse/Expand Arrow Icon */}
                                 <span style={{
                                   fontSize: '12px',
                                   transition: 'transform 0.2s',
@@ -460,9 +450,8 @@ const SummaryEstimate = () => {
                                 }}>
                                   ▼
                                 </span>
-                                {/* Edit Link */}
                                 <Link
-                                  href={`/serviceDetails?categoryId=${summary_estimate?.category?.id || ""}&requestedId=${activeRequestId || ""}&subCategoryId=${subCat?.id || ""}${is_quote === "1" ? "&is_quote_edit=1" : ""}`}
+                                  href={`/serviceDetails?categoryId=${summary_estimate?.category?.id || ""}&requestedId=${activeRequestId || ""}&subCategoryId=${subCat?.id || ""}${is_quote === "1" ? "&is_quote_edit=1" : ""}&is_quote_update=1`}
                                   className="ml-2"
                                   onClick={(e) => e.stopPropagation()} // Header toggle event ko rokne ke liye
                                 >
@@ -499,7 +488,7 @@ const SummaryEstimate = () => {
                                         ))}
                                       </ul>
                                     </div>
-                                    <Link href={`/serviceDetails?categoryId=${summary_estimate?.category?.id || ""}&requestedId=${activeRequestId || ""}&subCategoryId=${subCat?.id || ""}${is_quote === "1" ? "&is_quote_edit=1" : ""}`}>
+                                    <Link href={`/serviceDetails?categoryId=${summary_estimate?.category?.id || ""}&requestedId=${activeRequestId || ""}&subCategoryId=${subCat?.id || ""}${is_quote === "1" ? "&is_quote_edit=1" : ""}&is_quote_update=1`}>
                                       <img src="images/inner-page/edit-icon-c.svg" alt="Edit" style={{ width: '14px' }} />
                                     </Link>
                                   </div>
@@ -513,7 +502,7 @@ const SummaryEstimate = () => {
                                         {subCat?.problemDescription || "No description provided"}
                                       </p>
                                     </div>
-                                    <Link href={`/serviceDetails?categoryId=${summary_estimate?.category?.id || ""}&requestedId=${activeRequestId || ""}&subCategoryId=${subCat?.id || ""}${is_quote === "1" ? "&is_quote_edit=1" : ""}`}>
+                                    <Link href={`/serviceDetails?categoryId=${summary_estimate?.category?.id || ""}&requestedId=${activeRequestId || ""}&subCategoryId=${subCat?.id || ""}${is_quote === "1" ? "&is_quote_edit=1" : ""}&is_quote_update=1`}>
                                       <img src="images/inner-page/edit-icon-c.svg" alt="Edit" style={{ width: '14px' }} />
                                     </Link>
                                   </div>

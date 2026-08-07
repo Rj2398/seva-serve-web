@@ -12,7 +12,7 @@ const ServiceDetails = () => {
                 <div className="browse-wrp">
                   <div className="browse-ctg-head my-con-head">
                     <h2 className="sub-cate-page">
-                      <a href="#"><img src="images/home/left-arrow.svg" alt=""/></a>
+                      <a href="#"><img src="images/home/left-arrow.svg" alt=""/></a> 
                       View Details
                     </h2>
                   </div>

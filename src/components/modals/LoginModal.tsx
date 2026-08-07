@@ -16,6 +16,11 @@ const LoginModal = () => {
   const [loading, setLoading] = useState(false);
   const [referCode, setReferCode] = useState("");
 
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const phoneRegex = /^(?:\+1\s?)?(?:\([2-9]\d{2}\)|[2-9]\d{2})[-.\s]?[2-9]\d{2}[-.\s]?\d{4}$/;
+
+  const isvalidInput = isEmailLogin ? emailRegex.test(inputValue) : phoneRegex.test(inputValue);
+
 
   const handleContinue = async () => {
     // 1. FRONTEND VALIDATION
@@ -340,6 +345,7 @@ const LoginModal = () => {
 
                       onClick={handleContinue}
                       className="continue-btn"
+                      disabled={!isvalidInput || loading}
                     >
                       Continue
                     </button>

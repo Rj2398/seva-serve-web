@@ -1,5 +1,17 @@
 import Script from "next/script";
 import ClientProviders from "./providers";
+import { Metadata } from "next";
+
+
+
+export const metadata: Metadata = {
+  title: "Seva Serve",
+  description: "My application description",
+  icons : {
+     icon: "/images/header/logo.svg",
+  }
+};
+
 
 export default function RootLayout({
   children,

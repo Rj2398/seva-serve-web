@@ -3,39 +3,102 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { globalServerRequest } from "@/actions/globalApi";
+import { log } from "node:console";
+import toast from "react-hot-toast";
 
-const PaymentPage = () => {
+interface CheckOutProps {
+  bookingData?: any;
+}
+
+
+const PaymentPage = ({ bookingData }: CheckOutProps) => {
   const searchParams = useSearchParams();
-  const bookingId = searchParams.get("booking_id");
+  const urlBookingId = searchParams.get("booking_id") || searchParams.get("bookingId");
+
+  // console.log(urlBookingId, "usrl booking is");
+
+  const bDataStr = searchParams.get("bData");
+  console.log(bookingData, "booking data ********");
+
+  let currentBookingData = bookingData;
+  if (!currentBookingData && bDataStr) {
+    try {
+      currentBookingData = JSON.parse(bDataStr);
+    } catch (e) { }
+  }
+
+  console.log('bookingData', currentBookingData);
+  const bookingId = urlBookingId || currentBookingData?.bookingId || currentBookingData?.id;
+
+  const paymentType = searchParams.get("paymenttype") || "initial";
   const [checkoutData, setCheckoutData] = useState<any>();
 
-  useEffect(() => {
+  const fetchCheckoutDetails = async () => {
     if (!bookingId) return;
+    try {
+      // 1. Change 'body' to 'data' (the standard key for Axios/Fetch wrappers)
+      const response = await globalServerRequest({
+        endpoint: "quotes/final-checkout",
+        method: "POST",
+        payload: {
+          booking_id: bookingId || checkoutData?.bookingId,
+        },
+      } as any); // Keeping 'as any' temporarily until we match the correct key name
 
-    const fetchCheckoutDetails = async () => {
-      try {
-        // 1. Change 'body' to 'data' (the standard key for Axios/Fetch wrappers)
-        const response = await globalServerRequest({
-          endpoint: "quotes/checkout",
-          method: "POST",
-          payload: {
-            quote_id: Number(bookingId),
-          },
-        } as any); // Keeping 'as any' temporarily until we match the correct key name
-
-        if (response.success) {
-          console.log("Checkout details fetched successfully:", response.data);
-          setCheckoutData(response.data?.data || response.data);
-        } else {
-          console.error("Failed to fetch checkout details:", response.error);
-        }
-      } catch (error) {
-        console.error("Error fetching checkout details:", error);
+      if (response.success) {
+        console.log("Checkout details fetched successfully:", response.data);
+        setCheckoutData(response.data?.data || response.data);
+      } else {
+        console.error("Failed to fetch checkout details:", response.error);
       }
-    };
+    } catch (error) {
+      console.error("Error fetching checkout details:", error);
+    }
+  };
 
+  useEffect(() => {
     fetchCheckoutDetails();
   }, [bookingId]);
+
+  const [couponCode, setCouponCode] = useState<string>("");
+  const [couponDiscount, setCouponDiscount] = useState<number>(0);
+
+  // handle apply coupon
+  const handleApplyCoupon = async () => {
+    if (checkoutData?.job_summary?.coupon_offer?.coupon_code !== null && couponCode === checkoutData?.job_summary?.coupon_offer?.coupon_code) {
+      console.log("Coupon already applied");
+      toast.success("Coupon already applied")
+      return;
+    }
+
+
+
+    try {
+      const response = await globalServerRequest({
+        endpoint: "quotes/apply-coupon",
+        method: "POST",
+        payload: {
+          quote_id: checkoutData?.quote_id,
+          coupon_code: couponCode,
+        },
+      } as any); // Keeping 'as any' temporarily until we match the correct key name
+
+      if (response.success) {
+        console.log("Coupon applied successfully:", response.data);
+        toast.success("Coupon applied successfully")
+
+        setCheckoutData(response.data?.data || response.data);
+        await fetchCheckoutDetails();
+      } else {
+        console.error("Failed to apply coupon:", response.error);
+        toast.error(response.error)
+
+      }
+    } catch (error) {
+      console.error("Error applying coupon:", error);
+      // toast.error("Invalid coupon code")
+    }
+  };
   return (
     <main>
       <div
@@ -49,9 +112,9 @@ const PaymentPage = () => {
                 <div className="browse-wrp">
                   <div className="browse-ctg-head my-con-head">
                     <h2 className="sub-cate-page">
-                      <a href="#">
+                      <Link href="/booking" >
                         <img src="images/home/left-arrow.svg" alt="" />
-                      </a>
+                      </Link>
                       Payment
                     </h2>
                   </div>
@@ -68,8 +131,8 @@ const PaymentPage = () => {
                         <h6>
                           Initial Deposit Paid{" "}
                           <b>
-                            -$
-                            {checkoutData?.job_summary?.initial_deposit?.amount}
+                            $
+                            {checkoutData?.job_summary?.initial_deposit_paid?.amount}
                           </b>
                         </h6>
 
@@ -77,15 +140,15 @@ const PaymentPage = () => {
                           Subscription Offer
                           <span className="offer-tag">
                             {
-                              checkoutData?.job_summary?.subscription_discount
+                              checkoutData?.job_summary?.subscription_offer
                                 ?.discount_percentage
                             }
                             % OFF
                           </span>{" "}
                           <b>
-                            -$
+                            $
                             {
-                              checkoutData?.job_summary?.subscription_discount
+                              checkoutData?.job_summary?.subscription_offer
                                 ?.discount_amount
                             }
                           </b>
@@ -102,10 +165,10 @@ const PaymentPage = () => {
                         </h6>
 
                         <h6>
-                          Coupon Offer <span className={checkoutData?.job_summary?.coupon_discount?.coupon_code !== null ? "offer-tag" : ""}>
-                            {checkoutData?.job_summary?.coupon_discount?.coupon_code}
+                          Coupon Offer <span className={checkoutData?.job_summary?.coupon_offer?.coupon_code !== null ? "offer-tag" : ""}>
+                            {checkoutData?.job_summary?.coupon_offer?.coupon_code}
                           </span>
-                          <b>${checkoutData?.job_summary?.coupon_discount?.discount_amount}</b>
+                          <b>${checkoutData?.job_summary?.coupon_offer?.discount_amount}</b>
                         </h6>
 
                         <h6 className="mb-0" style={{ fontSize: "larger" }}>
@@ -116,7 +179,7 @@ const PaymentPage = () => {
                               color: "#991318",
                             }}
                           >
-                            ${checkoutData?.job_summary?.remaining_amount}
+                            ${checkoutData?.job_summary?.remaining_cost}
                           </b>
                         </h6>
                       </div>
@@ -153,8 +216,10 @@ const PaymentPage = () => {
                         <input
                           type="text"
                           placeholder="Enter code (e.g. SEVA10)"
+                          value={couponCode}
+                          onChange={(e) => setCouponCode(e.target.value)}
                         />
-                        <button type="submit">Apply</button>
+                        <button type="submit" onClick={handleApplyCoupon}>Apply</button>
                       </div>
                     </div>
                   </div>
@@ -209,17 +274,25 @@ const PaymentPage = () => {
                             ? {
                               pathname: "/payment-method",
                               query: {
-                                booking_id: bookingId || "",
+                                quote_id: checkoutData?.quote_id || "",
                                 initialpayment:
-                                  checkoutData?.job_summary?.initial_deposit
+                                  checkoutData?.job_summary?.initial_deposit_paid
                                     ?.amount,
-                                paymenttype: "initial",
+                                remaingPayment:
+                                  checkoutData?.job_summary?.remaining_cost,
+                                paymenttype: paymentType,
                               },
                             }
                             : {
                               pathname: "/add-new-card",
                               query: {
-                                booking_id: bookingId || "",
+                                quote_id: checkoutData?.quote_id || "",
+                                initialpayment:
+                                  checkoutData?.job_summary?.initial_deposit_paid
+                                    ?.amount,
+                                remaingPayment:
+                                  checkoutData?.job_summary?.remaining_cost,
+                                paymenttype: paymentType,
                               },
                             }
                         }

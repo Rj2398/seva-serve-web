@@ -1,115 +1,3 @@
-// import Link from 'next/link'
-// import React, { useEffect, useRef } from 'react'
-
-
-// interface BookingProps {
-//   bookingData?: any;
-//   isOpen: boolean;
-//   setIsOpen: (isOpen: boolean) => void;
-//   onConfirm?: (data: CanclePayload) => void;
-// }
-
-// const CancelBooking = ({ bookingData, isOpen, setIsOpen, onConfirm }: BookingProps) => {
-//   const modalRef = useRef<HTMLDivElement>(null);
-
-//   console.log("bookingData", bookingData?.bookingDateTime)
-
-//   useEffect(() => {
-//     const modalElement = modalRef.current;
-//     if (!modalElement) return;
-
-//     const bootstrap = (window as any).bootstrap;
-//     if (!bootstrap) return;
-
-//     const modalInstance =
-//       bootstrap.Modal.getInstance(modalElement) ||
-//       new bootstrap.Modal(modalElement, {
-//         backdrop: "static",
-//         keyboard: false,
-//       });
-
-//     if (isOpen) {
-//       // Set date to today on open
-//       modalInstance.show();
-//     } else {
-//       modalInstance.hide();
-//     }
-
-//     const handleModalHidden = () => {
-//       setIsOpen(false);
-//     };
-
-//     modalElement.addEventListener("hidden.bs.modal", handleModalHidden);
-//     return () => {
-//       modalElement.removeEventListener("hidden.bs.modal", handleModalHidden);
-//     };
-//   }, [isOpen, setIsOpen]);
-
-
-//   const canReschedule = (
-//     bookingDateTime: string | Date | null | undefined
-//   ): boolean => {
-//     if (!bookingDateTime) return false;
-
-//     const bookingDate = new Date(bookingDateTime);
-
-//     if (isNaN(bookingDate.getTime())) {
-//       return false;
-//     }
-
-//     const now = Date.now();
-
-//     // Time remaining until booking
-//     const remainingTime = bookingDate.getTime() - now;
-
-//     // Allow only if at least 24 hours remain
-//     return remainingTime >= 24 * 60 * 60 * 1000;
-//   };
-
-
-//   return (
-//     <>
-//       <div
-//         ref={modalRef}
-//         className="modal fade"
-//         id="cancelBookingPopup"
-//         data-bs-backdrop="static"
-//         tabIndex={-1}
-//         aria-labelledby="exampleModalLabel" aria-hidden="true">
-//         <div className="modal-dialog  modal-dialog-centered">
-//           <div className="modal-content">
-//             <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-//             <div className="modal-body">
-//               <div className="select-date-time-wrp cancel-nooking">
-//                 <h1>Cancel Booking</h1>
-//                 <div>
-//                   <h5>PLEASE NOTE:</h5>
-//                   <p className="body-text">If cancelled, you may lose your deposit. If possible, please try rescheduling or contact <a href="#">Help & Support</a> for assistance.</p>
-//                   <p className="notice">Notice:  <span> Bookings cannot be cancelled within 24 hours of the appointment.</span></p>
-//                   <div className="cnl-cta">
-//                     <button className="secondary-cta" data-bs-target="#select-date-time-popup" data-bs-toggle="modal" >Reschedule</button>
-//                     <button type="button" className={`secondary-cta ${canReschedule(bookingData?.bookingDateTime) ? "" : "cancel"}`}
-//                       onClick={() => {
-//                         canReschedule(bookingData?.bookingDateTime) ? onConfirm(bookingData) : null,
-//                         setIsOpen(false)
-//                       }}
-//                     >Cancel</button>
-//                   </div>
-//                   <p className="contact"><Link href="/help-support" >Contact Help & Support</Link></p>
-//                 </div>
-//               </div>
-//             </div>
-//           </div>
-//         </div>
-//       </div >
-//     </>
-//   )
-// }
-
-// export default CancelBooking
-
-
-
 
 "use client";
 
@@ -119,14 +7,18 @@ import React, { useEffect, useRef } from "react";
 interface CancelBookingProps {
   isOpen: boolean;
   setIsOpen: (value: boolean) => void;
-  onReschedule: () => void;
+  onCancel: (reason: string) => void;
+  isQuote?: boolean;
 }
 
 const CancelBooking = ({
   isOpen,
   setIsOpen,
-  onReschedule,
+  onCancel,
+  isQuote = false
 }: CancelBookingProps) => {
+
+  const [reason, setReason] = React.useState<string>("");
 
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -143,6 +35,7 @@ const CancelBooking = ({
     if (isOpen) {
       modal.show();
     } else {
+      setReason("");
       modal.hide();
     }
 
@@ -163,6 +56,17 @@ const CancelBooking = ({
     };
   }, [isOpen]);
 
+
+  const handleClose = () => {
+    if (onCancel) {
+      onCancel(reason);
+      setReason("");
+    }
+    setIsOpen(false);
+  };
+
+
+
   return (
     <div
       ref={modalRef}
@@ -182,41 +86,68 @@ const CancelBooking = ({
           <div className="modal-body">
 
             <div className="select-date-time-wrp cancel-nooking">
-
-              <h1>Cancel Booking</h1>
+              <h1>
+                {
+                  isQuote ? "Cancel Quote" : "Cancel Booking"
+                }</h1>
 
               <div>
+                {
+                  isQuote ? (
+                    <>
+                      <div className="welcome-seva-ser">
+                        <img src="images/modal/reject-cross-icon.svg" className="check" alt="" />
+                      </div>
+                      <p style={{ textAlign: "center", fontSize: "14px", marginTop: "10px", marginBottom: "25px" }}>
+                        Are you sure you want to cancel this quote?
+                      </p>
+                    </>
 
-                <h5>PLEASE NOTE:</h5>
-
-                <p className="body-text">
-                  If cancelled, you may lose your deposit.
-                </p>
-
-                <p className="notice">
-                  Notice:
-                  <span>
-                    Bookings cannot be cancelled within
-                    24 hours.
-                  </span>
-                </p>
-
+                  ) : (
+                    <>
+                      <h5>PLEASE NOTE:</h5>
+                      <p className="body-text">
+                        If cancelled, you may lose your deposit.
+                      </p>
+                      <p className="notice">
+                        Notice:
+                        <span>
+                          Bookings cannot be cancelled within
+                          24 hours.
+                        </span>
+                      </p>
+                    </>
+                  )
+                }
+                <div className="reject-text-area">
+                  {!isQuote && <>
+                    <label htmlFor="">Reason for Cancel</label>
+                    <textarea
+                      placeholder="Share your reason for rejection"
+                      value={reason}
+                      onChange={(e) => setReason(e.target.value)}
+                    ></textarea>
+                  </>
+                  }
+                </div>
                 <div className="cnl-cta">
 
+                  {
+                    isQuote &&
+                    <button
+                      className="secondary-cta cancel btn"
+                      onClick={handleClose}
+                      style={{ marginRight: "10px", backgroundColor: "#991318", color: "#fff" }}
+                    >
+                      Yes
+                    </button>
+                  }
                   <button
                     className="secondary-cta"
-                    onClick={onReschedule}
-                  >
-                    Reschedule
-                  </button>
-
-                  <button
-                    className="secondary-cta cancel"
-                    onClick={() => setIsOpen(false)}
+                    onClick={!isQuote ? handleClose : () => setIsOpen(false)}
                   >
                     Cancel
                   </button>
-
                 </div>
 
                 <p className="contact">

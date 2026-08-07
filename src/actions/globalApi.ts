@@ -191,7 +191,15 @@ export async function globalServerRequest({
       throw error;
     }
     console.error(`Global API Error on [${endpoint}]:`, error);
-    // forceLogoutClient();
+    
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("networkError", {
+          detail: "Unable to connect to the server. Please check your internet connection.",
+        })
+      );
+    }
+    
     return { success: false, error: "Network connection to backend failed." };
   }
 }

@@ -20,24 +20,6 @@ const NotificationDropdown = () => {
   };
 
 
-  // const fetchNotifications = async () => {
-  //   try {
-  //     const response = await globalServerRequest({
-  //       endpoint: "notification",
-  //       method: "POST",
-  //       payload: {
-  //         type: typeMap[activeTab as keyof typeof typeMap],
-  //       }
-  //     });
-
-  //     if (response?.success) {
-  //       setNotificationsData(response?.data?.data?.notifications || []);
-  //     }
-  //   } catch (error) {
-  //     console.error("Error fetching notifications:", error);
-  //   }
-  // };
-
   const fetchNotifications = async (page = 1) => {
     if (loading) return;
 
@@ -75,39 +57,57 @@ const NotificationDropdown = () => {
   };
 
 
-  const markNotificationAsRead = async (id: number) => {
-    try {
+const markNotificationAsRead = async () => {
+  try {
+    const unreadIds = notificationsData
+      .filter((notification: any) => !notification.isRead)
+      .map((notification: any) => notification.notificationId);
 
-      const unreadIds = notificationsData.filter((notification: any) => !notification.isRead).map((notification: any) => notification.notificationId);
+    if (unreadIds.length === 0) return;
 
-      if (unreadIds.length === 0) return;
+    await Promise.all(
+      unreadIds.map((id: number) =>
+        globalServerRequest({
+          endpoint: "notification/read",
+          method: "POST",
+          payload: {
+            id,
+          },
+        })
+      )
+    );
 
-      const response = await globalServerRequest({
-        endpoint: "notification/read",
-        method: "POST",
-        payload: {
-          // id,
-          id: unreadIds,
-        },
-      });
+    setNotificationsData((prev: any[]) =>
+      prev.map((item) => ({
+        ...item,
+        isRead: true,
+      }))
+    );
+  } catch (error) {
+    console.error("Error marking notification as read:", error);
+  }
+};
 
-      if (response?.success) {
-        fetchNotifications();
-      }
-    } catch (error) {
-      console.error("Error marking notification as read:", error);
-    }
-  };
-
-  // useEffect(() => {
-  //   fetchNotifications();
-  // }, [activeTab]);
 
   useEffect(() => {
     setPageNo(1);
     setHasNextPage(true);
     fetchNotifications(1);
   }, [activeTab]);
+
+  useEffect(() => {
+  const handleNewNotification = () => {
+    setPageNo(1);
+    setHasNextPage(true);
+    fetchNotifications(1);
+  };
+
+  window.addEventListener("newNotification", handleNewNotification);
+
+  return () => {
+    window.removeEventListener("newNotification", handleNewNotification);
+  };
+}, [activeTab]);
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
@@ -134,10 +134,10 @@ const NotificationDropdown = () => {
         src="images/header/bell-icon.svg"
         alt="Logo"
         className="logo dropdown-toggle"
-        // type="button"
         data-bs-toggle="dropdown"
         aria-expanded="false"
         data-bs-auto-close="outside"
+        onClick={markNotificationAsRead}
       />
 
       {unreadCount > 0 && (
@@ -197,7 +197,7 @@ const NotificationDropdown = () => {
                 <div
                   className="notification-item"
                   key={notif.notificationId}
-                  onClick={() => markNotificationAsRead(notif.notificationId)}
+                  // onClick={() => markNotificationAsRead(notif.notificationId)}
                 >
                   <div className="notification-data">
                     <h3>{notif.title}</h3>

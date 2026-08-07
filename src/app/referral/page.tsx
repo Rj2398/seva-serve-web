@@ -46,7 +46,7 @@ export default async function RefferalHistoryPage() {
                 method: "POST",
                 payload: {
                     status: "all", pageNo: 1,
-                    limit: 10,
+                    limit: 2,
                 }
             }),
 

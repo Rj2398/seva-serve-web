@@ -76,6 +76,16 @@ const DatePopup: React.FC<DatePopupProps> = ({
   // Holds all selected slots across different dates
   const [selectedSlots, setSelectedSlots] = useState<SelectedSlotPayload[]>([]);
 
+  const selectedSlotsRef = useRef(selectedSlots);
+  useEffect(() => {
+    selectedSlotsRef.current = selectedSlots;
+  }, [selectedSlots]);
+
+  const selectedDateRef = useRef(selectedDate);
+  useEffect(() => {
+    selectedDateRef.current = selectedDate;
+  }, [selectedDate]);
+
   const [timeSlots, setTimeSlots] = useState<ApiTimeSlot[]>([]);
   const [loadingSlots, setLoadingSlots] = useState<boolean>(false);
 
@@ -114,7 +124,7 @@ const DatePopup: React.FC<DatePopupProps> = ({
       setLoadingSlots(true);
       try {
         const response = await globalServerRequest({
-          endpoint: "quotes/time-slots",
+          endpoint: `quotes/time-slots?date=${selectedDate}`,
           method: "GET",
           isFormData: false,
         });
@@ -144,7 +154,7 @@ const DatePopup: React.FC<DatePopupProps> = ({
       fetchSlots();
       fetchAddresses();
     }
-  }, [isOpen]);
+  }, [isOpen, selectedDate]);
 
   // Bootstrap modal sync lifecycle
   useEffect(() => {
@@ -195,6 +205,22 @@ const DatePopup: React.FC<DatePopupProps> = ({
           minDate: 0,
           dateFormat: "yy-mm-dd", // Changed to match your JSON payload format (YYYY-MM-DD)
           onSelect: (dateText: string) => {
+            const currentSelectedSlots = selectedSlotsRef.current;
+            const uniqueDates = Array.from(new Set(currentSelectedSlots.map(item => item.date)));
+
+            // Check if clicking a NEW date and already have 3 dates selected
+            if (!uniqueDates.includes(dateText) && uniqueDates.length >= 3) {
+              toast.error("You can select a maximum of 3 dates");
+
+              // Revert the datepicker visually to the previously selected date
+              // Passed as string since dateFormat is 'yy-mm-dd'
+              setTimeout(() => {
+                const $ = (window as any).$;
+                $("#datepicker-2").datepicker("setDate", selectedDateRef.current);
+              }, 10);
+              return;
+            }
+
             setSelectedDate(dateText);
           },
         });
@@ -293,14 +319,25 @@ const DatePopup: React.FC<DatePopupProps> = ({
 
     setIsOpen(false);
 
-    const nextModal = document.getElementById("rescheduleRequest");
-    if (nextModal) {
+    // const nextModal = document.getElementById("rescheduleRequest");
+    // if (nextModal) {
+    //   const bootstrap = (window as any).bootstrap;
+    //   const nextInstance =
+    //     bootstrap.Modal.getInstance(nextModal) ||
+    //     new bootstrap.Modal(nextModal);
+    //   nextInstance.hide();
+    // }
+
+    const modalElement = document.getElementById("select-date-time-popup") || document.getElementById("#select-date-time-popup");
+    if (modalElement) {
       const bootstrap = (window as any).bootstrap;
       const nextInstance =
-        bootstrap.Modal.getInstance(nextModal) ||
-        new bootstrap.Modal(nextModal);
-      nextInstance.show();
+        bootstrap.Modal.getInstance(modalElement) ||
+        new bootstrap.Modal(modalElement);
+      nextInstance.hide();
     }
+
+
   };
 
   const formatDateLabel = (dateStr: string) => {
@@ -505,7 +542,7 @@ const DatePopup: React.FC<DatePopupProps> = ({
                     type="button"
                     className="filled"
                     onClick={
-                       handleConfirmBooking
+                      handleConfirmBooking
                     }
                   >
                     Confirm & Book

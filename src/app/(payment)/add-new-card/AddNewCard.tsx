@@ -35,6 +35,7 @@ function AddNewCardForm() {
   const planId = searchParams.get("subscription_plan_id");
   const planType = searchParams.get("type");
   const planAmount = searchParams.get("amount");
+  const quoteId = searchParams.get("quote_id");
 
   const [holderName, setHolderName] = useState("");
   const [errors, setErrors] = useState<FormErrors>({});
@@ -92,18 +93,31 @@ function AddNewCardForm() {
         console.log("Response from card add:", response);
         toast.success("Card added successfully!", { id: toastId });
 
+        if (quoteId) {
+
+          router.push(`/payment-method?quote_id=${bookingId}&initialpayment=${initialpayment}&remaingPayment=${remainingPayment}&paymenttype=${paymenttype}`)
+        }
+
+
         if (bookingId) {
           router.push(
-            `/payment-method?booking_id=${bookingId || ""}&initialpayment=${
-              initialpayment || ""
-            }&remaingPayment=${remainingPayment || ""}&paymenttype=${
-              paymenttype || ""
+            `/payment-method?booking_id=${bookingId || ""}&initialpayment=${initialpayment || ""
+            }&remaingPayment=${remainingPayment || ""}&paymenttype=${paymenttype || ""
             }`
           );
+
+
         } else {
-          router.push(
-            `/payment-method?subscription_plan_id=${planId}&type=${planType}&amount=${planAmount}`
-          );
+
+          if (!quoteId && !bookingId) {
+            router.push(
+              `/payment-method?subscription_plan_id=${planId}&type=${planType}&amount=${planAmount}`
+            );
+          } else {
+            router.push(
+              `/payment-method?quote_id=${quoteId}&initialpayment=${initialpayment}&remaingPayment=${remainingPayment}&paymenttype=${paymenttype}`
+            );
+          }
         }
       } else {
         toast.error(response.error || "Failed to add card.", { id: toastId });

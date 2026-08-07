@@ -4,16 +4,18 @@
 
 
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import RateSevaServe from "./RateSevaServe";
 import { globalServerRequest } from "@/actions/globalApi";
 
 interface BookingProps {
   bookingId: number | null;
+  // callBooking: () => void;
+  callBooking: (page?: number, currentTab?: string) => void | Promise<void>;
 }
 
-const RateContractorPopup = ({ bookingId }: BookingProps) => {
+const RateContractorPopup = ({ bookingId, callBooking }: BookingProps) => {
 
   const router = useRouter();
 
@@ -23,52 +25,80 @@ const RateContractorPopup = ({ bookingId }: BookingProps) => {
   console.log("Rating:", rating);
   console.log("Feedback:", feedback);
 
+
+
+  useEffect(() => {
+    const modal = document.getElementById("rate-contractor-popup");
+
+    const handleModalOpen = () => {
+      setRating(0);
+      setFeedback("");
+    };
+
+    modal?.addEventListener("shown.bs.modal", handleModalOpen);
+
+    return () => {
+      modal?.removeEventListener("shown.bs.modal", handleModalOpen);
+    };
+  }, []);
+
+
+  let res: any = null;
+
   const handleSubmit = async () => {
-    if (rating === 0 || feedback.trim() === "") {
-      toast.error("Please provide a rating and feedback before submitting.");
+    if (rating === 0) {
+      toast.error("Please provide a rating.");
       return;
     }
 
-    // Rating 1-3 => Submit directly
     if (rating <= 3) {
-      // Call your API here
-      // await submitRating({ rating, feedback });
-
       const res = await globalServerRequest({
-        endpoint: `review/contractor?rating=${rating}&bookingId=${bookingId}&feedback=${feedback}`,
+        endpoint: `review/contractor?rating=${rating}&bookingId=${bookingId}&feedback=${encodeURIComponent(feedback)}`,
         method: "POST",
-      })
+      });
 
-      if (res.success === true) {
-        toast.success(res?.data?.message);
-        // router.push('/booking');
-        return;
-      } else {
-        toast.error(res?.data?.message);
+      if (res.success) {
+        toast.success(res.data.message);
+        await callBooking(1); // Call the callback function if provided
+
+
+        const bootstrap = (window as any).bootstrap;
+        const modal = document.getElementById("rate-contractor-popup");
+
+        if (modal) {
+          const instance =
+            bootstrap.Modal.getInstance(modal) ||
+            new bootstrap.Modal(modal);
+
+          instance.hide();
+        }
+
         return;
       }
+
+      toast.error(res.data.message);
+
+      return;
     }
 
-    // Rating 4-5 => Open next popup
+    // 4-5 star flow
+    const bootstrap = (window as any).bootstrap;
+    const currentModal = document.getElementById("rate-contractor-popup");
     const nextModal = document.getElementById("rateSevaServe");
 
-    if (nextModal) {
-      const bootstrap = (window as any).bootstrap;
 
-      // Optional: close current modal
-      const currentModal = document.getElementById("rate-contractor-popup");
 
-      if (currentModal) {
-        const currentInstance =
-          bootstrap.Modal.getInstance(currentModal) ||
-          new bootstrap.Modal(currentModal);
+    if (currentModal && nextModal) {
+      const currentInstance =
+        bootstrap.Modal.getInstance(currentModal) ||
+        new bootstrap.Modal(currentModal);
 
-        currentInstance.hide();
-      }
+      currentInstance.hide();
 
       const nextInstance = new bootstrap.Modal(nextModal);
       nextInstance.show();
     }
+
   };
   return (
     <>
@@ -91,7 +121,7 @@ const RateContractorPopup = ({ bookingId }: BookingProps) => {
 
             <div className="modal-body p-0">
               <div className="rate-contractor-wrp">
-                <h1>Rate Your Experience</h1>
+                <h1>Rate Your Contractor</h1>
 
                 <form>
                   <h2>How was your experience?</h2>
@@ -160,7 +190,7 @@ const RateContractorPopup = ({ bookingId }: BookingProps) => {
                       type="button"
                       // data-bs-target="#rateSevaServe"
                       // data-bs-toggle="modal"
-                      data-bs-dismiss="modal"
+                      // data-bs-dismiss="modal"
                       className="primary-cta rgt"
                       onClick={handleSubmit}
                     >

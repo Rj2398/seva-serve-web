@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import MyProfile from "./MyProfile";
 import { globalServerRequest } from "@/actions/globalApi";
+import LogoLoader from "@/components/common/LogoLoader";
 
 export default function ProfilePage() {
   const [initialProfile, setInitialProfile] = useState<any>(null);
@@ -39,17 +40,18 @@ export default function ProfilePage() {
   // Prevent flash of mock hardcoded fallback data while API finishes fetching
   if (loading) {
     return (
-      <div
-        className="profile-loading-container"
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          minHeight: "50vh",
-        }}
-      >
-        <p>Loading Profile Data...</p>
-      </div>
+      // <div
+      //   className="profile-loading-container"
+      //   style={{
+      //     display: "flex",
+      //     justifyContent: "center",
+      //     alignItems: "center",
+      //     minHeight: "50vh",
+      //   }}
+      // >
+      //   <p>Loading Profile Data...</p>
+      // </div>
+      <LogoLoader />
     );
   }
 

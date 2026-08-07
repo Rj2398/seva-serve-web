@@ -14,20 +14,28 @@ const VerifyProfileOtpModal = ({ emailLogin = false, loginValue = "" }: VerifyPr
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
     const [timer, setTimer] = useState(30);
+    const intervalRef = React.useRef<NodeJS.Timeout | null>(null);
 
-    // Timer starts immediately on mount
-    useEffect(() => {
-        const intervalId = setInterval(() => {
+    const startOtpTimer = () => {
+        if (intervalRef.current) clearInterval(intervalRef.current);
+        setTimer(30);
+        intervalRef.current = setInterval(() => {
             setTimer((prev) => {
                 if (prev <= 1) {
-                    clearInterval(intervalId);
+                    clearInterval(intervalRef.current!);
                     return 0;
                 }
                 return prev - 1;
             });
         }, 1000);
+    };
 
-        return () => clearInterval(intervalId);
+    useEffect(() => {
+        const handleStartTimer = () => {
+            startOtpTimer();
+        };
+        window.addEventListener("start-verify-profile-timer", handleStartTimer);
+        return () => window.removeEventListener("start-verify-profile-timer", handleStartTimer);
     }, []);
 
     const handleChange = (value: string, index: number) => {
@@ -36,6 +44,40 @@ const VerifyProfileOtpModal = ({ emailLogin = false, loginValue = "" }: VerifyPr
         updatedOtp[index] = numericValue;
         setOtp(updatedOtp);
     };
+
+    const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+        e.preventDefault();
+        const pastedData = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 5);
+        if (!pastedData) return;
+        const newOtp = [...otp];
+        pastedData.split("").forEach((digit, index) => {
+            newOtp[index] = digit;
+        });
+        setOtp(newOtp);
+        const lastIndex = Math.min(pastedData.length - 1, 4);
+        document.getElementById(`verify-otp-${lastIndex}`)?.focus();
+    };
+
+    const maskValue = (value: string, isEmail: boolean) => {
+        if (!value) return "";
+        if (isEmail) {
+            const parts = value.split("@");
+            if (parts.length !== 2) return value;
+            const name = parts[0];
+            const domain = parts[1];
+            const maskedName = name.length > 2 ? name.substring(0, 2) + "*".repeat(name.length - 2) : name;
+            return `${maskedName}@${domain}`;
+        } else {
+            const digits = value.replace(/\D/g, "");
+            if (digits.length === 10) {
+                return `******${digits.slice(-4)}`;
+            }
+            return value;
+        }
+    };
+
+    const displayValue = maskValue(loginValue, emailLogin);
+    const rawLoginValue = emailLogin ? loginValue : loginValue.replace(/\D/g, "");
 
     const handleVerify = async () => {
         const finalOtp = otp.join("");
@@ -54,7 +96,7 @@ const VerifyProfileOtpModal = ({ emailLogin = false, loginValue = "" }: VerifyPr
 
             const payload = {
                 channel: type,
-                value: loginValue,
+                value: rawLoginValue,
                 otp: finalOtp,
             };
 
@@ -75,7 +117,7 @@ const VerifyProfileOtpModal = ({ emailLogin = false, loginValue = "" }: VerifyPr
                         endpoint: "profile",
                         method: "GET"
                     });
-                    
+
                     if (profileRes.success) {
                         const updatedUser = profileRes.data?.data || profileRes.data;
                         const rawUser = localStorage.getItem("user");
@@ -89,7 +131,7 @@ const VerifyProfileOtpModal = ({ emailLogin = false, loginValue = "" }: VerifyPr
                             localStorage.setItem("user", JSON.stringify(userObj));
                         }
                     }
-                } catch(e) {
+                } catch (e) {
                     console.error("Failed to fetch fresh profile data:", e);
                 }
 
@@ -97,7 +139,7 @@ const VerifyProfileOtpModal = ({ emailLogin = false, loginValue = "" }: VerifyPr
                 if (typeof window !== "undefined") {
                     window.dispatchEvent(new Event("loginStatusChanged"));
                     // We also reload the page to make sure the NextJS context (if any) is fully synced
-                    window.location.reload(); 
+                    window.location.reload();
                 }
 
                 const currentModal = document.getElementById("verify-profile-screen-2");
@@ -127,7 +169,7 @@ const VerifyProfileOtpModal = ({ emailLogin = false, loginValue = "" }: VerifyPr
 
         try {
             const type = emailLogin ? "email" : "phone";
-            const endpoint = `profile/profile-update?type=${type}&value=${loginValue}`;
+            const endpoint = `profile/profile-update?type=${type}&value=${rawLoginValue}`;
 
             const response = await globalServerRequest({
                 endpoint: endpoint,
@@ -138,7 +180,7 @@ const VerifyProfileOtpModal = ({ emailLogin = false, loginValue = "" }: VerifyPr
 
             if (response.success) {
                 toast.success(response.data?.message || response.data?.messages || "A brand new OTP has been sent!");
-                setTimer(30);
+                startOtpTimer();
                 setOtp(["", "", "", "", ""]);
             } else {
                 setError(response.error || "Failed to resend OTP. Try again.");
@@ -280,20 +322,21 @@ const VerifyProfileOtpModal = ({ emailLogin = false, loginValue = "" }: VerifyPr
                                 <h5>Verify Your Profile Update</h5>
                                 <p>
                                     Enter the 5-digit code we sent to <br />
-                                    {emailLogin ? "" : "+1 "} {loginValue}
+                                    {emailLogin ? "" : "+1 "} {displayValue}
                                 </p>
                                 <form>
                                     <div className="input-multigrp">
                                         {otp?.map((digit, index) => (
                                             <input
                                                 key={index}
-                                                id={`otp-${index}`}
+                                                id={`verify-otp-${index}`}
                                                 type="text"
                                                 placeholder="-"
                                                 className="input-field-code-in inputs"
                                                 maxLength={1}
                                                 disabled={loading}
                                                 value={digit}
+                                                onPaste={handlePaste}
                                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                                                     handleChange(e.target.value, index)
                                                 }

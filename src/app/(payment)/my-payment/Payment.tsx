@@ -1,7 +1,8 @@
 "use client"
 import { useRouter } from 'next/navigation'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { globalServerRequest } from '@/actions/globalApi'
+import LogoLoader from '@/components/common/LogoLoader'
 
 const Payment = () => {
     const router = useRouter()
@@ -12,6 +13,29 @@ const Payment = () => {
     const [pageNo, setPageNo] = useState(1);
     const [limit] = useState(5);
     const [pagination, setPagination] = useState<any>(null);
+    const observerTarget = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting && pagination?.hasNextPage && !loading) {
+                    setPageNo((prev) => prev + 1);
+                }
+            },
+            { threshold: 0.1 }
+        );
+
+        if (observerTarget.current) {
+            observer.observe(observerTarget.current);
+        }
+
+        const currentTarget = observerTarget.current;
+        return () => {
+            if (currentTarget) {
+                observer.unobserve(currentTarget);
+            }
+        };
+    }, [pagination, loading]);
 
     const handleTabChange = (tab: string) => {
         setActiveTab(tab);
@@ -36,15 +60,15 @@ const Payment = () => {
                 });
                 if (response.success) {
                     const resData = response.data?.data || response.data;
-                    setPayments(resData?.payments || []);
+                    setPayments(prev => pageNo === 1 ? (resData?.payments || []) : [...prev, ...(resData?.payments || [])]);
                     setPagination(resData?.pagination || null);
                 } else {
-                    setPayments([]);
+                    if (pageNo === 1) setPayments([]);
                     setPagination(null);
                 }
             } catch (error) {
                 console.error("Error fetching payment history:", error);
-                setPayments([]);
+                if (pageNo === 1) setPayments([]);
                 setPagination(null);
             } finally {
                 setLoading(false);
@@ -113,8 +137,8 @@ const Payment = () => {
 
                                         <div className="tab-content">
                                             <div className="my-payments-body-wrp">
-                                                {loading ? (
-                                                    <p className="text-center">Loading payments...</p>
+                                                {loading && pageNo === 1 ? (
+                                                    <LogoLoader />
                                                 ) : (
                                                     <>
                                                         {payments.map((item) => {
@@ -136,7 +160,7 @@ const Payment = () => {
                                                                 <div className="my-payments-body" key={item.transaction_id || item.id}>
                                                                     <div className="left-payments-body">
                                                                         <div className="plumbing-icon">
-                                                                            <img src={  item?.booking_image || ""} alt={title} />
+                                                                            <img src={item?.booking_image || ""} alt={title} />
                                                                         </div>
                                                                         <div className={`paid ${isPending ? 'pending' : ''}`}>
                                                                             <h5>
@@ -155,7 +179,7 @@ const Payment = () => {
                                                                     </div>
 
                                                                     <div className="right-payments-body">
-                                                                        <button className="secondary-cta" onClick={() => router.push(`/view-booking-detail?booking_id=${item.booking_id}`)}>
+                                                                        <button className="secondary-cta" onClick={() => router.push(`/view-booking-detail?bookingId=${item.booking_id}`)}>
                                                                             View Job
                                                                         </button>
                                                                         {isPending && (
@@ -180,25 +204,9 @@ const Payment = () => {
                                                             <p className="text-center">No {activeTab} payments found.</p>
                                                         )}
 
-                                                        {pagination && pagination.totalPages > 1 && (
-                                                            <div className="d-flex justify-content-center align-items-center gap-2 mt-4">
-                                                                <button
-                                                                    className="btn btn-outline-secondary btn-sm"
-                                                                    disabled={!pagination.hasPreviousPage}
-                                                                    onClick={() => setPageNo(prev => Math.max(prev - 1, 1))}
-                                                                >
-                                                                    Previous
-                                                                </button>
-                                                                <span className="text-sm text-secondary px-2">
-                                                                    Page {pagination.page} of {pagination.totalPages}
-                                                                </span>
-                                                                <button
-                                                                    className="btn btn-outline-secondary btn-sm"
-                                                                    disabled={!pagination.hasNextPage}
-                                                                    onClick={() => setPageNo(prev => Math.min(prev + 1, pagination.totalPages))}
-                                                                >
-                                                                    Next
-                                                                </button>
+                                                        {pagination && pagination.hasNextPage && (
+                                                            <div ref={observerTarget} style={{ height: '40px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                                                                {loading && <div className="spinner-border text-danger spinner-border-sm" role="status"><span className="visually-hidden">Loading...</span></div>}
                                                             </div>
                                                         )}
                                                     </>

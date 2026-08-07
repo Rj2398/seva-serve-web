@@ -22,6 +22,7 @@ import {
 
 import { IoCopyOutline } from "react-icons/io5";
 import { FaTimes } from "react-icons/fa";
+import CancelBooking from "@/components/modals/bookingmodals/CancelBooking";
 
 interface homeprops {
   data: any;
@@ -32,6 +33,21 @@ const ClientComponent = ({ data }: homeprops) => {
   const [showWelcomeModal, setShowWelcomeModal] = useState<boolean>(false);
   const [showAddCardModal, setShowAddCardModal] = useState<boolean>(false);
   const [serviceId, setServiceId] = useState<string>("");
+  const [additionalId, setAdditionalId] = useState<string>("");
+  const [bookingId, setBookingId] = useState<any>('')
+  const [showCancle, setShowCancle] = useState<boolean>(false);
+  const [selectedBookingData, setSelectedBookingData] = useState<any>(null)
+  const [isAddactional, setIsAddactional] = useState<boolean>(false);
+
+
+  console.log("bookingId", bookingId)
+
+  const [expandedQuotes, setExpandedQuotes] = useState<Record<number, boolean>>(
+    {}
+  );
+  const [expandedAdditional, setExpandedAdditional] = useState<
+    Record<number, boolean>
+  >({});
 
   const referralCode = data?.refferalBanners?.refferalCode;
   // console.log("Referral Code22222222", referralCode )
@@ -54,11 +70,47 @@ const ClientComponent = ({ data }: homeprops) => {
 
     const checkModalFlags = () => {
       if (typeof window !== "undefined") {
-        if (sessionStorage.getItem("showWelcomeModal") === "true") {
+        let shouldShowWelcome = sessionStorage.getItem("showWelcomeModal") === "true";
+        let shouldShowAddCard = sessionStorage.getItem("showAddCardModal") === "true";
+
+        const userStr = localStorage.getItem("user");
+        const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+
+        if (isLoggedIn && userStr) {
+          try {
+            const userData = JSON.parse(userStr);
+            const userIsNew =
+              userData?.isNewUser === true ||
+              userData?.isNewUser === "true" ||
+              userData?.isNewUser === 1 ||
+              userData?.isNewUser === "1";
+
+            const userHasCard =
+              userData?.user?.hasCard === true ||
+              userData?.user?.hasCard === "true" ||
+              userData?.user?.hasCard === 1 ||
+              userData?.user?.hasCard === "1" ||
+              userData?.hasCard === true ||
+              userData?.hasCard === "true" ||
+              userData?.hasCard === 1 ||
+              userData?.hasCard === "1";
+
+            const isProfileCompleted = userData?.user?.isProfileCompleted || userData?.isProfileCompleted;
+
+            if (userIsNew && !isProfileCompleted) {
+              shouldShowWelcome = true;
+            } else if (!userHasCard) {
+              shouldShowAddCard = true;
+            }
+          } catch (e) {
+            console.error("Error parsing user data in checkModalFlags", e);
+          }
+        }
+
+        if (shouldShowWelcome) {
           setShowWelcomeModal(true);
           sessionStorage.removeItem("showWelcomeModal");
-        }
-        if (sessionStorage.getItem("showAddCardModal") === "true") {
+        } else if (shouldShowAddCard) {
           setShowAddCardModal(true);
           sessionStorage.removeItem("showAddCardModal");
         }
@@ -75,6 +127,9 @@ const ClientComponent = ({ data }: homeprops) => {
         window.removeEventListener("loginStatusChanged", checkModalFlags);
       }
     };
+
+
+
   }, []);
 
   useEffect(() => {
@@ -83,13 +138,12 @@ const ClientComponent = ({ data }: homeprops) => {
     const initSliders = () => {
       const $ = (window as any).$;
 
-      // CRITICAL FIX: Ensure BOTH jQuery and its .slick extension are fully initialized
-      if (!$ || typeof $.fn.slick !== "function") {
+      if (!$ || !$.fn || typeof $.fn.slick !== "function") {
         frameId = requestAnimationFrame(initSliders);
         return;
       }
 
-      // 1. Safe layout checking for Hero Slider
+      // Hero Slider
       const $hero = $(".hero-slider");
       if (
         $hero.length &&
@@ -106,14 +160,17 @@ const ClientComponent = ({ data }: homeprops) => {
           responsive: [
             {
               breakpoint: 767,
-              settings: { slidesToShow: 1, slidesToScroll: 1 },
+              settings: {
+                slidesToShow: 1,
+                slidesToScroll: 1,
+              },
             },
           ],
         });
       }
 
-      // 2. Safe layout checking for Upcoming & Popular Slider configurations
-      const $upcoming = $(".upcoming-slider");
+      // Upcoming Booking Slider
+      const $upcoming = $(".upcoming-booking-slider");
       if (
         $upcoming.length &&
         $upcoming.children().length > 0 &&
@@ -124,7 +181,24 @@ const ClientComponent = ({ data }: homeprops) => {
           infinite: true,
           speed: 300,
           slidesToShow: 1,
-          // centerMode: true,
+          autoplay: true,
+          arrows: false,
+          variableWidth: true,
+        });
+      }
+
+      // Popular Service Slider
+      const $popular = $(".popular-service-slider");
+      if (
+        $popular.length &&
+        $popular.children().length > 0 &&
+        !$popular.hasClass("slick-initialized")
+      ) {
+        $popular.slick({
+          dots: false,
+          infinite: true,
+          speed: 300,
+          slidesToShow: 1,
           autoplay: true,
           arrows: false,
           variableWidth: true,
@@ -132,19 +206,18 @@ const ClientComponent = ({ data }: homeprops) => {
       }
     };
 
-    // Spin initialization request loop up safely
     frameId = requestAnimationFrame(initSliders);
 
-    // Context execution logic for simple non-plugin click bindings
     const checkBindings = () => {
       const $ = (window as any).$;
+
       if ($) {
         const $body = $("body");
 
         $body
           .off("click", ".service-list-type .more-service")
           .on("click", ".service-list-type .more-service", function (e: any) {
-            let parent = $(e.currentTarget).closest(".service-list-type");
+            const parent = $(e.currentTarget).closest(".service-list-type");
             parent.find(".service-data").show();
             $(e.currentTarget).hide();
             parent.find(".less-service").css("display", "list-item");
@@ -153,7 +226,7 @@ const ClientComponent = ({ data }: homeprops) => {
         $body
           .off("click", ".service-list-type .less-service")
           .on("click", ".service-list-type .less-service", function (e: any) {
-            let parent = $(e.currentTarget).closest(".service-list-type");
+            const parent = $(e.currentTarget).closest(".service-list-type");
             parent.find(".service-data").hide();
             parent.find(".more-service").css("display", "list-item");
             $(e.currentTarget).hide();
@@ -172,15 +245,30 @@ const ClientComponent = ({ data }: homeprops) => {
 
     checkBindings();
 
-    // Clean teardown handlers to guarantee no duplicate slider instances on history mutations
     return () => {
       cancelAnimationFrame(frameId);
-      const _$ = (window as any).$;
-      if (_$ && typeof _$.fn?.slick === "function") {
-        if (_$(".hero-slider").hasClass("slick-initialized"))
-          _$(".hero-slider").slick("unslick");
-        if (_$(".upcoming-slider").hasClass("slick-initialized"))
-          _$(".upcoming-slider").slick("unslick");
+
+      const $ = (window as any).$;
+
+      if (!$ || !$.fn || typeof $.fn.slick !== "function") return;
+
+      try {
+        const hero = $(".hero-slider");
+        if (hero.length && hero.hasClass("slick-initialized")) {
+          hero.slick("unslick");
+        }
+
+        const upcoming = $(".upcoming-booking-slider");
+        if (upcoming.length && upcoming.hasClass("slick-initialized")) {
+          upcoming.slick("unslick");
+        }
+
+        const popular = $(".popular-service-slider");
+        if (popular.length && popular.hasClass("slick-initialized")) {
+          popular.slick("unslick");
+        }
+      } catch (err) {
+        console.warn("Slick cleanup error:", err);
       }
     };
   }, [data]);
@@ -275,6 +363,136 @@ const ClientComponent = ({ data }: homeprops) => {
     )}&body=${encodeURIComponent(shareMessage)}`;
   };
 
+
+
+  const handleRescheduleBooking = async (payload: any) => {
+    try {
+      console.log("onConform", payload);
+      console.log("bookingId", bookingId);
+
+      const [response] = await Promise.all([
+        globalServerRequest({
+          endpoint: `booking/reschedule`,
+          method: "POST",
+          payload: {
+            bookingId: bookingId,
+            addressId: payload.address,
+            availabilitySlots: payload.availabilitySlots,
+          },
+        }),
+      ]);
+
+      if (response?.success) {
+
+        toast.success("Booking rescheduled successfully!");
+        setShowDatePicker(false);
+      }
+    } catch (error) {
+      console.error("Error rescheduling booking:", error);
+      toast.error("Failed to reschedule booking. Please try again.");
+    }
+  };
+
+
+
+  const handleLoadRescheduleRequest = async (item: any) => {
+    try {
+      console.log("item", item)
+      setBookingId(item?.bookingId);
+      // setQuoteId(item?.quoteId);
+      setShowDatePicker(true);
+
+      setTimeout(() => {
+        const modalElement = document.getElementById("select-date-time-popup");
+
+        if (modalElement) {
+          const bootstrap = (window as any).bootstrap;
+          if (bootstrap) {
+            const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+            modal.show();
+          }
+        } else {
+          console.warn("Modal element '#select-date-time-popup' is not avilible in the DOM.");
+        }
+      }, 0);
+
+    } catch (error) {
+      console.error("Error loading reschedule request:", error);
+    }
+  };
+
+  const handleCancel = async (reason: string) => {
+    console.log("selectedBookingData", selectedBookingData)
+    console.log("Cancel Reason", reason)
+    try {
+      const response = await globalServerRequest({
+        endpoint: `booking/cancel-booking`,
+        method: "POST",
+        payload: {
+          booking_id: selectedBookingData?.bookingId,
+          reason: reason,
+        },
+      });
+      if (response?.success) {
+        toast.success("Booking cancelled successfully!");
+        setShowCancle(false);
+      }
+    } catch (error) {
+      console.error("Error cancelling booking:", error);
+      toast.error("Failed to cancel booking. Please try again.");
+    }
+  }
+
+  const handleReject = async (reason: string, isAddactional: boolean) => {
+    console.log("reason", reason, "isAddactional", isAddactional)
+    const updatedEndpoint = isAddactional ? `booking/approve-additional-servies-request` : `quotes/reject/${serviceId}`
+    try {
+      const response = await globalServerRequest({
+        endpoint: updatedEndpoint,
+        method: isAddactional ? "POST" : "PUT",
+        payload: {
+          rejection_reason: reason,
+          ...(isAddactional && { booking_id: serviceId, status: 'reject', additional_work_id: additionalId }),
+        }
+      });
+
+      console.log(" rejected services response  ", response)
+      if (response.success) {
+        window.dispatchEvent(new Event("quoteUpdated"));
+        const bootstrap = (window as any).bootstrap;
+        const currentModalEl = document.getElementById("servicesRejection");
+        const confirmModalEl = document.getElementById("#servicesRejected");
+        if (!currentModalEl) return;
+        const currentModal =
+          bootstrap?.Modal?.getInstance(currentModalEl) ||
+          bootstrap?.Modal?.getOrCreateInstance(currentModalEl);
+        currentModal.hide();
+        if (confirmModalEl && isAddactional) {
+          currentModalEl.addEventListener(
+            "hidden.bs.modal",
+            () => {
+              const confirmModal =
+                bootstrap?.Modal?.getOrCreateInstance(confirmModalEl);
+              confirmModal?.show();
+            },
+            { once: true }
+          );
+        }
+      } else {
+        toast.error("Failed to reject service. Please try again.");
+      }
+    } catch (error) {
+      console.error("Rejection Error:", error);
+      toast.error("An error occurred while rejecting the service.");
+    }
+  }
+
+
+
+
+
+
+
   return (
     <>
       <style
@@ -362,7 +580,7 @@ const ClientComponent = ({ data }: homeprops) => {
             <section>
               <div
                 className="container"
-                onClick={() => router.push("/view-booking-detail")}
+                onClick={() => router.push(`/view-booking-detail?bookingId=${data?.activeBookings[0]?.bookingId}`)}
                 style={{ cursor: "pointer" }}
               >
                 <div className="row">
@@ -485,12 +703,12 @@ const ClientComponent = ({ data }: homeprops) => {
                         </Link>
                       </p>
                     </div>
-                    <div className="upcoming-slider">
+                    <div className="upcoming-booking-slider" style={{ marginBottom: '20px' }}>
                       {data?.upcomingBookings?.map(
                         (item: any, index: number) => (
                           <div className="upcoming-my-slide" key={index}>
-                            <div className="upcoming-img">
-                              <img src="images/home/home-slider/1.svg" alt="" />
+                            <div className="upcoming-img" style={{ width: '320px' }}>
+                              <img src={item?.image[0] || "images/home/home-slider/1.svg"} alt="" />
                             </div>
                             <div className="upcoming-data">
                               <p className="up-text">
@@ -504,9 +722,14 @@ const ClientComponent = ({ data }: homeprops) => {
                               <div className="upcm-slider-btn">
                                 <button
                                   className="primary-cta upcm-btn"
-                                  onClick={() => setShowDatePicker(true)}
-                                  data-bs-target="#select-date-time-popup"
-                                  data-bs-toggle="modal"
+                                  onClick={() => {
+                                    handleLoadRescheduleRequest(item)
+                                    // setShowDatePicker(true), setBookingId(item?.bookingId)
+                                  }}
+
+                                  disabled={item?.is_previous_rescheduled}
+                                // data-bs-target="#select-date-time-popup"
+                                // data-bs-toggle="modal"
                                 >
                                   <img
                                     src="images/home/home-slider/re-sdl-btn.svg"
@@ -516,8 +739,12 @@ const ClientComponent = ({ data }: homeprops) => {
                                 </button>
                                 <button
                                   className="cnl"
-                                  data-bs-target="#cancelBookingPopup"
-                                  data-bs-toggle="modal"
+                                  // data-bs-target="#cancelBookingPopup"
+                                  // data-bs-toggle="modal"
+                                  onClick={() => {
+                                    setSelectedBookingData(item);
+                                    setShowCancle(true);
+                                  }}
                                 >
                                   Cancel
                                 </button>
@@ -551,97 +778,182 @@ const ClientComponent = ({ data }: homeprops) => {
                           </Link>
                         </p>
                       </div>
-                      {data?.quotes
-                        ?.slice(0, 1)
-                        .map((item: any, index: number) => (
-                          <div className="my-quotes-inner" key={index}>
-                            <div className="add-user">
-                              <p className="left">#{item?.quoteId}</p>
-                              <p className="right">Additional Services</p>
-                            </div>
-                            <div className="plumbing">
-                              <Link
-                                // href={`/serviceDetails?serviceId=${item?.id}`}
-                                href={`/quotes`}
-                                className="plm"
-                              >
-                                {item?.title || "Plumbing"}{" "}
-                                <img
-                                  src="images/home/up-right-arrow.svg"
-                                  alt=""
-                                />
-                              </Link>
-                              {/* <p className="sub-cate">Sub categories Selected</p> */}
-                              <div className="service-list-type">
-                                {/* <ol className="main-category">
-                                <li>
-                                  Installation
-                                  <ul>
-                                    <li>
-                                      Sink Installation
-                                      <ul>
-                                        <li>Replace Existing Sink</li>
-                                      </ul>
-                                    </li>
-                                  </ul>
-                                </li>
-                              </ol>
-                              <ol className="main-category">
-                                <li className="more-service">
-                                  + 1 more service
-                                </li>
-                                <div
-                                  className="service-data"
-                                  style={{ display: "none" }}
-                                >
-                                  <li>
-                                    Installation
-                                    <ul>
-                                      <li>
-                                        Sink Installation
-                                        <ul>
-                                          <li>Replace Existing Sink</li>
-                                        </ul>
-                                      </li>
-                                    </ul>
-                                  </li>
-                                </div>
-                                <li
-                                  className="less-service"
-                                  style={{ display: "none" }}
-                                >
-                                  Less service
-                                </li>
-                              </ol>
-                              <div className="additional-services">
-                                <p className="additional-text">
-                                  Additional Services{" "}
-                                  <img
-                                    src="images/home/additional-service.svg"
-                                    alt=""
-                                  />
-                                </p>
-                                <ul
-                                  className="service-list"
-                                  style={{ display: "none" }}
-                                >
-                                  <li>Undermount / Vessel Sink Setup</li>
-                                  <li>Vessel Sink Setup</li>
-                                </ul>
-                              </div> */}
+                      {data?.quotes?.slice(0, 1)?.map((item: any, index: number) => {
+                        const isServicesOpen = !!expandedQuotes[index];
+                        const isAdditionalOpen = !!expandedAdditional[index];
 
+                        // Dynamic cost resolution logic
+                        const resolveCost = () => {
+                          if (typeof item?.cost === "object" && item?.cost !== null) {
+                            return item?.cost?.totalAmount || item?.cost?.amount || "0.00";
+                          }
+                          if (item?.cost) return item.cost;
+                          if (item?.quotedPrice) return item.quotedPrice;
+                          return (
+                            item?.sub_categories?.[0]?.services?.[0]?.issues?.[0]?.total_amount || "0.00"
+                          );
+                        };
+
+                        return (
+                          <div className="my-quotes-inner" key={item?.id || index}>
+                            {/* Header Info */}
+                            <div className="add-user">
+                              <p className="left">#{item?.quoteId || item?.quote_id}</p>
+                              {item?.has_additional_services && (
+                                <p className="right">Additional Services</p>
+                              )}
+                            </div>
+
+                            <div className="plumbing">
+                              {/* Title Link */}
+                              <Link href="/quotes" className="plm">
+                                {item?.category?.name || "Plumbing"}{" "}
+                                <img src="images/home/up-right-arrow.svg" alt="arrow" />
+                              </Link>
+
+                              {/* Categories & Subcategories List */}
+                              <div className="service-list-type">
+                                <ol className="main-category">
+                                  {/* First Sub-Category */}
+                                  {item?.sub_categories?.slice(0, 1).map((subCat: any, i: number) => (
+                                    <li key={subCat.id || `first-${i}`}>
+                                      {subCat.name}
+                                      {subCat.services?.length > 0 && (
+                                        <ul>
+                                          {subCat.services.map((srv: any, j: number) => (
+                                            <li key={srv.id || `srv-${j}`}>
+                                              {srv.name}
+                                              {srv.issues?.length > 0 && (
+                                                <ul>
+                                                  {srv.issues.map((issue: any, k: number) => (
+                                                    <li key={issue.id || `issue-${k}`}>
+                                                      {issue.name}
+                                                    </li>
+                                                  ))}
+                                                </ul>
+                                              )}
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      )}
+                                    </li>
+                                  ))}
+
+                                  {/* Toggle More / Less Sub-Categories */}
+                                  {item?.sub_categories?.length > 1 && (
+                                    <>
+                                      {!isServicesOpen ? (
+                                        <li
+                                          className="more-service"
+                                          style={{
+                                            cursor: "pointer",
+                                            listStyleType: "none",
+                                            marginLeft: "-20px",
+                                          }}
+                                          onClick={() =>
+                                            setExpandedQuotes((prev) => ({
+                                              ...prev,
+                                              [index]: true,
+                                            }))
+                                          }
+                                        >
+                                          + {item.sub_categories.length - 1} more sub category
+                                        </li>
+                                      ) : (
+                                        <>
+                                          {item.sub_categories.slice(1).map((subCat: any, i: number) => (
+                                            <li key={subCat.id || `more-${i}`}>
+                                              {subCat.name}
+                                              {subCat.services?.length > 0 && (
+                                                <ul>
+                                                  {subCat.services.map((srv: any, j: number) => (
+                                                    <li key={srv.id || `more-srv-${j}`}>
+                                                      {srv.name}
+                                                      {srv.issues?.length > 0 && (
+                                                        <ul>
+                                                          {srv.issues.map((issue: any, k: number) => (
+                                                            <li key={issue.id || `more-issue-${k}`}>
+                                                              {issue.name}
+                                                            </li>
+                                                          ))}
+                                                        </ul>
+                                                      )}
+                                                    </li>
+                                                  ))}
+                                                </ul>
+                                              )}
+                                            </li>
+                                          ))}
+
+                                          <li
+                                            style={{
+                                              cursor: "pointer",
+                                              fontWeight: "bold",
+                                              listStyleType: "none",
+                                              marginLeft: "-20px",
+                                              marginTop: "10px",
+                                            }}
+                                            onClick={() =>
+                                              setExpandedQuotes((prev) => ({
+                                                ...prev,
+                                                [index]: false,
+                                              }))
+                                            }
+                                          >
+                                            Less service
+                                          </li>
+                                        </>
+                                      )}
+                                    </>
+                                  )}
+                                </ol>
+                              </div>
+
+                              {/* Schedule Info */}
+                              {/* {item?.schedule && item.schedule.length > 0 ? (
                                 <div
                                   className="booking-schedule-container"
                                   style={{
                                     padding: "15px",
-                                    fontFamily:
-                                      "'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+                                    fontFamily: "'Segoe UI', Roboto, sans-serif",
                                     color: "#333",
                                     fontSize: "16px",
                                     maxWidth: "400px",
                                   }}
                                 >
-                                  {/* {item?.schedule?.map((scheduleItem: any, schedIndex: number) => ( */}
+                                  {item.schedule.map((scheduleItem: any, schedIndex: number) => (
+                                    <div
+                                      key={schedIndex}
+                                      style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        marginBottom: "12px",
+                                        lineHeight: "1.4",
+                                      }}
+                                    >
+                                      <div style={{ width: "70px", fontWeight: "500", color: "#222" }}>
+                                        {schedIndex === 0 ? "Date :" : ""}
+                                      </div>
+                                      <div style={{ width: "140px", letterSpacing: "0.3px", color: "#222" }}>
+                                        {scheduleItem?.date}
+                                      </div>
+                                      <div style={{ letterSpacing: "0.5px", color: "#222", paddingLeft: "10px" }}>
+                                        {scheduleItem?.time}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (item?.date || item?.time) && (
+                                <div
+                                  className="booking-schedule-container"
+                                  style={{
+                                    padding: "15px",
+                                    fontFamily: "'Segoe UI', Roboto, sans-serif",
+                                    color: "#333",
+                                    fontSize: "16px",
+                                    maxWidth: "400px",
+                                  }}
+                                >
                                   <div
                                     style={{
                                       display: "flex",
@@ -650,68 +962,144 @@ const ClientComponent = ({ data }: homeprops) => {
                                       lineHeight: "1.4",
                                     }}
                                   >
-                                    <div
-                                      style={{
-                                        width: "70px",
-                                        fontWeight: "500",
-                                        color: "#222222",
-                                      }}
-                                    >
+                                    <div style={{ width: "70px", fontWeight: "500", color: "#222" }}>
                                       Date :
                                     </div>
-                                    <div
-                                      style={{
-                                        width: "140px",
-                                        letterSpacing: "0.3px",
-                                        color: "#222",
-                                      }}
-                                    >
+                                    <div style={{ width: "140px", letterSpacing: "0.3px", color: "#222" }}>
                                       {item?.date}
                                     </div>
-                                    <div
-                                      style={{
-                                        letterSpacing: "0.5px",
-                                        color: "#222",
-                                        paddingLeft: "10px",
-                                      }}
-                                    >
+                                    <div style={{ letterSpacing: "0.5px", color: "#222", paddingLeft: "10px" }}>
                                       {item?.time}
                                     </div>
                                   </div>
-                                  {/* ))} */}
                                 </div>
+                              )} */}
 
-                                <div className="service-quotes">
-                                  <p className="service-cost">
-                                    Cost:<span>${item?.quotedPrice}</span>
-                                  </p>
-                                  <div className="home-quotes-cta">
-                                    <button
-                                      className="reject-btn"
-                                      data-bs-target="#servicesRejection"
-                                      data-bs-toggle="modal"
-                                      onClick={() => setServiceId(item?.id)}
+
+                              <div className="booking-schedule-container" style={{ padding: "15px", fontFamily: "'Segoe UI', Roboto, Helvetica, Arial, sans-serif", color: "#333", fontSize: "16px", maxWidth: "400px" }}>
+                                {(() => {
+                                  let scheduleList = [];
+                                  if (Array.isArray(item?.schedule)) {
+                                    scheduleList = item.schedule;
+                                  } else if (Array.isArray(item?.schedled)) {
+                                    scheduleList = item.schedled;
+                                  } else if (typeof item?.date === 'string' && item.date.includes(',')) {
+                                    const dates = item.date.split(',');
+                                    const times = typeof item?.time === 'string' ? item.time.split(',') : [];
+                                    scheduleList = dates.map((d: string, i: number) => ({ date: d.trim(), time: times[i]?.trim() || "" }));
+                                  } else if (item?.date || item?.time) {
+                                    scheduleList = [{ date: item?.date || "", time: item?.time || "" }];
+                                  }
+
+                                  return scheduleList.map((scheduleItem: any, schedIndex: number) => (
+                                    <div key={schedIndex} style={{ display: "flex", alignItems: "center", marginBottom: "12px", lineHeight: "1.4" }}>
+                                      <div style={{ width: "70px", fontWeight: "500", color: "#222222" }}>
+                                        {schedIndex === 0 ? "Date :" : ""}
+                                      </div>
+                                      <div style={{ width: "140px", letterSpacing: "0.3px", color: "#222" }}>
+                                        {scheduleItem?.date}
+                                      </div>
+                                      <div style={{ letterSpacing: "0.5px", color: "#222", paddingLeft: "10px" }}>
+                                        {scheduleItem?.time}
+                                      </div>
+                                    </div>
+                                  ));
+                                })()}
+                              </div>
+
+                              {/* Additional Services */}
+                              {
+                                item?.has_additional_services && (
+                                  <div className="additional-services">
+                                    <p
+                                      className="additional-text"
+                                      style={{ cursor: "pointer" }}
+                                      onClick={() =>
+                                        setExpandedAdditional((prev) => ({
+                                          ...prev,
+                                          [index]: !isAdditionalOpen,
+                                        }))
+                                      }
                                     >
-                                      Reject
-                                    </button>
-                                    <button
-                                      className="primary-cta rgt"
-                                      data-bs-target="#servicesAccepted"
-                                      data-bs-toggle="modal"
-                                      onClick={() => setServiceId(item?.id)}
-                                    >
-                                      Accept{" "}
+                                      Additional Services {!isAdditionalOpen}
                                       <img
-                                        src="images/home/right-img.svg"
+                                        src="images/home/additional-service.svg"
                                         alt=""
                                       />
-                                    </button>
+                                    </p>
+                                    <ul
+                                      className="service-list"
+                                      style={{
+                                        display: isAdditionalOpen
+                                          ? "block"
+                                          : "none",
+                                      }}
+                                    >
+                                      {(() => {
+                                        const addSrvs = item?.additional_services?.items;
+                                        if (Array.isArray(addSrvs) && addSrvs.length > 0) {
+                                          return addSrvs.map((srv: any, i: number) => (
+                                            <li key={i}>
+                                              {typeof srv === 'object' ? srv?.description : srv}
+                                              {srv?.material_cost && ` (Material Cost: $${srv.material_cost})`}
+                                              {Number(srv?.labour_cost) > 0 && `,(Lebour Cost: $${srv?.labour_cost})`}
+                                            </li>
+                                          ));
+                                        } else if (typeof addSrvs === 'string' && addSrvs.trim() !== '') {
+                                          return addSrvs.split(',').map((srv: string, i: number) => (
+                                            <li key={i}>{srv.trim()}</li>
+                                          ));
+                                        }
+                                        return <li>No additional services</li>;
+                                      })()}
+                                    </ul>
                                   </div>
+                                )
+                              }
+                              {item?.description && <p>{item.description}</p>}
+                              {/* Cost & Action Buttons */}
+                              <div className="service-quotes">
+                                <p className="service-cost">
+                                  Cost: <span>${resolveCost()}</span>
+                                </p>
+                                <div className="home-quotes-cta">
+                                  <button
+                                    className="reject-btn"
+                                    data-bs-target="#servicesRejection"
+                                    data-bs-toggle="modal"
+                                    // onClick={() => setServiceId(item?.quote_id || item?.id)}
+                                    style={{ cursor: "pointer" }}
+
+                                    onClick={() => {
+                                      setServiceId(item.has_additional_services ? item.additional_services.booking_id : item.id);
+                                      setAdditionalId(item.has_additional_services ? item.additional_services?.items?.[0]?.id : null);
+                                      setIsAddactional(item.has_additional_services)
+                                    }}
+                                  >
+                                    Reject
+                                  </button>
+
+                                  <button
+                                    className="primary-cta rgt"
+                                    data-bs-target="#servicesAccepted"
+                                    data-bs-toggle="modal"
+                                    // onClick={() => setServiceId(item?.quote_id || item?.id)}
+                                    onClick={() => {
+                                      setServiceId(item.has_additional_services ? item.additional_services.booking_id : item.id);
+                                      setAdditionalId(item.has_additional_services ? item.additional_services?.items?.[0]?.id : null);
+                                      setIsAddactional(item.has_additional_services)
+                                    }}
+                                    style={{ cursor: "pointer" }}
+                                  >
+                                    Accept{" "}
+                                    <img src="images/home/right-img.svg" alt="accept" />
+                                  </button>
                                 </div>
                               </div>
                             </div>
                           </div>
-                        ))}
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
@@ -918,7 +1306,7 @@ const ClientComponent = ({ data }: homeprops) => {
                         </p>
                       </div>
                       <div
-                        className="upcoming-slider"
+                        className="upcoming-booking-slider"
                         onClick={(e) => {
                           const target = e.target as HTMLElement;
                           const slide = target.closest("[data-route]");
@@ -990,17 +1378,24 @@ const ClientComponent = ({ data }: homeprops) => {
         }}
       />
       <AddCardModal isOpen={showAddCardModal} setIsOpen={setShowAddCardModal} />
-      <DatePopup isOpen={showDatePicker} setIsOpen={setShowDatePicker} />
+      <DatePopup isOpen={showDatePicker} setIsOpen={setShowDatePicker} onConfirm={handleRescheduleBooking} />
       <RescheduleRequestSubmit />
       <ServiceRejected />
-      <NewServiceRejectionModal serviceId={serviceId} />
-      <ServiceAccepted serviceId={serviceId} />
+      {/* <NewServiceRejectionModal serviceId={serviceId} /> */}
+      <NewServiceRejectionModal serviceId={serviceId} onConfirm={handleReject} isAddactional={isAddactional} />
+      <ServiceAccepted serviceId={serviceId} isAddactional={isAddactional} additionalId={additionalId} />
+      {/* <ServiceAccepted serviceId={serviceId} /> */}
+      <CancelBooking
+        isOpen={showCancle}
+        setIsOpen={setShowCancle}
+        onCancel={handleCancel}
+      />
 
       {
         showShareMenu && (
           <div
             className="share-overlay"
-            // onClick={() => setShowShareMenu(false)}
+          // onClick={() => setShowShareMenu(false)}
           >
             <div
               className="share-popup"
@@ -1053,8 +1448,7 @@ const ClientComponent = ({ data }: homeprops) => {
             </div>
           </div>
         )
-}
-
+      }
     </>
   );
 };

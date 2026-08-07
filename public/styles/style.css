@@ -409,6 +409,12 @@ button.menu-btn span.sec {
   background-color: var(--line-color);
 }
 
+
+.continue-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* Pipe-Leakage */
 
 /* Browse Category */
