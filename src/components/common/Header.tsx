@@ -249,7 +249,7 @@ const Header = () => {
             </div>
           )}
 
-          <SevaServeAgentPanel />
+          {loginStatus === "true" && <SevaServeAgentPanel />}
           <Cart />
           {loginStatus === "true" && <NotificationDropdown />}
 
