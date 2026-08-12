@@ -1,16 +1,12 @@
 "use client";
-
 import Link from "next/link";
 import { useState } from "react";
-// import { topServices, featuredCategory, allServices } from "../../json/services.json"
-
 
 interface categoryProps {
   initialData: any;
 }
 const Category = ({ initialData }: categoryProps) => {
   const [searchCategory, setSearchCategory] = useState<string>("");
-
   const featuredCategory = initialData?.data?.categories?.filter((item: any) => item?.name?.toLowerCase()?.includes(searchCategory?.toLowerCase()));
 
   return (
@@ -51,31 +47,13 @@ const Category = ({ initialData }: categoryProps) => {
                           ))}
 
                         </ul>
-                      )
-                    }
-                    {/* <ul>
-                      {featuredCategory.map((item: any) => (
-                        <li key={item?.id}  >
-                          <Link href={`/serviceDetails?categoryId=${item?.id}`} className="wrp-img">
-                            <div className="c-img">
-                              <img
-                                src={item?.icon || "images/home/browse-category/1.svg"}
-                                alt=""
-                              />
-                            </div>
-                            <span>{item?.name}</span>
-                          </Link>
-                        </li>
-                      ))}
-
-                    </ul> */}
+                      )}
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </section>
-
       </div>
     </main>
   )

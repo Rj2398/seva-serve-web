@@ -10,9 +10,7 @@ interface serviceProp {
 }
 
 export default function ClientComponent({ serviceData }: serviceProp) {
-  const router = useRouter()
-
-  console.log(serviceData, "new service Data");
+  const router = useRouter();
 
   const [filterTopServices, setFilteredServices] = useState<any[]>([])
   const [filterfeaturedCategory, setFilteredfeaturedCategory] = useState<any[]>([])
@@ -44,12 +42,9 @@ export default function ClientComponent({ serviceData }: serviceProp) {
       setApiFilteredServices(null);
       return;
     }
-
-    // Determine category name and category id
     let categoryName = selectedValue;
     let categoryId = Number(selectedValue);
 
-    // Try to find in serviceData?.featuredCategories
     const matchedCategory = serviceData?.featuredCategories?.find(
       (cat: any) => String(cat.id) === selectedValue || cat.name === selectedValue
     );
@@ -58,7 +53,6 @@ export default function ClientComponent({ serviceData }: serviceProp) {
       categoryName = matchedCategory.name;
       categoryId = matchedCategory.id;
     } else {
-      // Fallback mapping for hardcoded categories
       const fallbackMapping: Record<string, string> = {
         "1": "Plumbing",
         "2": "Repairing",
@@ -99,23 +93,16 @@ export default function ClientComponent({ serviceData }: serviceProp) {
   const truncateWords = (text: string, n: number) => {
     return text.split(" ").slice(0, n).join(" ") + "...";
   };
-
-  // Persistent reference trackers to stop infinite teardown/init loops
   const topSliderInitialized = useRef(false);
   const featuredSliderInitialized = useRef(false);
-
-  // Restores immediate mounting slick sliders on navigation transitions safely
   useEffect(() => {
     let frameId: number;
-
     const initServicesSliders = () => {
       const $ = (window as any).$;
       if (!$ || !$.fn.slick) {
         frameId = requestAnimationFrame(initServicesSliders);
         return;
       }
-
-      // Initialize Top Services Slider only once when elements are fully ready
       const $topSlider = $(".top-services-slider");
       if ($topSlider.length && $topSlider.children().length > 0) {
         if ($topSlider.hasClass("slick-initialized")) {
@@ -149,8 +136,6 @@ export default function ClientComponent({ serviceData }: serviceProp) {
       } else {
         topSliderInitialized.current = true;
       }
-
-      // Initialize Featured Category Slider only once when elements are fully ready
       const $featuredSlider = $(".featured-category-slider");
       if ($featuredSlider.length && $featuredSlider.children().length > 0) {
         if ($featuredSlider.hasClass("slick-initialized")) {
@@ -190,15 +175,11 @@ export default function ClientComponent({ serviceData }: serviceProp) {
       } else {
         featuredSliderInitialized.current = true;
       }
-
-      // Keep cycling the frame loop if layout targets haven't loaded elements yet
       if (!topSliderInitialized.current || !featuredSliderInitialized.current) {
         frameId = requestAnimationFrame(initServicesSliders);
       }
     };
-
     frameId = requestAnimationFrame(initServicesSliders);
-
     return () => {
       cancelAnimationFrame(frameId);
       topSliderInitialized.current = false;
@@ -214,43 +195,6 @@ export default function ClientComponent({ serviceData }: serviceProp) {
       }
     };
   }, [filterTopServices, filterfeaturedCategory]);
-
-  // useEffect(() => {
-  //   const $ = (window as any).$;
-
-  //   if ($ && $.fn.slick) {
-  //     if ($(".top-services-slider").hasClass("slick-initialized")) {
-  //       $(".top-services-slider").slick("unslick");
-  //       topSliderInitialized.current = false;
-  //     }
-  //     if ($(".featured-category-slider").hasClass("slick-initialized")) {
-  //       $(".featured-category-slider").slick("unslick");
-  //       featuredSliderInitialized.current = false;
-  //     }
-  //   }
-
-  //   // Determine target lists based on category filter
-  //   const rawAllSource = apiFilteredServices !== null
-  //     ? apiFilteredServices
-  //     : (serviceData?.allServices?.items || []);
-
-  //   const rawTopSource = (selectedCategory === "0" || selectedCategory === "All Category")
-  //     ? (serviceData?.topServices || [])
-  //     : [];
-
-  //   // Safely apply filtering matching your exact backend object keys
-  //   setFilteredServices(handlefilter(rawTopSource));
-  //   setFilteredfeaturedCategory(handlefilter(serviceData?.featuredCategories));
-  //   setFilteredAllServices(handlefilter(rawAllSource));
-  // }, [
-  //   searchServices,
-  //   serviceData?.topServices,
-  //   serviceData?.featuredCategories,
-  //   serviceData?.allServices,
-  //   apiFilteredServices,
-  //   selectedCategory,
-  // ]);
-
 
  useEffect(() => {
   const $ = (window as any).$;
@@ -268,7 +212,6 @@ export default function ClientComponent({ serviceData }: serviceProp) {
   }
 
   if (selectedCategory === "0") {
-    // ✅ All Category
     setFilteredServices(handlefilter(serviceData?.topServices || []));
     setFilteredfeaturedCategory(
       handlefilter(serviceData?.featuredCategories || [])
@@ -277,14 +220,11 @@ export default function ClientComponent({ serviceData }: serviceProp) {
       handlefilter(serviceData?.allServices?.items || [])
     );
   } else {
-    // ✅ Selected Category
     const featured = (serviceData?.featuredCategories || []).filter(
       (item: any) => String(item.id) === selectedCategory
     );
 
     setFilteredfeaturedCategory(handlefilter(featured));
-
-    // Hide these two sections
     setFilteredServices([]);
     setFilteredAllServices([]);
   }
@@ -298,7 +238,6 @@ export default function ClientComponent({ serviceData }: serviceProp) {
   const handlefilter = (data: any[]) => {
     if (!data || !Array.isArray(data)) return [];
     return data.filter((item) => {
-      // Matches the precise backend structure target string key ".name"
       const searchTarget = item?.name || "";
       return searchTarget
         .toLowerCase()
@@ -410,11 +349,9 @@ export default function ClientComponent({ serviceData }: serviceProp) {
                                   <div className="upcoming-my-slide">
                                     <Link href={`/serviceDetails?serviceId=${item.id}&categoryId=${item.category_id || (selectedCategory !== "0" && selectedCategory !== "All Category" ? selectedCategory : "")}`}>
                                       <div className="upcoming-img">
-                                        {/* Fixed: Uses item.imageUrl dynamically matching your payload */}
                                         <img src={item?.imageUrl || "images/home/home-slider/1.svg"} alt="" />
                                       </div>
                                       <div className="upcoming-data ser">
-                                        {/* Fixed: Uses item.name dynamically matching your payload */}
                                         <p className="up-text">{item?.name}</p>
                                         <p className="up-date">{truncateWords(item.description, 5)}</p>
                                       </div>
@@ -437,10 +374,8 @@ export default function ClientComponent({ serviceData }: serviceProp) {
                                       <li>
                                         <Link href={`/serviceDetails?categoryId=${item.id}`} className="wrp-img">
                                           <div className="c-img">
-                                            {/* Fixed: Uses item.iconUrl dynamically matching your payload */}
                                             <img src={item?.iconUrl} alt={item?.name} />
                                           </div>
-                                          {/* Fixed: Uses item.name dynamically matching your payload */}
                                           <span>{item?.name}</span>
                                         </Link>
                                       </li>
@@ -460,11 +395,9 @@ export default function ClientComponent({ serviceData }: serviceProp) {
                                 <div className="upcoming-my-slide" key={`${item.id}_all`}>
                                   <Link href={`/serviceDetails?serviceId=${item.id}&categoryId=${item.category_id || (selectedCategory !== "0" && selectedCategory !== "All Category" ? selectedCategory : "")}`}>
                                     <div className="upcoming-img">
-                                      {/* Fixed: Uses item.imageUrl dynamically matching your payload */}
                                       <img src={item?.imageUrl || "images/home/home-slider/1.svg"} alt="" />
                                     </div>
                                     <div className="upcoming-data ser">
-                                      {/* Fixed: Uses item.name dynamically matching your payload */}
                                       <p className="up-text">{item?.name}</p>
                                       <p className="up-date">{truncateWords(item.description, 5)}.</p>
                                     </div>

@@ -15,23 +15,30 @@ interface ApiOptions {
 /**
  * Helper to force logout the user immediately
  */
+// const forceLogoutClient = () => {
+
+//   console.log("window", window)
+//   localStorage.removeItem('user')
+//   localStorage.removeItem('autoLocation')
+//   localStorage.removeItem('homeUserData')
+//   localStorage.removeItem('isLoggedIn')
+//   localStorage.clear();
+//   document.cookie =
+//     "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax; Secure";
+//   window.dispatchEvent(new Event("loginStatusChanged"));
+//   window.location.href = "/";
+
+// };
+
 const forceLogoutClient = () => {
-  // console.log("window", window)
-  // if (typeof window !== "undefined") {
-  console.log("window", window)
-  // sessionStorage.clear();
-  localStorage.removeItem('user')
-  localStorage.removeItem('autoLocation')
-  localStorage.removeItem('homeUserData')
-  localStorage.removeItem('isLoggedIn')
   localStorage.clear();
+
   document.cookie =
     "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax; Secure";
+
   window.dispatchEvent(new Event("loginStatusChanged"));
-  window.location.href = "/";
-  // } else {
-  //   redirect("/");
-  // }
+
+  // Don't redirect here
 };
 
 /**
@@ -82,10 +89,10 @@ export async function globalServerRequest({
         }
       }
     } else {
-      // --- Server Side ---
+
       try {
         const nextHeaders = await import("next/headers");
-        // NOTE: If using Next.js 13/14, change this to: const cookieStore = nextHeaders.cookies();
+
         const cookieStore = await nextHeaders.cookies();
         token = cookieStore.get("auth_token")?.value;
       } catch (e) {
@@ -191,7 +198,7 @@ export async function globalServerRequest({
       throw error;
     }
     console.error(`Global API Error on [${endpoint}]:`, error);
-    
+
     if (typeof window !== "undefined") {
       window.dispatchEvent(
         new CustomEvent("networkError", {
@@ -199,7 +206,7 @@ export async function globalServerRequest({
         })
       );
     }
-    
+
     return { success: false, error: "Network connection to backend failed." };
   }
 }

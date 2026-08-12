@@ -23,7 +23,6 @@ interface ReferralData {
   requiredThreshold: number;
   rewardAmount: number;
   status: ReferralStatus;
-  // Missing fields added below for the high-fidelity modal popup
   referrerName: string;
   referrerType: string;
   referredUserType: string;
@@ -36,119 +35,6 @@ interface ReferralData {
   rewardReferredStatus: ReferralStatus;
   paidOn: string;
 }
-
-const dummyData: ReferralData[] = [
-  {
-    id: "REF-312",
-    referredUserName: "John Smith",
-    referralType: "User → User",
-    joinedOn: "Jan 10,",
-    joinedYear: "2026",
-    qualifiedSpend: 200,
-    requiredThreshold: 200,
-    rewardAmount: 20,
-    status: "Paid",
-    referrerName: "Alice Johnson",
-    referrerType: "User",
-    referredUserType: "User",
-    qualificationPeriod: "30 Days",
-    qualificationEnds: "Feb 10, 2026",
-    minimumAmount: 200,
-    rewardReferrer: 20,
-    rewardReferrerStatus: "Paid",
-    rewardReferred: 10,
-    rewardReferredStatus: "Paid",
-    paidOn: "Jan 12, 2026",
-  },
-  {
-    id: "REF-311",
-    referredUserName: "Michael Brown",
-    referralType: "User → Contractor",
-    joinedOn: "Jan 18,",
-    joinedYear: "2026",
-    qualifiedSpend: 120,
-    requiredThreshold: 200,
-    rewardAmount: 20,
-    status: "Pending",
-    referrerName: "Sarah Jenkins",
-    referrerType: "User",
-    referredUserType: "Contractor",
-    qualificationPeriod: "30 Days",
-    qualificationEnds: "Feb 18, 2026",
-    minimumAmount: 200,
-    rewardReferrer: 20,
-    rewardReferrerStatus: "Pending",
-    rewardReferred: 15,
-    rewardReferredStatus: "Pending",
-    paidOn: "N/A",
-  },
-  {
-    id: "REF-310",
-    referredUserName: "David Lee",
-    referralType: "Contractor → User",
-    joinedOn: "Jan 20,",
-    joinedYear: "2026",
-    qualifiedSpend: 80,
-    requiredThreshold: 150,
-    rewardAmount: 20,
-    status: "Pending",
-    referrerName: "Robert Downey",
-    referrerType: "Contractor",
-    referredUserType: "User",
-    qualificationPeriod: "45 Days",
-    qualificationEnds: "Mar 06, 2026",
-    minimumAmount: 150,
-    rewardReferrer: 20,
-    rewardReferrerStatus: "Pending",
-    rewardReferred: 10,
-    rewardReferredStatus: "Pending",
-    paidOn: "N/A",
-  },
-  {
-    id: "REF-309",
-    referredUserName: "Chris Evans",
-    referralType: "User → User",
-    joinedOn: "Dec 10,",
-    joinedYear: "2025",
-    qualifiedSpend: 80,
-    requiredThreshold: 150,
-    rewardAmount: 20,
-    status: "Expired",
-    referrerName: "Scarlett Johansson",
-    referrerType: "User",
-    referredUserType: "User",
-    qualificationPeriod: "30 Days",
-    qualificationEnds: "Jan 10, 2026",
-    minimumAmount: 150,
-    rewardReferrer: 20,
-    rewardReferrerStatus: "Expired",
-    rewardReferred: 10,
-    rewardReferredStatus: "Expired",
-    paidOn: "N/A",
-  },
-  {
-    id: "REF-308",
-    referredUserName: "Mark Taylor",
-    referralType: "Contractor → Contractor",
-    joinedOn: "Dec 05,",
-    joinedYear: "2025",
-    qualifiedSpend: 150,
-    requiredThreshold: 150,
-    rewardAmount: 20,
-    status: "Paid",
-    referrerName: "Chris Hemsworth",
-    referrerType: "Contractor",
-    referredUserType: "Contractor",
-    qualificationPeriod: "30 Days",
-    qualificationEnds: "Jan 05, 2026",
-    minimumAmount: 150,
-    rewardReferrer: 20,
-    rewardReferrerStatus: "Paid",
-    rewardReferred: 20,
-    rewardReferredStatus: "Paid",
-    paidOn: "Dec 07, 2025",
-  },
-];
 
 interface Props {
   initialReferralData: {
@@ -229,7 +115,6 @@ const RefferalHistory = ({ initialReferralData }: Props) => {
   );
 
   const filteredData = historyData.filter((item: any) => {
-    // const matchesTab = activeFilter === "All" ? true : item.status === activeFilter;
     const matchesDropdown =
       selectedStatus === "Status"
         ? true
@@ -362,9 +247,6 @@ const RefferalHistory = ({ initialReferralData }: Props) => {
                       <td className="type-cell">{item.type}</td>
                       <td className="joined-cell">
                         {item.date}
-                        {/* {item.joinedOn}
-                                                <br />
-                                                {item.joinedYear} */}
                       </td>
                       <td>
                         <div className="progress-wrapper">
@@ -415,7 +297,6 @@ const RefferalHistory = ({ initialReferralData }: Props) => {
             </tbody>
           </table>
         </div>
-
         {pagination.totalPages > 1 && (
           <div className="pagination-container">
             <div className="pagination-info">
@@ -429,7 +310,6 @@ const RefferalHistory = ({ initialReferralData }: Props) => {
               of {pagination.totalItems} results
             </div>
             <div className="pagination-controls">
-              {/* <button className="page-btn arrow"><FaChevronLeft size={10} /></button> */}
               <button
                 className="page-btn arrow"
                 disabled={pagination.pageNo === 1}
@@ -437,10 +317,8 @@ const RefferalHistory = ({ initialReferralData }: Props) => {
               >
                 <FaChevronLeft size={10} />
               </button>
-
               {Array.from({ length: pagination.totalPages }, (_, index) => {
                 const page = index + 1;
-
                 return (
                   <button
                     key={page}
@@ -452,7 +330,6 @@ const RefferalHistory = ({ initialReferralData }: Props) => {
                   </button>
                 );
               })}
-              {/* <button className="page-btn arrow"><FaChevronRight size={10} /></button> */}
               <button
                 className="page-btn arrow"
                 disabled={!pagination.hasNextPage}
@@ -464,8 +341,6 @@ const RefferalHistory = ({ initialReferralData }: Props) => {
           </div>
         )}
       </div>
-
-      {/* ==================== HIGH-FIDELITY MODAL POPUP ==================== */}
       {selectedReferral && (
         <div
           style={{
@@ -474,7 +349,7 @@ const RefferalHistory = ({ initialReferralData }: Props) => {
             left: 0,
             width: "100%",
             height: "100%",
-            backgroundColor: "rgba(15, 23, 42, 0.4)", // slate-900 with opacity
+            backgroundColor: "rgba(15, 23, 42, 0.4)",
             backdropFilter: "blur(4px)",
             display: "flex",
             justifyContent: "center",
@@ -496,9 +371,8 @@ const RefferalHistory = ({ initialReferralData }: Props) => {
               fontFamily: "Inter, sans-serif",
               color: "#1E293B",
             }}
-            onClick={(e) => e.stopPropagation()} // Prevents closing when clicking inside
+            onClick={(e) => e.stopPropagation()}
           >
-            {/* Header */}
             <div
               style={{
                 display: "flex",
@@ -535,8 +409,6 @@ const RefferalHistory = ({ initialReferralData }: Props) => {
                 <FiX />
               </button>
             </div>
-
-            {/* Content Body */}
             {loadingDetails ? (
               <div
                 style={{
@@ -608,8 +480,6 @@ const RefferalHistory = ({ initialReferralData }: Props) => {
                     {referralDetail.referral_id || selectedReferral.referral_code || selectedReferral.id}
                   </span>
                 </div>
-
-                {/* Referrer */}
                 <div
                   style={{
                     display: "flex",
@@ -642,7 +512,6 @@ const RefferalHistory = ({ initialReferralData }: Props) => {
                   </div>
                 </div>
 
-                {/* Referred User */}
                 <div
                   style={{
                     display: "flex",
@@ -674,8 +543,6 @@ const RefferalHistory = ({ initialReferralData }: Props) => {
                     </div>
                   </div>
                 </div>
-
-                {/* Type */}
                 <div
                   style={{
                     display: "flex",
@@ -702,8 +569,6 @@ const RefferalHistory = ({ initialReferralData }: Props) => {
                     {referralDetail.type || selectedReferral.type}
                   </span>
                 </div>
-
-                {/* Joined On */}
                 <div
                   style={{
                     display: "flex",
@@ -730,8 +595,6 @@ const RefferalHistory = ({ initialReferralData }: Props) => {
                     {referralDetail.joined_on || selectedReferral.date}
                   </span>
                 </div>
-
-                {/* Qualification Period */}
                 <div
                   style={{
                     display: "flex",
@@ -758,8 +621,6 @@ const RefferalHistory = ({ initialReferralData }: Props) => {
                     {referralDetail.qualification_period || "N/A"}
                   </span>
                 </div>
-
-                {/* Qualification Ends */}
                 {selectedReferral?.status?.toLowerCase() !== "paid" && (
                   <div
                     style={{
@@ -788,8 +649,6 @@ const RefferalHistory = ({ initialReferralData }: Props) => {
                     </span>
                   </div>
                 )}
-
-                {/* Minimum Amount */}
                 <div
                   style={{
                     display: "flex",
@@ -816,8 +675,6 @@ const RefferalHistory = ({ initialReferralData }: Props) => {
                     ${referralDetail.minimum_amount ?? "0"}
                   </span>
                 </div>
-
-                {/* Progress Section */}
                 <div>
                   <div
                     style={{
@@ -887,8 +744,6 @@ const RefferalHistory = ({ initialReferralData }: Props) => {
                     </span>
                   </div>
                 </div>
-
-                {/* Divider */}
                 <hr
                   style={{
                     border: "none",
@@ -896,8 +751,6 @@ const RefferalHistory = ({ initialReferralData }: Props) => {
                     margin: "8px 0",
                   }}
                 />
-
-                {/* Reward (Referrer) */}
                 <div
                   style={{
                     display: "flex",
@@ -951,8 +804,6 @@ const RefferalHistory = ({ initialReferralData }: Props) => {
                     </span>
                   </div>
                 </div>
-
-                {/* Reward (Referred) */}
                 <div
                   style={{
                     display: "flex",
@@ -1006,8 +857,6 @@ const RefferalHistory = ({ initialReferralData }: Props) => {
                     </span>
                   </div>
                 </div>
-
-                {/* Paid On */}
                 <div
                   style={{
                     display: "flex",

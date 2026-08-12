@@ -1,4 +1,4 @@
-export const baseURL = "https://seva.tgastaging.com/api/v1/";
+export const baseURL = "https://spartanlms.tgastaging.com/api/";
 
 export const imageBase = "https://spartanlms.tgastaging.com/api/";
 

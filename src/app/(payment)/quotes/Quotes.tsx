@@ -31,12 +31,9 @@ export default function Quotes() {
   const [limit, setLimit] = useState<number>(2);
   const [showLoadMore, setShowLoadMore] = useState(false);
   const [hasMore, setHasMore] = useState<boolean>(true);
-  const [btnHover, setBtnHover] = useState(false);
   const [serviceId, setServiceId] = useState<string>("");
   const [additionalId, setAdditionalId] = useState<string>("");
   const [isAddactional, setIsAddactional] = useState<boolean>(false);
-
-  const [expandService, setExpandService] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchQuotes = async () => {
@@ -65,7 +62,6 @@ export default function Quotes() {
         } else {
           if (pageNo === 1) setQuotes([]);
           setHasMore(false);
-          // setShowLoadMore(false);
         }
 
       } catch (error) {
@@ -134,9 +130,7 @@ export default function Quotes() {
       if (response.success) {
 
         window.dispatchEvent(new Event("quoteUpdated"));
-
         const bootstrap = (window as any).bootstrap;
-
         const currentModalEl = document.getElementById("servicesRejection");
         const confirmModalEl = document.getElementById("#servicesRejected");
 
@@ -173,7 +167,6 @@ export default function Quotes() {
     try {
       const response = await globalServerRequest({
         endpoint: `booking/delete-quote`,
-        // endpoint: ``,
         method: "POST",
         payload: {
           quote_id: selectedBookingData?.quote_id,
@@ -188,14 +181,7 @@ export default function Quotes() {
       console.error("Error cancelling booking:", error);
       toast.error("Failed to cancel booking. Please try again.");
     }
-
-
   }
-
-
-
-
-
 
   return (
     <>
@@ -208,7 +194,6 @@ export default function Quotes() {
                   <div className="browse-wrp">
                     <div className="browse-ctg-head my-con-head">
                       <h2 className="sub-cate-page">
-                        {/* <a href="index.html"><img src="images/home/left-arrow.svg" alt="" /></a> */}
                         <button
                           type="button"
                           onClick={() => router.back()}
@@ -241,14 +226,6 @@ export default function Quotes() {
                                     : ""
                                     }`}
                                   type="button"
-                                  // onClick={() => {
-                                  //   if (activeTab !== item.toLowerCase()) {
-                                  //     setActiveTab(item.toLowerCase());
-                                  //     setPageNo(1);
-                                  //     setQuotes([]);
-                                  //   }
-                                  // }}
-
                                   onClick={() => {
                                     if (activeTab !== item.toLowerCase()) {
                                       setActiveTab(item.toLowerCase());
@@ -323,16 +300,17 @@ export default function Quotes() {
                                                     <li key={k}>{issue.name}</li>
                                                   ))}
                                                 </ul>
+                                                <p className="normal-text" style={{ marginTop: "15px" }}>
+                                                  Problem Description
+                                                </p>
+                                                <span>{srv.services_description || "N/A"}</span>
                                               </li>
                                             ))}
                                           </ul>
                                         </li>
                                       ))}
-
-                                      {/* MORE / LESS SERVICES LOGIC INSIDE THE SAME OL */}
                                       {item.sub_categories?.length > 1 && (
                                         <>
-                                          {/* 2. "+ X more category" Button - Number hide karne ke liye inline styles use kiye hain */}
                                           {!isServicesOpen && (
                                             <li
                                               className="more-service"
@@ -347,8 +325,6 @@ export default function Quotes() {
                                               + {item.sub_categories.length - 1} more sub category
                                             </li>
                                           )}
-
-                                          {/* 3. Expanded Content Block - Fragment use karne se numbering sequence break nahi hogi */}
                                           {isServicesOpen && (
                                             <>
                                               {item.sub_categories?.slice(1).map((subCat: any, i: number) => (
@@ -363,6 +339,10 @@ export default function Quotes() {
                                                             <li key={k}>{issue.name}</li>
                                                           ))}
                                                         </ul>
+                                                        <p className="normal-text" style={{ marginTop: "15px" }}>
+                                                          Problem Description
+                                                        </p>
+                                                        <span>{srv.services_description || "N/A"}</span>
                                                       </li>
                                                     ))}
                                                   </ul>
@@ -453,20 +433,18 @@ export default function Quotes() {
                                         </div>
                                       )
                                     }
-                                    <p>{item.description}</p>
+                                    {/* <p>{item.description}</p> */}
                                     <div className="service-quotes">
                                       <p className="service-cost">
                                         Cost:<span>${typeof item.cost === 'object' ? (item.cost?.totalAmount || item.cost?.amount || "") : item.cost}</span>
                                       </p>
                                       <div className="home-quotes-cta">
-                                        {/* RECEIVED */}
                                         {activeTab === "received" && (
                                           <>
                                             <button
                                               className="reject-btn"
                                               data-bs-target="#servicesRejection"
                                               data-bs-toggle="modal"
-                                              // onClick={() => handleAction(item, 'reject')}
                                               onClick={() => {
                                                 setServiceId(item.has_additional_services ? item.additional_services.booking_id : item.quote_id);
                                                 setAdditionalId(item.has_additional_services ? item.additional_services?.items?.[0]?.id : null);
@@ -501,17 +479,13 @@ export default function Quotes() {
                                           <>
                                             <button
                                               className="reject-btn"
-                                              // data-bs-target="#servicesRejection"
-                                              // data-bs-toggle="modal"
                                               onClick={() => {
                                                 setSelectedBookingData(item);
                                                 setShowCancle(true);
                                               }}
-                                            // onClick={() => setServiceId(item?.quote_id)}
                                             >
                                               Cancel
                                             </button>
-
                                             <button
                                               className="primary-cta rgt"
                                               onClick={() =>
@@ -522,8 +496,6 @@ export default function Quotes() {
                                             </button>
                                           </>
                                         )}
-
-                                        {/* ACCEPTED */}
                                         {activeTab === "accepted" && (
                                           <button className="primary-cta rgt" onClick={() => window.open(item?.download_url, "_blank")} >
                                             <img
@@ -542,12 +514,11 @@ export default function Quotes() {
                             );
                           })
                         )}
-
-                          {hasMore && (
-                            <div ref={observerTarget} style={{ height: '40px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                              {loading && <div className="spinner-border text-danger spinner-border-sm" role="status"><span className="visually-hidden">Loading...</span></div>}
-                            </div>
-                          )}
+                        {hasMore && (
+                          <div ref={observerTarget} style={{ height: '40px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                            {loading && <div className="spinner-border text-danger spinner-border-sm" role="status"><span className="visually-hidden">Loading...</span></div>}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>

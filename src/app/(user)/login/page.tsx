@@ -4,7 +4,6 @@ import ClientComponent from "./ClientComponent";
 import { ServerActionResponse } from "@/types/auth";
 
 export default async function LoginPage() {
-  // Explicitly typed Server Action
   async function handleLogin(
     email: string,
     password: string

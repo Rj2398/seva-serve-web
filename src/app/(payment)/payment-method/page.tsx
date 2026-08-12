@@ -1,13 +1,9 @@
 
 export const dynamic = "force-dynamic";
-
 import React, { Suspense } from 'react'
 import PaymentMethod from './PaymentMethod'
 import { globalServerRequest } from '@/actions/globalApi';
-
-
 export default async function PaymentPage() {
-
 
   let initialCardsData = {
     cards: [],
@@ -24,8 +20,6 @@ export default async function PaymentPage() {
   } else {
     initialCardsData = { cards: [] };
   }
-
-
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 px-4 dark:bg-zinc-950">

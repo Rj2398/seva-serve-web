@@ -6,7 +6,6 @@ import LogoLoader from '@/components/common/LogoLoader'
 
 const Payment = () => {
     const router = useRouter()
-
     const [activeTab, setActiveTab] = useState('all');
     const [payments, setPayments] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
@@ -134,7 +133,6 @@ const Payment = () => {
                                                 </ul>
                                             </div>
                                         </div>
-
                                         <div className="tab-content">
                                             <div className="my-payments-body-wrp">
                                                 {loading && pageNo === 1 ? (
@@ -152,10 +150,7 @@ const Payment = () => {
                                                                 : `Payment for ${item.type || 'Booking'}`;
                                                             const amountText = item.currency === 'USD' || !item.currency ? `$${item.amount}` : `${item.currency} ${item.amount}`;
                                                             const { date, time } = formatPaidAt(item.paid_at || item.created_at);
-
-                                                            // Determine query parameters for checkout redirection
                                                             const checkoutUrl = `/checkout?booking_id=${item.booking_id}&initialpayment=${item.payment_type === 'initial' ? item.amount : 0}&remaingPayment=${item.payment_type === 'full' ? item.amount : 0}&paymenttype=${item.payment_type}`;
-
                                                             return (
                                                                 <div className="my-payments-body" key={item.transaction_id || item.id}>
                                                                     <div className="left-payments-body">
@@ -199,11 +194,9 @@ const Payment = () => {
                                                                 </div>
                                                             );
                                                         })}
-
                                                         {payments.length === 0 && (
                                                             <p className="text-center">No {activeTab} payments found.</p>
                                                         )}
-
                                                         {pagination && pagination.hasNextPage && (
                                                             <div ref={observerTarget} style={{ height: '40px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                                                                 {loading && <div className="spinner-border text-danger spinner-border-sm" role="status"><span className="visually-hidden">Loading...</span></div>}

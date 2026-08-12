@@ -41,38 +41,14 @@ export default function TermCondition({ initialTAndCData }: TermConditionProps) 
 
                     </div>
                     <div className="about-us-body">
-                      {/* <p className="about-us-data">Your trust and privacy are our top priorities. SevaServe  connects users with verified service professionals through a secure, transparent platform.
-                        By using our app, you agree to:
-                        Provide accurate information while creating your account or booking services.
-                        Use the app responsibly and communicate respectfully with contractors.
-                        Make payments securely through authorized gateways only.
-                        Allow SevaServe  to contact you regarding bookings, offers, or feedback.
-                        All service prices, quotes, and timelines are approximate and subject to mutual confirmation between you and the contractor.
-                        SevaServe  is not liable for delays caused by external factors such as traffic, power issues, or weather conditions.
-                        We reserve the right to update terms or service policies at any time. Continued use of the app means you accept the latest version of these Terms.</p>
-
-                      <p className="about-us-data">Your trust and privacy are our top priorities. SevaServe  connects users with verified service professionals through a secure, transparent platform.
-                        By using our app, you agree to:
-                        Provide accurate information while creating your account or booking services.
-                        Use the app responsibly and communicate respectfully with contractors.
-                        Make payments securely through authorized gateways only.
-                        Allow SevaServe  to contact you regarding bookings, offers, or feedback.
-                        All service prices, quotes, and timelines are approximate and subject to mutual confirmation between you and the contractor.
-                        SevaServe  is not liable for delays caused by external factors such as traffic, power issues, or weather conditions.
-                        We reserve the right to update terms or service policies at any time. Continued use of the app means you accept the latest version of these Terms.</p> */}
-
                       <div dangerouslySetInnerHTML={{ __html: termAndCond.content }} />
-
                     </div>
                   </div>
                 </div>
               </div>
             </div>
           </section>
-
-
         </div>
-
       </main>
     </>
   )

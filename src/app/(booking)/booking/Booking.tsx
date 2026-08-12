@@ -1,5 +1,4 @@
 "use client";
-
 import { globalServerRequest } from "@/actions/globalApi";
 import CancelBooking from "@/components/modals/bookingmodals/CancelBooking";
 import ConfirmCancelBooking from "@/components/modals/bookingmodals/ConfirmCancelBooking";
@@ -7,17 +6,13 @@ import ContractorRequest from "@/components/modals/bookingmodals/ContractorReque
 import DatePopup, {
   ReschedulePayload,
 } from "@/components/modals/bookingmodals/DatePopup";
-import NewServiceRejectionModal from "@/components/modals/bookingmodals/NewServiceRejectionModal";
 import PaymentRemainingPopup from "@/components/modals/bookingmodals/PaymentRemainingPopup";
 import RateContractorPopup from "@/components/modals/bookingmodals/RateContractorPopup";
 import RescheduleRequestSubmit from "@/components/modals/bookingmodals/RescheduleRequestSubmit";
-import ServiceAccepted from "@/components/modals/bookingmodals/ServiceAccepted";
-import ServiceRejected from "@/components/modals/bookingmodals/ServiceRejected";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
 import toast from "react-hot-toast";
-
 
 const canReschedule = (
   bookingDateTime: string | Date | null | undefined
@@ -29,13 +24,8 @@ const canReschedule = (
   if (isNaN(bookingDate.getTime())) {
     return false;
   }
-
   const now = Date.now();
-
-  // Time remaining until booking
   const remainingTime = bookingDate.getTime() - now;
-
-  // Allow only if at least 24 hours remain
   return remainingTime >= 24 * 60 * 60 * 1000;
 };
 
@@ -48,8 +38,6 @@ interface BookingProps {
 }
 
 export default function Booking({ initialBookingData }: BookingProps) {
-  const router = useRouter();
-  // console.log("initialBookingData", initialBookingData)
   const [myBookingData, setMyBookingData] = useState<any>(initialBookingData);
   const [activeTab, setActiveTab] = useState("upcoming");
   const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
@@ -60,10 +48,6 @@ export default function Booking({ initialBookingData }: BookingProps) {
   const [expandedQuotes, setExpandedQuotes] = useState<Record<number, boolean>>(
     {}
   );
-
-  //   const [expandedAdditional, setExpandedAdditional] = useState<
-  //   Record<number, boolean>
-  // >({});
 
   const [quote_id, setQuoteId] = useState<any>();
   const [bookingPaymentInfo, setBookingPaymentInfo] = useState<any>(null);
@@ -89,8 +73,7 @@ export default function Booking({ initialBookingData }: BookingProps) {
 
       const [response] = await Promise.all([
         globalServerRequest({
-          // endpoint: `booking/reschedule`,
-          endpoint: ``,
+          endpoint: `booking/reschedule`,
           method: "POST",
           payload: {
             bookingId: bookingId,
@@ -115,8 +98,6 @@ export default function Booking({ initialBookingData }: BookingProps) {
       toast.error("Failed to reschedule booking. Please try again.");
     }
   };
-
-
 
   const handleContractorRequest = async () => {
     await fetchBookingData(1);
@@ -281,7 +262,7 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                   type="button"
 
                                   onClick={() => {
-                                    setActiveTab(item.toLowerCase()); // ya previous/cancelled
+                                    setActiveTab(item.toLowerCase());
                                     setPageNo(1);
                                     setHasMore(false);
                                     setShowLoadMore(false);
@@ -307,7 +288,6 @@ export default function Booking({ initialBookingData }: BookingProps) {
                           {booking && booking.length > 0 ? (
                             booking.map((item: any, index: number) => {
                               const isServicesOpen = !!expandedQuotes[index];
-                              // const isAdditionalOpen = !!expandedAdditional[index];
                               const isCompleted = item?.status === "completed";
                               const isCancelled = item?.status === "contractor_cancel" || item?.status === "customer_cancel";
                               const isUpcoming = item?.status === "upcoming";
@@ -331,7 +311,6 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                 >
                                   <div className="my-quotes-inner">
                                     <div className="my-booking-wrpper">
-                                      {/* Category Image */}
                                       <div className="booking-left-img">
                                         <img
                                           src={item?.categoryImageUrl || ""}
@@ -376,20 +355,37 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                               }
                                             </>
                                           )}
-                                          {isCancelled && (
-                                            <p className="plm cmp">
+                                        </div>
+                                        {isCancelled && (
+                                          <div className="plumbing-top">
+                                            <p className="plm">
                                               {item?.categoryName}
-                                              <img src="images/home/up-right-arrow.svg" alt="" />{" "}
-                                              <span>
-                                                Cancelled{" "}
+                                              <img src="images/home/up-right-arrow.svg" alt="" />
+                                            </p>
+                                            <div className="add-progress">
+                                              <p className="right">
                                                 <img
-                                                  src="images/inner-page/delete-icon-can.svg"
+                                                  src="images/inner-page/in-progress.svg"
                                                   alt=""
                                                 />
-                                              </span>
-                                            </p>
-                                          )}
-                                        </div>
+                                                {item?.status}
+                                              </p>
+                                            </div>
+                                          </div>
+                                          // <p className="plm cmp">
+                                          //   {item?.categoryName}
+                                          //   <img src="images/home/up-right-arrow.svg" alt="" />{" "}
+                                          //   <span>
+                                          //     {/* Cancelled{" "} */}
+                                          //     {item?.status}
+                                          //     <img
+                                          //       src="images/inner-page/delete-icon-can.svg"
+                                          //       alt=""
+                                          //     />
+                                          //   </span>
+                                          // </p>
+                                        )}
+
                                         {(isUpcoming || isOngoing) && (
                                           <div className="plumbing-top">
                                             <p className="plm">
@@ -407,7 +403,6 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                             </div>
                                           </div>
                                         )}
-                                        {/* Booking Date & Time */}
                                         <p className="sub-cate">
                                           {item?.bookingDateTime ? (
                                             `${new Date(item.bookingDateTime).toLocaleDateString("en-US", {
@@ -430,22 +425,16 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                             <span>{`$ ${item?.payment?.totalAmount ?? 0}`}</span>
                                           </p>
                                         )}
-                                        {/* Selected Services List */}
                                         <p className="sub-cate">Selected Services</p>
                                         <div className="service-list-type">
-
                                           <ol className="main-category">
-                                            {/* 1. First Service (Always Visible) */}
                                             {item?.services?.slice(0, 1).map((service: any, idx: number) => (
                                               <li key={`first-${idx}`}>
                                                 {service?.name || service?.serviceName || "Service"}
                                               </li>
                                             ))}
-
-                                            {/* MORE / LESS SERVICES LOGIC INSIDE THE SAME OL */}
                                             {item?.services?.length > 1 && (
                                               <>
-                                                {/* 2. "+ X more services" Button */}
                                                 {!isServicesOpen && (
                                                   <li
                                                     className="more-service"
@@ -464,8 +453,6 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                                     + {item.services.length - 1} more services
                                                   </li>
                                                 )}
-
-                                                {/* 3. Expanded Services List */}
                                                 {isServicesOpen && (
                                                   <>
                                                     {item?.services?.slice(1).map((service: any, idx: number) => (
@@ -473,8 +460,6 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                                         {service?.name || service?.serviceName || "Service"}
                                                       </li>
                                                     ))}
-
-                                                    {/* 4. "Less services" Button */}
                                                     <li
                                                       style={{
                                                         cursor: "pointer",
@@ -497,17 +482,13 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                               </>
                                             )}
                                           </ol>
-
                                           <div className="service-quotes">
-                                            {/* Amount display for active jobs */}
                                             {(isUpcoming || isOngoing) && (
                                               <p className="service-cost">
                                                 Amount :
                                                 <span>{`$ ${item?.payment?.totalAmount ?? 0}`}</span>
                                               </p>
                                             )}
-
-                                            {/* Actions & Dynamic CTA buttons */}
                                             {isContractorReschedule ? (
                                               isUpcoming ? (
                                                 isAccpectedDate ? (
@@ -590,14 +571,6 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                                         canRescheduleBooking ? handleLoadRescheduleRequest(item) : toast.error("You have already rescheduled this booking once. Further rescheduling is not allowed.")
                                                       }
                                                       disabled={!canRescheduleBooking}
-                                                    // onClick={() => {
-                                                    //   setShowDatePicker(true);
-                                                    //   setbookingId(item?.bookingId);
-                                                    //   setQuoteId(item?.quoteId);
-                                                    // }}
-                                                    // data-bs-target="#select-date-time-popup"
-                                                    // data-bs-toggle="modal"
-
                                                     >
                                                       <img
                                                         src="images/inner-page/clock-booking.svg"
@@ -638,8 +611,6 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                               )
                                             )}
                                           </div>
-
-                                          {/* Payment & Feedback status triggers */}
                                           {item?.payment?.isPaid === false ? (
                                             isCompleted && (
                                               <div className="service-quotes my-booking">
@@ -711,8 +682,46 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                                 </div>
                                               </div>
                                             )
-
                                           )}
+                                          {
+                                            isCancelled && (
+                                              <div className="service-quotes my-booking">
+                                                <div className="home-quotes-cta">
+                                                  <button
+                                                    className="reject-btn"
+                                                    onClick={() => {
+                                                      toast.error("Booking cancellation request is in review this action is not allowed at this moment.");
+                                                    }}
+                                                  >
+                                                    Cancel
+                                                  </button>
+                                                  {canReschedule(item?.bookingDateTime) ? (
+                                                    <button
+                                                      className="primary-cta rgt"
+                                                      onClick={() =>
+                                                        toast.error("Booking cancellation request is in review this action is not allowed at this moment.")
+                                                      }
+                                                      disabled={!canRescheduleBooking}
+                                                    >
+                                                      <img
+                                                        src="images/inner-page/clock-booking.svg"
+                                                        className="img-left"
+                                                        alt=""
+                                                      />
+                                                      Reschedule
+                                                    </button>
+                                                  ) : (
+                                                    <Link
+                                                      href={`/view-booking-detail?bookingId=${item?.bookingId}`}
+                                                      className="reject-btn"
+                                                    >
+                                                      View Details
+                                                    </Link>
+                                                  )}
+                                                </div>
+                                              </div>
+                                            )
+                                          }
                                         </div>
                                       </div>
 
@@ -787,9 +796,7 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                         Less service
                                       </li>
                                     </ol>
-
                                     <div className="service-quotes my-booking">
-                                      {/* <!-- <p className="service-cost">Cost:<span>$149</span></p> --> */}
                                       <div className="home-quotes-cta">
                                         <button
                                           className="reject-btn"
@@ -854,8 +861,6 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                       <li>Toilet Blockage</li>
                                     </ol>
                                     <ol className="main-category booking">
-                                      {/* <!-- <li className="more-service">+ 1 more service</li> --> */}
-
                                       <div className="service-data">
                                         <ol className="main-category">
                                           <li>Sink Installation</li>
@@ -866,15 +871,10 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                         Less service
                                       </li>
                                     </ol>
-
                                     <div className="service-quotes my-booking">
-                                      {/* <!-- <p className="service-cost">Cost:<span>$149</span></p> --> */}
                                       <div className="home-quotes-cta">
-                                        {/* <!-- <button className="reject-btn">Cancel</button> --> */}
                                         <button
                                           className="primary-cta rgt"
-                                        // data-bs-target="#rescheduleRequest"
-                                        // data-bs-toggle="modal"
                                         >
                                           <img
                                             src="images/inner-page/download-icon.svg"
@@ -959,9 +959,6 @@ export default function Booking({ initialBookingData }: BookingProps) {
         setIsOpen={setShowDatePicker}
         onConfirm={handleRescheduleBooking}
       />
-
-      {/* <ServiceAccepted  />
-      <ServiceRejected /> */}
       <ContractorRequest booking={selectedBooking} onConfirm={handleContractorRequest} />
       <RescheduleRequestSubmit />
       <PaymentRemainingPopup
@@ -969,22 +966,13 @@ export default function Booking({ initialBookingData }: BookingProps) {
         bookingId={bookingId !== null ? String(bookingId) : ""}
         quote_id={quote_id}
       />
-      {/* <CancelBooking
-        isOpen={showCancle}
-        setIsOpen={setShowCancle}
-        onConfirm={handleCancleBooking}
-        bookingData={selectedBookingData}
-      /> */}
-
       <CancelBooking
         isOpen={showCancle}
         setIsOpen={setShowCancle}
         onCancel={handleCancel}
       />
-
       <ConfirmCancelBooking />
       <RateContractorPopup bookingId={bookingId} callBooking={() => fetchBookingData(1)} />
-      {/* <NewServiceRejectionModal /> */}
     </>
   );
 }

@@ -41,7 +41,6 @@ const SavedAddress = ({ addressData }: addressprops) => {
   const [addresses, setAddresses] = useState<any[]>(addressData || []);
   const [selectedAddress, setSelectedAddress] = useState<any>(null);
 
-  // Sync when addressData loads from API (page fetches client-side)
   useEffect(() => {
     if (addressData && Array.isArray(addressData)) {
       setAddresses(addressData);
@@ -85,7 +84,6 @@ const SavedAddress = ({ addressData }: addressprops) => {
     if (response?.success) {
       toast.success("Address marked as default successfully");
 
-      // Update the header instantly via local storage
       const item = addresses.find((a: any) => a.id === id);
       if (item && typeof window !== 'undefined') {
         const displayFlat = item.flat || item.flat_house_building || '';
@@ -109,8 +107,6 @@ const SavedAddress = ({ addressData }: addressprops) => {
       toast.error("Failed to set address as default");
     }
   };
-
-
 
   return (
     <>
@@ -157,8 +153,6 @@ const SavedAddress = ({ addressData }: addressprops) => {
                           ) : (
                             <MdOutlineShareLocation size={24} />
                           );
-
-
                         return (
                           <div className="saved-addresses-in" key={item.id}>
                             <div className="saved-addresses-icon">
@@ -173,37 +167,12 @@ const SavedAddress = ({ addressData }: addressprops) => {
                                 </span>
                               </p>
                             </div>
-                            {/* <div className="saved-addresses-cta">
-                            <button
-                              type="button"
-                              data-bs-target="#add-address-popup"
-                              data-bs-toggle="modal"
-                              onClick={() => setSelectedAddress(item)}
-                            >
-                              <img src="images/saved-addresses/edit.svg" alt="Edit" />
-                            </button>
-                            <button
-                              type="button"
-                              data-bs-target="#delete-address-popup"
-                              data-bs-toggle="modal"
-                              onClick={() => setSelectedAddress(item)}
-                            >
-                              <img src="images/saved-addresses/delete.svg" alt="Delete" />
-                            </button>
-                          </div> */}
-
-
-
                             <div className="saved-addresses-cta">
-
                               {!item.is_default ? <a type="button" className="primary-cta" onClick={() => makeDefaultAddress(item.id)}><i
                               ></i> Set as default</a> :
                                 <a type="button" style={{ background: '#363636', border: "1px solid    #363636", color: "#fff", cursor: "not-allowed", borderRadius: '20px', width: 'fit-content', padding: '3px 15px' }}><i
                                 ></i> Default</a>
                               }
-
-
-                              {/* Edit Button */}
                               <button
                                 type="button"
                                 data-bs-target="#add-address-popup"
@@ -212,8 +181,6 @@ const SavedAddress = ({ addressData }: addressprops) => {
                               >
                                 <img src="images/saved-addresses/edit.svg" alt="Edit" />
                               </button>
-
-                              {/* Delete Button */}
                               <button
                                 type="button"
                                 data-bs-target="#delete-address-popup"

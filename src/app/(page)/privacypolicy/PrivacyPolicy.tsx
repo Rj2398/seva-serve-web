@@ -47,19 +47,6 @@ export default function PrivacyPolicy({ initialPrivacyPolicyData }: PrivacyPolic
 
                     </div>
                     <div className="about-us-body">
-                      {/* <p className="about-us-data">At SevaServe , your personal data is handled with care and transparency.
-                        We collect only the information necessary to deliver smooth and personalized service — such as your name, contact details, service preferences, location (if permitted), and payment details.
-                        We never sell or rent your personal information to third parties.
-                        All data is securely stored and shared only with verified service partners directly related to your request.
-                        You have full control of your data and can update, export, or delete it anytime via your profile settings.
-                        For safety, we recommend keeping your app updated to the latest version to enjoy new security features and improvements.</p>
-
-                      <p className="about-us-data">At SevaServe , your personal data is handled with care and transparency.
-                        We collect only the information necessary to deliver smooth and personalized service — such as your name, contact details, service preferences, location (if permitted), and payment details.
-                        We never sell or rent your personal information to third parties.
-                        All data is securely stored and shared only with verified service partners directly related to your request.
-                        You have full control of your data and can update, export, or delete it anytime via your profile settings.
-                        For safety, we recommend keeping your app updated to the latest version to enjoy new security features and improvements.</p> */}
                       <div dangerouslySetInnerHTML={{ __html: privacyPolicy.content }} />
                     </div>
                   </div>

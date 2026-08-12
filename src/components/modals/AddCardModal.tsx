@@ -6,9 +6,14 @@ import React, { useEffect, useRef } from "react";
 interface AddCardModalProps {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
+  onClose?: () => any;
 }
 
-const AddCardModal: React.FC<AddCardModalProps> = ({ isOpen, setIsOpen }) => {
+const AddCardModal: React.FC<AddCardModalProps> = ({
+  isOpen,
+  setIsOpen,
+  onClose,
+}) => {
   const modalRef = useRef<HTMLDivElement>(null);
 
   // Sync React's isOpen prop with Bootstrap's programmatic Modal instance
@@ -58,7 +63,10 @@ const AddCardModal: React.FC<AddCardModalProps> = ({ isOpen, setIsOpen }) => {
               <button
                 type="button"
                 className="btn-close"
-                onClick={() => setIsOpen(false)}
+                onClick={() => {
+                  setIsOpen(false);
+                  if (onClose) onClose();
+                }}
                 aria-label="Close"
               ></button>
             </div>
@@ -76,7 +84,10 @@ const AddCardModal: React.FC<AddCardModalProps> = ({ isOpen, setIsOpen }) => {
                 </p>
                 <Link
                   href="/add-new-card"
-                  onClick={() => setIsOpen(false)} // Cleanly close modal via state on click before routing
+                  onClick={() => {
+                    setIsOpen(false);
+                    if (onClose) onClose();
+                  }}
                   className="primary-cta"
                 >
                   Add Card

@@ -39,12 +39,9 @@ const HelpSupport = () => {
             </div>
           </div>
         </section>
-       
-         
       </div>
-   
     </main>
-   </>
+    </>
   )
 }
 

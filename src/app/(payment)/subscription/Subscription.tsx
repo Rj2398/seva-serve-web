@@ -21,8 +21,6 @@ const Subscription = () => {
     { id: 'Yearly', price: '$5.99', popular: false }
   ];
 
-
-
   return (
     <>
       <main>
@@ -99,10 +97,7 @@ const Subscription = () => {
               </div>
             </div>
           </section>
-
-
         </div>
-
       </main>
     </>
   )

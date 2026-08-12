@@ -12,13 +12,11 @@ const page = async ({ searchParams }: { searchParams: Promise<SearchParams> }) =
   const resolvedSearchParams = await searchParams;
   const bookingId = resolvedSearchParams.booking_id || resolvedSearchParams.bookingId;
 
-  console.log("bookingId",bookingId)
-
   let initialData = null;
 
   try {
     if (bookingId) {
-      let res = await globalServerRequest({
+      const res = await globalServerRequest({
         endpoint: "profile/job-tracking",
         method: "POST",
         payload: {

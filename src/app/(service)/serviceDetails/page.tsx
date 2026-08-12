@@ -24,7 +24,6 @@ async function ServicePageContent({ searchParams }: PageProps) {
   if (categoryId || serviceId) {
     try {
       console.log("hello 1")
-      // Try POST first
       let response = await globalServerRequest({
         endpoint: "services/getCategoryService",
         method: "POST",
@@ -38,7 +37,6 @@ async function ServicePageContent({ searchParams }: PageProps) {
 
       console.log("hello 2", response)
 
-      // Fallback to GET if POST was unsuccessful
       if (!response.success) {
         console.log("response 1", response)
         const queryParams = [];

@@ -1,14 +1,10 @@
-import React from 'react'
 import BookingUpdate from './BookingUpdate'
 import { globalServerRequest } from '@/actions/globalApi';
-
-
 
 interface SearchParams {
   bookingId?: string;
   late_alert_id?: string;
 }
-
 
 const page = async ({ searchParams }: { searchParams: Promise<SearchParams> }) => {
 
@@ -20,7 +16,7 @@ const page = async ({ searchParams }: { searchParams: Promise<SearchParams> }) =
   let initialData = null;
 
   try {
-    let res = await globalServerRequest({
+    const res = await globalServerRequest({
       endpoint: "booking/get-running-late-request",
       method: "POST",
       payload: {
@@ -39,8 +35,6 @@ const page = async ({ searchParams }: { searchParams: Promise<SearchParams> }) =
   } catch (error) {
     console.log(error)
   }
-
-
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 px-4 dark:bg-zinc-950">

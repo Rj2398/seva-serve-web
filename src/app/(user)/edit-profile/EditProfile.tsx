@@ -109,8 +109,6 @@ const EditProfile = () => {
       if (response.success) {
         toast.success("Profile completed successfully!");
         const updatedUser = response.data?.data || response.data;
-
-        // Sync localStorage user object
         const rawUser = localStorage.getItem("user");
         if (rawUser) {
           try {
@@ -125,9 +123,7 @@ const EditProfile = () => {
             console.error(e);
           }
         }
-
         window.dispatchEvent(new Event("loginStatusChanged"));
-
         setShowAddCardModal(true);
       } else {
         toast.error(response.error || "Failed to update profile");

@@ -28,7 +28,6 @@ const VerifyProfile = ({ initialMode = "phone" }: VerifyProfileProps) => {
   }, [initialMode]);
 
   const handleContinue = async () => {
-    // 1. FRONTEND VALIDATION
     const rawValue = isEmailLogin ? inputValue : inputValue.replace(/\D/g, "");
 
     if (isEmailLogin) {
@@ -55,7 +54,6 @@ const VerifyProfile = ({ initialMode = "phone" }: VerifyProfileProps) => {
       }
     }
 
-    // Clear previous errors and set loading to true
     setError("");
     setLoading(true);
 
@@ -73,7 +71,6 @@ const VerifyProfile = ({ initialMode = "phone" }: VerifyProfileProps) => {
       if (response.success) {
         toast.success(response.data?.message || response.data?.messages || "OTP sent successfully!");
 
-        // Hide Screen 1
         const currentModal = document.getElementById("verify-profile-screen-1");
         if (currentModal) {
           const bootstrapModal =
@@ -81,7 +78,6 @@ const VerifyProfile = ({ initialMode = "phone" }: VerifyProfileProps) => {
           bootstrapModal?.hide();
         }
 
-        // Show Screen 2 (OTP Entering Screen)
         const nextModal = document.getElementById("verify-profile-screen-2");
         if (nextModal) {
           const nextInstance = new window.bootstrap.Modal(nextModal);
@@ -105,10 +101,7 @@ const VerifyProfile = ({ initialMode = "phone" }: VerifyProfileProps) => {
   const closeModalBeforeNavigation = (modalId: string) => {
     const currentModal = document.getElementById(modalId);
     if (currentModal) {
-      // 1. Get the active Bootstrap modal instance
       const bootstrapModal = window.bootstrap?.Modal.getInstance(currentModal);
-
-      // 2. Hide it cleanly (this removes the dark backdrop instantly)
       bootstrapModal?.hide();
     }
   };
@@ -260,20 +253,11 @@ const VerifyProfile = ({ initialMode = "phone" }: VerifyProfileProps) => {
                         value={inputValue}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                           if (isEmailLogin) {
-                            // EMAIL INPUT
                             setInputValue(e.target.value);
                             setError("");
                           } else {
-                            // PHONE INPUT (US FORMAT)
                             const onlyNumbers = e.target.value.replace(/\D/g, "").substring(0, 10);
                             let formatted = onlyNumbers;
-                            // if (onlyNumbers.length > 6) {
-                            //   formatted = `(${onlyNumbers.slice(0, 3)}) ${onlyNumbers.slice(3, 6)}-${onlyNumbers.slice(6)}`;
-                            // } else if (onlyNumbers.length > 3) {
-                            //   formatted = `(${onlyNumbers.slice(0, 3)}) ${onlyNumbers.slice(3)}`;
-                            // } else if (onlyNumbers.length > 0) {
-                            //   formatted = `(${onlyNumbers}`;
-                            // }
                             setError("");
                             setInputValue(formatted);
                           }
@@ -309,9 +293,7 @@ const VerifyProfile = ({ initialMode = "phone" }: VerifyProfileProps) => {
                       {loading ? "Sending..." : "Continue"}
                     </button>
                   </form>
-
                   <div className="divider"></div>
-
                   <div
                     className="email-option"
                     onClick={() => {
@@ -364,7 +346,6 @@ const VerifyProfile = ({ initialMode = "phone" }: VerifyProfileProps) => {
           </div>
         </div>
       </div>
-
       <VerifyProfileOtpModal emailLogin={isEmailLogin} loginValue={inputValue} />
     </>
   );

@@ -1,7 +1,6 @@
 import { globalServerRequest } from "@/actions/globalApi";
 import ViewBookingDetail from "./ViewBookingDetail"
 
-
 interface SearchParams {
   bookingId?: string;
 }
@@ -12,7 +11,7 @@ const page = async ({ searchParams }: { searchParams: Promise<SearchParams> }) =
 
   let initialData = null;
   try {
-    let res = await globalServerRequest({
+    const res = await globalServerRequest({
       endpoint: "profile/job-tracking",
       method: "POST",
       payload: {
@@ -22,7 +21,7 @@ const page = async ({ searchParams }: { searchParams: Promise<SearchParams> }) =
 
     if (res.success) {
       console.log("res", res.data)
-      initialData = res?.data?.data
+      initialData = res?.data?.data;
     }
 
   } catch (error) {
@@ -31,7 +30,7 @@ const page = async ({ searchParams }: { searchParams: Promise<SearchParams> }) =
   console.log("bookingtrackingData", initialData)
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 px-4 dark:bg-zinc-950">
-      <ViewBookingDetail bookingData={initialData} />
+      <ViewBookingDetail bookingtrackingData={initialData} />
     </div>
   )
 }

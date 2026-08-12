@@ -83,7 +83,7 @@ export default function DeleteAccount() {
                 if (deleteConfirm && deleteConfirm.success) {
                   console.log("Account deletion confirmed successfully");
                   toast.success("Your account has been deleted successfully.");
-                  alert("Your account has been deleted successfully.");
+                  // alert("Your account has been deleted successfully.");
                   router.push("/home");
                 }
 

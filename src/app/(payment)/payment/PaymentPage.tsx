@@ -3,47 +3,37 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { globalServerRequest } from "@/actions/globalApi";
-import { log } from "node:console";
 import toast from "react-hot-toast";
 
 interface CheckOutProps {
   bookingData?: any;
 }
 
-
 const PaymentPage = ({ bookingData }: CheckOutProps) => {
   const searchParams = useSearchParams();
   const urlBookingId = searchParams.get("booking_id") || searchParams.get("bookingId");
-
-  // console.log(urlBookingId, "usrl booking is");
-
   const bDataStr = searchParams.get("bData");
   console.log(bookingData, "booking data ********");
-
   let currentBookingData = bookingData;
   if (!currentBookingData && bDataStr) {
     try {
       currentBookingData = JSON.parse(bDataStr);
     } catch (e) { }
   }
-
   console.log('bookingData', currentBookingData);
   const bookingId = urlBookingId || currentBookingData?.bookingId || currentBookingData?.id;
-
   const paymentType = searchParams.get("paymenttype") || "initial";
   const [checkoutData, setCheckoutData] = useState<any>();
-
   const fetchCheckoutDetails = async () => {
     if (!bookingId) return;
     try {
-      // 1. Change 'body' to 'data' (the standard key for Axios/Fetch wrappers)
       const response = await globalServerRequest({
         endpoint: "quotes/final-checkout",
         method: "POST",
         payload: {
           booking_id: bookingId || checkoutData?.bookingId,
         },
-      } as any); // Keeping 'as any' temporarily until we match the correct key name
+      } as any);
 
       if (response.success) {
         console.log("Checkout details fetched successfully:", response.data);
@@ -61,17 +51,13 @@ const PaymentPage = ({ bookingData }: CheckOutProps) => {
   }, [bookingId]);
 
   const [couponCode, setCouponCode] = useState<string>("");
-  const [couponDiscount, setCouponDiscount] = useState<number>(0);
 
-  // handle apply coupon
   const handleApplyCoupon = async () => {
     if (checkoutData?.job_summary?.coupon_offer?.coupon_code !== null && couponCode === checkoutData?.job_summary?.coupon_offer?.coupon_code) {
       console.log("Coupon already applied");
       toast.success("Coupon already applied")
       return;
     }
-
-
 
     try {
       const response = await globalServerRequest({
@@ -81,7 +67,7 @@ const PaymentPage = ({ bookingData }: CheckOutProps) => {
           quote_id: checkoutData?.quote_id,
           coupon_code: couponCode,
         },
-      } as any); // Keeping 'as any' temporarily until we match the correct key name
+      } as any);
 
       if (response.success) {
         console.log("Coupon applied successfully:", response.data);
@@ -96,7 +82,6 @@ const PaymentPage = ({ bookingData }: CheckOutProps) => {
       }
     } catch (error) {
       console.error("Error applying coupon:", error);
-      // toast.error("Invalid coupon code")
     }
   };
   return (
@@ -153,9 +138,7 @@ const PaymentPage = ({ bookingData }: CheckOutProps) => {
                             }
                           </b>
                         </h6>
-
                         <hr />
-
                         <h6 className="text-black">
                           Total Service Cost
                           <b style={{ color: "#991318" }}>
@@ -163,14 +146,12 @@ const PaymentPage = ({ bookingData }: CheckOutProps) => {
                             {checkoutData?.job_summary?.total_service_cost}
                           </b>
                         </h6>
-
                         <h6>
                           Coupon Offer <span className={checkoutData?.job_summary?.coupon_offer?.coupon_code !== null ? "offer-tag" : ""}>
                             {checkoutData?.job_summary?.coupon_offer?.coupon_code}
                           </span>
                           <b>${checkoutData?.job_summary?.coupon_offer?.discount_amount}</b>
                         </h6>
-
                         <h6 className="mb-0" style={{ fontSize: "larger" }}>
                           Remaining Cost
                           <b
@@ -184,10 +165,8 @@ const PaymentPage = ({ bookingData }: CheckOutProps) => {
                         </h6>
                       </div>
                     </div>
-
                     <div className="select-pay-met">
                       <h4>Select Payment Method</h4>
-
                       <ul>
                         <li>
                           <input
@@ -231,42 +210,8 @@ const PaymentPage = ({ bookingData }: CheckOutProps) => {
                       extra charge.
                     </p>
                   </div>
-
                   <br />
-
-                  {/* <div className="smart-analysis">
-                    <h5>Important</h5>
-
-                    <p>
-                      • Please upload the payment screenshot if you select Zelle
-                      or Venmo.
-                    </p>
-
-                    <p>
-                      • If the paid amount is less than the requested amount,
-                      the remaining balance will be deducted automatically from
-                      your saved credit card.
-                    </p>
-
-                    <p>
-                      <b>Please Note:</b> You have 24 hours to complete the
-                      payment. If not completed, the full amount will be
-                      automatically deducted from your added credit card with a
-                      3% additional charge.
-                    </p>
-                  </div> */}
-
-                  {/* <div className="upload-screenshot">
-                    <h4>Upload Payment Screenshot</h4>
-                    <input type="file" />
-                  </div> */}
-
                   <div className="payment-btom">
-                    {/* <p>
-                      Your payment will be securely processed and automatically
-                      released to the contractor once the job is approved.
-                    </p> */}
-
                     <div className="card-help">
                       <Link
                         href={

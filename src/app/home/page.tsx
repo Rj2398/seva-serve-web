@@ -23,7 +23,6 @@ export default async function Homepage() {
     const response = await globalServerRequest({
       endpoint,
       method: "GET",
-      // headers,
     });
 
     console.log(`[Server Home] Response data from ${endpoint}:`, response);

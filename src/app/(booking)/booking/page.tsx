@@ -1,6 +1,4 @@
 export const dynamic = "force-dynamic";
-
-import Header from "@/components/common/Header";
 import Booking from "./Booking";
 import { globalServerRequest } from "@/actions/globalApi";
 
@@ -49,7 +47,6 @@ export default async function BookingPage() {
   return (
     <>
       <div className="flex min-h-screen items-center justify-center bg-zinc-50 px-4 dark:bg-zinc-950">
-        {/* <Header/> */}
         <Booking initialBookingData={initialBookingData} />
       </div>
     </>

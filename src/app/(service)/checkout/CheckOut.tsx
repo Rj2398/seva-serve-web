@@ -8,12 +8,10 @@ interface CheckOutProps {
   bookingData?: any;
 }
 
-// 1. Move your main logic to an internal component that safely consumes useSearchParams()
 const CheckOutContent = ({ bookingData }: CheckOutProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Extract values from the query parameters
   const bookingId =
     searchParams.get("booking_id") || searchParams.get("bookingId");
   const paymenttype = searchParams.get("paymenttype") || "initial";
@@ -41,17 +39,14 @@ const CheckOutContent = ({ bookingData }: CheckOutProps) => {
     fetchCheckoutDetails();
   }, [bookingId]);
 
-  // Parse strings safely into numbers for calculation and display
   const initialPayment =
     checkoutData?.job_summary?.initial_deposit?.amount || 0;
   const remainingPayment = checkoutData?.job_summary?.remaining_amount || 0;
 
-  // Dynamically calculate total cost
   const totalCost =
     checkoutData?.job_summary?.total_service_cost ||
     initialPayment + remainingPayment;
 
-  // Determine dynamic value for the absolute "Pay Now" amount
   const finalAmount = initialPayment;
 
   return (
@@ -101,11 +96,6 @@ const CheckOutContent = ({ bookingData }: CheckOutProps) => {
                   <div className="cost-details-wrp">
                     <h4>Booking Cost Details (ID: {bookingId})</h4>
                     <div className="cost-details-in">
-
-                      {/* {checkoutData?.job_summary?.subscription_discount?.is_subscribed === false && <p style={{ fontSize: '18px', fontWeight: '700', color: "black" }}>
-                        get upto 20% OFF more
-                        <span><Link className="primary-cta" href="/choose-plan">Subscribe Now</Link></span>
-                      </p>} */}
                       <p>
                         Deposit / Deductible Amount{" "}
                         <span>${initialPayment.toFixed(2)}</span>
@@ -121,7 +111,6 @@ const CheckOutContent = ({ bookingData }: CheckOutProps) => {
                           <b>${totalCost.toFixed(2)}</b>
                         </span>
                       </p>
-                      {/* Dynamic Pay Now Block based on flow configuration */}
                       <p
                         className="pay-now-highlight"
                         style={{ marginTop: "10px" }}
@@ -157,22 +146,6 @@ const CheckOutContent = ({ bookingData }: CheckOutProps) => {
                   </div>
                 </div>
                 <div className="card-help">
-                  {/* <Link
-                    href={{
-                      pathname: "/payment-method",
-                      query: {
-                        booking_id: bookingId || bookingData?.bookingId,
-                        initialpayment: initialPayment,
-                        remaingPayment: remainingPayment,
-                        paymenttype: paymenttype,
-                        quoteId:
-                          checkoutData?.quote_id || bookingData?.quoteId || "",
-                      },
-                    }}
-                    className="primary-cta"
-                  >
-                    Confirm Payment
-                  </Link> */}
                   <Link
                     href={{
                       pathname: checkoutData?.hasCard
@@ -201,7 +174,6 @@ const CheckOutContent = ({ bookingData }: CheckOutProps) => {
   );
 };
 
-// 2. Export the primary page components wrapped inside a Suspense Boundary to fix the build error
 export default function CheckOut({ bookingData }: CheckOutProps) {
   return (
     <Suspense

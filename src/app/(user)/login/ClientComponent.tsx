@@ -11,8 +11,6 @@ export default function ClientComponent({ loginData }: ClientComponentProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-
-  // useTransition tracks the async pending state of the Server Action automatically
   const [isPending, startTransition] = useTransition();
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -24,17 +22,13 @@ export default function ClientComponent({ loginData }: ClientComponentProps) {
       return;
     }
 
-    // Trigger the Server Action inside a transition
     startTransition(async () => {
       const response = await loginData(email, password);
 
       if (!response.success) {
-        // TypeScript safely knows 'error' exists here because success is false
         setErrorMsg(response.error);
       } else {
-        // TypeScript safely knows 'data' exists here because success is true
         console.log("Login successful! Data:", response.data);
-        // Handle client-side routing redirect or context updates here
       }
     });
   };

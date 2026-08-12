@@ -75,7 +75,6 @@ const BookingUpdate = ({ bookingData }: BookingUpdateProps) => {
     }
   }
 
-
   return (
     <>
       <main>
@@ -85,7 +84,6 @@ const BookingUpdate = ({ bookingData }: BookingUpdateProps) => {
               <div className="row">
                 <div className="col-lg-12">
                   <div className="browse-wrp">
-
                     <div className="browse-ctg-head my-con-head">
                       <h2 className="sub-cate-page">
                         <Link href={`/view-booking-detail?bookingId=${bookings.booking_id}`}><img src="images/home/left-arrow.svg" alt="" /></Link>
@@ -93,30 +91,22 @@ const BookingUpdate = ({ bookingData }: BookingUpdateProps) => {
                       </h2>
                       <Link href="/help-support" className="hel-cta"><i className="fa-regular fa-circle-question"></i> Help & Support</Link>
                     </div>
-
                     <div className="contractor-runnig-late">
                       <div className="image-icon">
                         <img src="images/clock-color-icon.svg" alt="" />
                       </div>
-
                       <div className="text-data">
                         <h3>Your contractor is running late</h3>
                         <p>They've requested to push your booking by <span className="hors">{bookings?.duration}</span>.</p>
                       </div>
-
                     </div>
-
                     <div className="vehicle-issue-data">
-
-
                       <div className="update-icons">
                         <h3>
                           <img src="images/calender-icon-update.svg" alt="" />{bookings?.schedule_date &&
                             formatDate(bookings?.schedule_date)}
                         </h3>
-
                       </div>
-
                       <div className="vehicle-inner-data">
                         <div className="time-wrp">
                           <p>Original Scheduled Time</p> <span className="line">{bookings?.time_slot?.original_slot}</span>
@@ -128,7 +118,6 @@ const BookingUpdate = ({ bookingData }: BookingUpdateProps) => {
                         <h4>{bookings?.reason_for_late}</h4>
                         <p>{bookings?.description}</p>
                       </div>
-
                     </div>
                     {
                       bookings?.status === "request" ? (
@@ -153,11 +142,8 @@ const BookingUpdate = ({ bookingData }: BookingUpdateProps) => {
               </div>
             </div>
           </section>
-
         </div>
-
       </main>
-
       <DatePopup isOpen={showDatePicker} setIsOpen={setShowDatePicker} />
     </>
   )

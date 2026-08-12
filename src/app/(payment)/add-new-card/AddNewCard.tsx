@@ -1,6 +1,5 @@
 "use client";
 import { globalServerRequest } from "@/actions/globalApi";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useState, Suspense } from "react";
 import toast from "react-hot-toast";
@@ -31,7 +30,6 @@ function AddNewCardForm() {
   const initialpayment = searchParams.get("initialpayment");
   const remainingPayment = searchParams.get("remaingPayment");
   const paymenttype = searchParams.get("paymenttype");
-  //for subscription
   const planId = searchParams.get("subscription_plan_id");
   const planType = searchParams.get("type");
   const planAmount = searchParams.get("amount");
@@ -43,8 +41,6 @@ function AddNewCardForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Front-end validation for Holder Name
     if (!holderName.trim()) {
       setErrors({ holderName: "Holder name is required" });
       return;
@@ -63,7 +59,6 @@ function AddNewCardForm() {
     const toastId = toast.loading("Processing card details...");
 
     try {
-      // Tokenize / Create the Payment Method directly through Stripe Elements securely
       const { error, paymentMethod } = await stripe.createPaymentMethod({
         type: "card",
         card: cardNumberElement,
@@ -92,23 +87,16 @@ function AddNewCardForm() {
       if (response.success) {
         console.log("Response from card add:", response);
         toast.success("Card added successfully!", { id: toastId });
-
         if (quoteId) {
-
           router.push(`/payment-method?quote_id=${bookingId}&initialpayment=${initialpayment}&remaingPayment=${remainingPayment}&paymenttype=${paymenttype}`)
         }
-
-
         if (bookingId) {
           router.push(
             `/payment-method?booking_id=${bookingId || ""}&initialpayment=${initialpayment || ""
             }&remaingPayment=${remainingPayment || ""}&paymenttype=${paymenttype || ""
             }`
           );
-
-
         } else {
-
           if (!quoteId && !bookingId) {
             router.push(
               `/payment-method?subscription_plan_id=${planId}&type=${planType}&amount=${planAmount}`
@@ -194,23 +182,18 @@ function AddNewCardForm() {
                             {errors.holderName}
                           </span>
                         )}
-
-                        {/* Card Number (Stripe Elements) */}
                         <label className="mt-3">Card Number</label>
                         <div className="stripe-card-element-container mb-15">
                           <CardNumberElement options={elementOptions} />
                         </div>
 
                         <div className="multi-row mt-3">
-                          {/* CVV (Stripe Elements) */}
                           <div className="cvv-exp">
                             <label>CVV</label>
                             <div className="stripe-card-element-container">
                               <CardCvcElement options={elementOptions} />
                             </div>
                           </div>
-
-                          {/* Expiry (Stripe Elements) */}
                           <div className="cvv-exp">
                             <label>Expiry Date</label>
                             <div className="stripe-card-element-container">
@@ -218,7 +201,6 @@ function AddNewCardForm() {
                             </div>
                           </div>
                         </div>
-
                         <button
                           type="submit"
                           className="primary-cta add-card mt-4"
@@ -235,8 +217,6 @@ function AddNewCardForm() {
           </div>
         </div>
       </section>
-
-      {/* Basic Error Styling Inline */}
       <style jsx>{`
         .text-danger {
           color: #dc3545;

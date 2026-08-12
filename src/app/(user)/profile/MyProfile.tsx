@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { globalServerRequest } from "@/actions/globalApi";
@@ -27,7 +26,6 @@ const MyProfile = ({ initialData }: MyProfileProps) => {
     created_at: initialData?.created_at || null,
   });
 
-  // Cleanup object URL memory leaks on unmount
   useEffect(() => {
     return () => {
       if (profileData.profile_image.startsWith("blob:")) {
@@ -36,7 +34,6 @@ const MyProfile = ({ initialData }: MyProfileProps) => {
     };
   }, [profileData.profile_image]);
 
-  // Sync state if initialData changes from an external router update
   useEffect(() => {
     if (initialData) {
       setProfileData({
@@ -62,8 +59,6 @@ const MyProfile = ({ initialData }: MyProfileProps) => {
 
     if (file) {
       setSelectedFile(file);
-
-      // Revoke older local preview blob URL if it exists to free RAM
       if (profileData.profile_image.startsWith("blob:")) {
         URL.revokeObjectURL(profileData.profile_image);
       }
@@ -126,8 +121,7 @@ const MyProfile = ({ initialData }: MyProfileProps) => {
       formData.append("name", profileData.name.trim());
       formData.append("phone", profileData.phone.trim());
       formData.append("email", profileData.email?.trim() || "");
-
-      // Send file with your backend's specific "profileImg" key
+      
       if (selectedFile) {
         formData.append("profileImg", selectedFile);
       }

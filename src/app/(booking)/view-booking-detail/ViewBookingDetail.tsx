@@ -1,25 +1,107 @@
 "use client";
+import { globalServerRequest } from '@/actions/globalApi';
 import CompletedService from '@/components/modals/bookingmodals/CompletedService'
 import ReviewAdditionalServices from '@/components/modals/bookingmodals/ReviewAdditionalServices'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation';
-
+import { db } from "@/config/firebase";
+import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react'
 
 interface BookingUpdateProps {
-  bookingData?: any;
+  bookingtrackingData?: any;
 }
 
-const ViewBookingDetail = ({ bookingData }: BookingUpdateProps) => {
-  console.log(bookingData, "bookingtrackingData")
-
+const ViewBookingDetail = ({ bookingtrackingData }: BookingUpdateProps) => {
+  console.log(bookingtrackingData, "bookingtrackingData")
+  const [bookingData, setBookingData] = useState(bookingtrackingData);
+  const isProcessingTrigger = React.useRef(false);
   const router = useRouter()
   const [showDropdown, setShowDropdown] = useState(false);
   const [showMaterialDropdown, setShowMaterialDropdown] = useState(false);
   const [expandedQuotes, setExpandedQuotes] = useState<Record<number, boolean>>(
     {}
   );
-  const [isServicesOpen, setIsServicesOpen] = useState(false);
+
+  const bookingId = bookingData?.bookingId || bookingData?.id;
+
+  const fetchTrackingDetails = async (): Promise<boolean> => {
+    try {
+      const res = await globalServerRequest({
+        endpoint: "profile/job-tracking",
+        method: "POST",
+        payload: {
+          bookingId: Number(bookingId),
+        },
+      });
+      console.log("hello  res ", res)
+      if (res?.success) {
+        setBookingData(res?.data?.data);
+        console.log("hello  res 1", bookingData)
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error("❌ Tracking API Failed:", error);
+      return false;
+    }
+  };
+
+  const resetAPITrigger = async () => {
+    if (!bookingId || !db) return;
+    try {
+      const docRef = doc(db, "bookingId", String(bookingId));
+      await updateDoc(docRef, {
+        apiTrigger: false,
+      });
+      console.log("✅ apiTrigger changed to FALSE");
+    } catch (error) {
+      console.error("❌ Failed to reset apiTrigger:", error);
+    } finally {
+      isProcessingTrigger.current = false;
+    }
+  };
+
+  useEffect(() => {
+    if (!bookingId || !db) {
+      console.warn("⚠️ Firebase DB instance or Booking ID is missing");
+      return;
+    }
+
+    try {
+      const docRef = doc(db, "bookingId", String(bookingId));
+      const unsubscribe = onSnapshot(
+        docRef,
+        async (snapshot) => {
+          if (!snapshot.exists()) return;
+          const snapshotData = snapshot.data();
+          const apiTrigger = snapshotData?.apiTrigger ?? false;
+          if (!apiTrigger) return;
+          if (isProcessingTrigger.current) {
+            console.log("⚠️ API already processing");
+            return;
+          }
+          isProcessingTrigger.current = true;
+          console.log("🚀 apiTrigger TRUE → Fetching API");
+          const success = await fetchTrackingDetails();
+          if (success) {
+            console.log("✅ Tracking API Success");
+            await resetAPITrigger();
+          } else {
+            console.log("❌ Tracking API Failed");
+            isProcessingTrigger.current = false;
+          }
+        },
+        (error) => {
+          console.error("❌ Firestore listener error:", error);
+        }
+      );
+
+      return () => unsubscribe();
+    } catch (err) {
+      console.error("❌ Error initializing Firestore listener:", err);
+    }
+  }, [bookingId]);
 
 
   useEffect(() => {
@@ -38,7 +120,7 @@ const ViewBookingDetail = ({ bookingData }: BookingUpdateProps) => {
     }, 2000);
 
     return () => clearTimeout(timer);
-  }, [bookingData]); // bookingData ko dependency mein zaroor dalein
+  }, [bookingData]);
 
   const formatScheduleTime = (date: string) => {
     const d = new Date(date);
@@ -58,14 +140,8 @@ const ViewBookingDetail = ({ bookingData }: BookingUpdateProps) => {
   };
 
   console.log(bookingData?.additionalServices, "bookingData");
-  // Jul 16, 2026 — 2:00 AM
-
-  //   const toggleCostDropdown = () => {
-  //   document.getElementById("costDropdown")?.classList.toggle("show");
-  // };
   return (
     <>
-      {/* Tiny style patch to handle standard icon rotation animations matching state */}
       <style dangerouslySetInnerHTML={{
         __html: `
           .rotate-icon {
@@ -87,7 +163,9 @@ const ViewBookingDetail = ({ bookingData }: BookingUpdateProps) => {
                   <div className="browse-wrp">
                     <div className="browse-ctg-head my-con-head">
                       <h2 className="sub-cate-page">
-                        <Link href="/booking"><img src="images/home/left-arrow.svg" alt="" /></Link>
+                        <Link href="" onClick={() => {
+                          router.back()
+                        }}><img src="images/home/left-arrow.svg" alt="" /></Link>
                         Booking Tracking
                       </h2>
                       <Link href="/help-support" className="hel-cta"><i className="fa-regular fa-circle-question"></i> Help & Support</Link>
@@ -115,14 +193,12 @@ const ViewBookingDetail = ({ bookingData }: BookingUpdateProps) => {
                               </Link>
 
                             </div>)}
-                          {/* */}
                           {bookingData?.serviceStatus && (
                             <div className="service-status-wrp">
                               <h4>Service Status</h4>
                               <div className="service-status-inner">
                                 {bookingData.serviceStatus.steps.map((step: any, index: number) => {
                                   const isChecked = step.state === "completed" || step.state === "active";
-
                                   const getStepImage = (stepKey: string) => {
                                     switch (stepKey) {
                                       case 'on_the_way': return "images/service-status/on-way.svg";
@@ -131,10 +207,8 @@ const ViewBookingDetail = ({ bookingData }: BookingUpdateProps) => {
                                       default: return null;
                                     }
                                   };
-
                                   const mainImg = getStepImage(step.stepKey);
                                   const isLineFilled = isChecked;
-
                                   return (
                                     <React.Fragment key={step?.stepNumber}>
                                       <div className={`service-status-item step-${step?.stepNumber} ${isChecked ? 'check' : ''}`}>
@@ -143,7 +217,6 @@ const ViewBookingDetail = ({ bookingData }: BookingUpdateProps) => {
                                         <h5>STEP {step?.stepNumber}</h5>
                                         <p>{step?.label}</p>
                                       </div>
-
                                       {index < bookingData?.serviceStatus?.steps?.length - 1 && (
                                         <div className={`progress-line ${isLineFilled ? 'step-fill' : ''}`}></div>
                                       )}
@@ -153,7 +226,6 @@ const ViewBookingDetail = ({ bookingData }: BookingUpdateProps) => {
                               </div>
                             </div>
                           )}
-
                           <div className="plumbing-wrp-book">
                             <div className="boking-right-img">
                               <img src={bookingData?.category?.categoryImageUrl || "images/inner-page/booking-traking-img.svg"} alt="" />
@@ -166,47 +238,7 @@ const ViewBookingDetail = ({ bookingData }: BookingUpdateProps) => {
                                 {bookingData?.category?.categoryName}
                               </p>
                               <p className="sub-cate">Selected sub categories </p>
-                              {/* <div className="service-list-type">
-                                <ol className="main-category">
-                                  {bookingData?.subcategory?.subcategoryName && (
-                                    <li>
-                                      {bookingData?.subcategory?.subcategoryName}
-                                    </li>
-                                  )}
-                                </ol>
-                                <p className="normal-text">Problem Description</p>
-                                <p className="light-text">{bookingData?.problemDescription || "N/A"}</p>
-                                <ol className="main-category" start={2}>
-                                </ol>
-                              </div> */}
                               <div className="service-list-type">
-                                {/* 1. Main Subcategories List (Numbered: 1, 2, 3...) */}
-                                {/* <ol className="main-category">
-                                  {bookingData?.bookingcategory?.map((cat: any) => (
-                                    <li key={cat.id} className="category-item">
-                                      <span className="bold-text">{cat.name}</span>
-                                      {cat.services?.length > 0 && (
-                                        <ul className="service-list" style={{ listStyleType: "disc", paddingLeft: "20px" }}>
-                                          {cat.services.map((service: any) => (
-                                            <li key={service.id} className="service-item">
-                                              <span>{service.name || service.detail}</span>
-                                              {service.issues?.length > 0 && (
-                                                <ul className="issue-list" style={{ listStyleType: "none", paddingLeft: "15px" }}>
-                                                  {service.issues.map((issue: any) => (
-                                                    <li key={issue.id} className="issue-item">
-                                                      {issue.name}
-                                                    </li>
-                                                  ))}
-                                                </ul>
-                                              )}
-                                            </li>
-                                          ))}
-                                        </ul>
-                                      )}
-                                    </li>
-                                  ))}
-                                </ol> */}
-
                                 {(() => {
                                   return (
                                     <>
@@ -279,7 +311,7 @@ const ViewBookingDetail = ({ bookingData }: BookingUpdateProps) => {
                                                         onClick={() =>
                                                           setExpandedQuotes((prev) => ({
                                                             ...prev,
-                                                            [bookingId]: false, 
+                                                            [bookingId]: false,
                                                           }))
                                                         }
                                                       >
@@ -297,10 +329,8 @@ const ViewBookingDetail = ({ bookingData }: BookingUpdateProps) => {
                                   );
                                 })()}
                               </div>
-
                             </div>
                           </div>
-
                           {bookingData?.additionalServices?.added_services && bookingData?.additionalServices?.added_services?.length > 0 && (
                             <div className="additional-services-wrp">
                               {bookingData?.additionalServices?.added_services?.map((service: any) => (
@@ -310,9 +340,6 @@ const ViewBookingDetail = ({ bookingData }: BookingUpdateProps) => {
                                 >
                                   <h3>
                                     Additional Services{" "}
-                                    {/* <span
-                                className={`tag ${service?.status === "rejected" ? "rejected" : ""}`}
-                              > */}
                                     <span
                                       className={`tag ${service?.status === "request"
                                         ? "add-progress"
@@ -332,7 +359,6 @@ const ViewBookingDetail = ({ bookingData }: BookingUpdateProps) => {
                           )}
                           <div className="cost-details-wrp">
                             <h4>Booking Cost Details</h4>
-                            {/* */}
                             <div className="cost-details-in">
                               <p>
                                 Deposit / Deductible Amount
@@ -439,7 +465,6 @@ const ViewBookingDetail = ({ bookingData }: BookingUpdateProps) => {
                               </p>
                               <hr />
                               <p
-                              //  data-bs-target="#reviewAdditional" data-bs-toggle="modal"
                               >
                                 Total Cost
                                 <span><b>${bookingData?.bookingCostDetails?.totalCost}</b></span>

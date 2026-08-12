@@ -33,19 +33,7 @@ export default function About({ initialAboutUs }: AboutProps) {
 
                     </div>
                     <div className="about-us-body">
-                      {/* <p className="about-us-data">SevaServe  is your trusted home services companion designed to make it easy for you to find verified professionals for all your daily household needs.
-                        From quick electrical repairs and plumbing fixes to deep cleaning, appliance maintenance, and emergency  requests, SevaServe  brings expert help right to your doorstep anytime, anywhere.
-                        We’re on a mission to simplify how India manages home services. With a user-friendly design, real-time tracking, secure digital payments, and verified service providers, SevaServe  ensures convenience, reliability, and safety every time you book.
-                        Your comfort and trust are at the heart of everything we do because your home deserves the best care.</p>
-
-                      <p className="about-us-data">SevaServe  is your trusted home services companion designed to make it easy for you to find verified professionals for all your daily household needs.
-                        From quick electrical repairs and plumbing fixes to deep cleaning, appliance maintenance, and emergency  requests, SevaServe  brings expert help right to your doorstep anytime, anywhere.
-                        We’re on a mission to simplify how India manages home services. With a user-friendly design, real-time tracking, secure digital payments, and verified service providers, SevaServe  ensures convenience, reliability, and safety every time you book.
-                        Your comfort and trust are at the heart of everything we do because your home deserves the best care.</p> */}
-
                       <div dangerouslySetInnerHTML={{ __html: aboutData.content }} />
-                      
-
                       <div className="about-swap-inner">
                         <Link href="/privacypolicy">
                           <div className="inner-data">
@@ -65,10 +53,7 @@ export default function About({ initialAboutUs }: AboutProps) {
               </div>
             </div>
           </section>
-
-
         </div>
-
       </main>
     </>
   )

@@ -11,7 +11,6 @@ import { useDispatch } from "react-redux";
 
 const normalizeData = (data: any) => {
   if (!data || Object.keys(data).length === 0) return null;
-  // If it's already in the new format 
   if (data.subCategories) {
     return data;
   }
@@ -67,13 +66,6 @@ export default function ServiceViewDetail({
   const subCategoryId = searchParams.get("subCategoryId");
   const is_quote_edit = searchParams.get("is_quote_edit");
   const quote_update = searchParams.get("is_quote_update");
-
-
-
-  // FIX: Unified selectedOptionId with selectedSpecificIssueId so state flows down to the API payload correctly
-  // const [selectedSpecificIssueId, setSelectedSpecificIssueId] = useState<
-  //   Record<string, number | null>
-  // >({});
 
   const [selectedSpecificIssueId, setSelectedSpecificIssueId] = useState<
     Record<string, number[]>
@@ -141,29 +133,21 @@ export default function ServiceViewDetail({
 
         if (response.success) {
           const savedData = response.data?.data || response.data;
-
           console.log("savedData", savedData)
-
           if (savedData) {
-
             const matchedSubCategory = savedData?.subCategories?.find(
               (sub: any) => sub.id == subCategoryId
             );
-
             console.log("matchedSubCategory", matchedSubCategory)
-
             if (matchedSubCategory) {
               const firstService = matchedSubCategory.services?.[0];
-              // const firstSpecificIssue = firstService?.specificIssues?.[0]; // Check standard naming in JSON
               const savedIssueId = firstService?.id ? String(firstService.id) : null;
               const savedSpecificIssueIds = Array.isArray(firstService?.specificIssues)
                 ? firstService.specificIssues.map((spec: any) => Number(spec.id))
                 : [];
-              // State me direct clean structure set karein
               setLoadedData({
                 subCategoryId: matchedSubCategory.id || null,
                 issueId: firstService?.id || null,
-                // specificIssueId: firstSpecificIssue?.id || null,
                 specificIssueId: savedSpecificIssueIds,
                 description: matchedSubCategory.problemDescription || "",
                 mediaUrls: Array.isArray(matchedSubCategory.media)
@@ -175,18 +159,9 @@ export default function ServiceViewDetail({
                 setSelectSubCategories(matchedSubCategory.id);
               }
 
-              // 2. Select the issue
               if (savedIssueId) {
                 setActiveIssueId(savedIssueId);
                 setAddedCategory(true);
-
-                // 3. Select the specific issue
-                // if (firstSpecificIssue?.id) {
-                //   setSelectedSpecificIssueId((prev) => ({
-                //     ...prev,
-                //     [savedIssueId]: Number(firstSpecificIssue.id),
-                //   }));
-                // }
                 if (savedIssueId && savedSpecificIssueIds.length > 0) {
                   setSelectedSpecificIssueId((prev) => ({
                     ...prev,
@@ -194,7 +169,6 @@ export default function ServiceViewDetail({
                   }));
                 }
 
-                // 4. Pre-fill problem description
                 if (matchedSubCategory.problemDescription) {
                   setProblemDesc((prev) => ({
                     ...prev,
@@ -202,7 +176,6 @@ export default function ServiceViewDetail({
                   }));
                 }
 
-                // 5. Pre-fill uploaded images
                 if (matchedSubCategory.media && Array.isArray(matchedSubCategory.media)) {
                   setUploadedImage((prev) => ({
                     ...prev,
@@ -217,7 +190,6 @@ export default function ServiceViewDetail({
         console.error("Failed to load saved quote request:", error);
       }
     };
-
     fetchSavedRequest();
   }, [requestedId]);
 
@@ -225,50 +197,35 @@ export default function ServiceViewDetail({
   console.log("loadedData", loadedData)
   console.log("requestedId", requestedId)
 
-
-
-  // Check if form changed when editing
   const isFormChanged = () => {
     if (!requestedId || !loadedData) return true;
 
-    // Compare subcategory
     if (Number(selectSubCategories || 0) !== Number(loadedData.subCategoryId || 0)) return true;
 
-    // Compare issue
     const cleanActiveIssueId = activeIssueId ? Number(String(activeIssueId).replace("issue_", "")) : null;
     const cleanLoadedIssueId = loadedData.issueId ? Number(loadedData.issueId) : null;
     if (cleanActiveIssueId !== cleanLoadedIssueId) return true;
-
-    // const currentSpecificIssueId = activeIssueId ? selectedSpecificIssueId[activeIssueId] : null;
     const currentSpecificIssueId = activeIssueId ? selectedSpecificIssueId[activeIssueId] || [] : [];
     const currentProblemDesc = activeIssueId ? problemDesc[activeIssueId] || "" : "";
     const currentUploadedFiles = activeIssueId ? uploadedFiles[activeIssueId] || [] : [];
     const currentUploadedImg = activeIssueId ? uploadedImg[activeIssueId] || [] : [];
     const loadedSpecificIssueIds = loadedData?.specificIssueId || [];
 
-    // Compare specific issue
     if (currentSpecificIssueId.length !== loadedSpecificIssueIds.length) return true;
     const isMismatch = currentSpecificIssueId.some(id => !loadedSpecificIssueIds.includes(id));
     if (isMismatch) return true;
 
-    // Compare description
     if ((currentProblemDesc || "") !== (loadedData.description || "")) return true;
-
-    // Compare uploaded files (if any new files are selected, it's changed)
     if (currentUploadedFiles.length > 0) return true;
-
-    // Compare uploadedImg remote URLs
     const currentRemoteUrls = currentUploadedImg.filter((url) => url.startsWith("http"));
     if (currentRemoteUrls.length !== loadedData.mediaUrls.length) return true;
 
     for (let i = 0; i < currentRemoteUrls.length; i++) {
       if (currentRemoteUrls[i] !== loadedData.mediaUrls[i]) return true;
     }
-
     return false;
   };
 
-  // Sync state if initialData changes via route update
   useEffect(() => {
     const normalized = normalizeData(
       initialData && Object.keys(initialData).length > 0 ? initialData : null
@@ -344,7 +301,6 @@ export default function ServiceViewDetail({
     } else if (!currentProblemDesc) {
       toast.error("please enter the description");
     } else {
-      // Direct redirect if editing and form was not changed
       if (requestedId && !isFormChanged()) {
         toast.success(
           actionType === "addtocart"
@@ -358,148 +314,41 @@ export default function ServiceViewDetail({
         }
         return;
       }
-
       try {
-
-
-        // const existingSubCategoryIds: number[] = [];
-        // const existingIssueIds: string[] = [];
-        // const existingSpecificIssueIds: number[] = [];
-        // const fetchedMediaFiles: File[] = [];
-
-
-        // if (requestedId && actionType === "addtocart") {
-        //   try {
-        //     const fetchResponse = await globalServerRequest({
-        //       endpoint: `quotes/${requestedId}`,
-        //       method: "GET",
-        //     });
-
-        //     const savedData = fetchResponse.data?.data || fetchResponse.data;
-
-        //     if (fetchResponse?.success && savedData) {
-        //       const subCats = savedData.subCategories;
-
-        //       if (Array.isArray(subCats.media)) {
-        //         for (const mediaItem of subCats.media) {
-        //           if (mediaItem.url) {
-        //             try {
-        //               const imgRes = await fetch(mediaItem.url);
-        //               const blob = await imgRes.blob();
-        //               const filename = mediaItem.url.substring(mediaItem.url.lastIndexOf('/') + 1) || "existing-file.png";
-        //               const file = new File([blob], filename, { type: blob.type || "image/png" });
-        //               fetchedMediaFiles.push(file);
-        //             } catch (imgErr) {
-        //               console.error("Error converting remote image url to file:", imgErr);
-        //             }
-        //           }
-        //         }
-        //       }
-
-        //       subCats.forEach((sub: any) => {
-        //         if (sub.id) existingSubCategoryIds.push(sub.id);
-
-        //         sub.services?.forEach((service: any) => {
-        //           if (service.id) existingIssueIds.push(String(service.id));
-
-        //           service.specificIssues?.forEach((spec: any) => {
-        //             if (spec.id) existingSpecificIssueIds.push(spec.id);
-        //           });
-        //         });
-        //       });
-        //     }
-        //   } catch (fetchError) {
-        //     console.error("Failed to fetch existing quote details, proceeding with current selection only:", fetchError);
-        //   }
-        // }
-
-        // console.log("existingSubCategoryIds  ", existingSubCategoryIds, "  existingIssueIds", existingIssueIds, "   existingSpecificIssueIds", existingSpecificIssueIds)
-
-
-
-
-
-
-
         const formData = new FormData();
-
-        // categoryId
         if (serviceDetailss?.category?.id) {
           formData.append("categoryId", String(serviceDetailss.category.id));
         }
-
-        // subCategoryId
         console.log("selectSubCategories", selectSubCategories)
         if (selectSubCategories) {
           formData.append("subCategoryId", String(selectSubCategories));
-          // const currentSubId = Number(selectSubCategories);
-          // const mergedSubCategories = Array.from(new Set([...existingSubCategoryIds, currentSubId])).filter(Boolean);
-          // formData.append("subCategoryId", mergedSubCategories.join(","));
         }
 
-        // issueId
         console.log("activeIssueId", activeIssueId)
         if (activeIssueId) {
           const cleanIssueId = String(activeIssueId).replace("issue_", "");
           formData.append("issueId", cleanIssueId);
-          // const cleanCurrentIssue = String(activeIssueId).replace("issue_", "");
-          // const mergedIssues = Array.from(new Set([...existingIssueIds, cleanCurrentIssue])).filter(Boolean);
-          // formData.append("issueId", mergedIssues.join(","));
         }
-
-        // const currentSpecificIssueId = activeIssueId ? selectedSpecificIssueId[activeIssueId] : null;
         const currentSpecificIssueId = activeIssueId ? selectedSpecificIssueId[activeIssueId] || [] : [];
         const currentUploadedFiles = activeIssueId ? uploadedFiles[activeIssueId] || [] : [];
-        // const totalMediaFiles = [...fetchedMediaFiles, ...currentUploadedFiles];
-        // // specificIssueId
-        // console.log("currentSpecificIssueId", currentSpecificIssueId)
-        // if (currentSpecificIssueId) {
-        //   formData.append("specificIssueId", String(currentSpecificIssueId));
-        // }
-
         if (currentSpecificIssueId.length > 0) {
           formData.append("specificIssueId", currentSpecificIssueId.join(","));
         }
-
-        // const currentSpecificIssueId = activeIssueId ? selectedSpecificIssueId[activeIssueId] : null;
-        // const specIdsToMerge = currentSpecificIssueId ? [Number(currentSpecificIssueId)] : [];
-        // const mergedSpecificIssues = Array.from(new Set([...existingSpecificIssueIds, ...specIdsToMerge])).filter(Boolean);
-
-        // if (mergedSpecificIssues.length > 0) {
-        //   formData.append("specificIssueId", mergedSpecificIssues.join(","));
-        // }
-
-
-
-
-        // description
         formData.append("description", currentProblemDesc);
-
-        // mediaUrls (only new file uploads)
         currentUploadedFiles.forEach((file, index) => {
           formData.append(`mediaUrls[${index}]`, file);
         });
-
-        // totalMediaFiles.forEach((file, index) => {
-        //   formData.append(`mediaUrls[${index}]`, file);
-        // });
-
-        // Pass existing remote URLs in a separate existingMediaUrls parameter
         const existingRemoteUrls = currentUploadedImg.filter((url) => url.startsWith("http"));
         existingRemoteUrls.forEach((url, index) => {
           console.log(`existingMediaUrls[${index}]`, url);
           formData.append(`existingMediaUrls[${index}]`, url);
         });
-
         if (requestedId) {
           formData.append("requestId", requestedId);
           formData.append("id", requestedId);
         }
-
         console.log("formData", formData)
-
         setIsAdding(true);
-
         const response = await globalServerRequest({
           endpoint:
             actionType === "addtocart" ? "cart/add-cart" : "quotes/save-quote",
@@ -507,24 +356,15 @@ export default function ServiceViewDetail({
           payload: formData,
           isFormData: true,
         });
-
         setIsAdding(false);
-
         if (!response.success) {
           throw new Error(response.error || "Failed to add service to cart");
         }
-
-        // Instantly trigger cart update so the counter and offcanvas fetch the new data
-        // if (actionType === "addtocart") {
-        //   window.dispatchEvent(new Event("cartUpdated"));
-        // }
-
         if (actionType === "addtocart") {
           dispatch(incrementCartCount());
           window.dispatchEvent(new Event("cartUpdated"));
         }
 
-        const apiNavigateData = response.data;
         const newRequestedId = response?.data?.data?.requestId || requestedId;
 
         toast.success(
@@ -532,7 +372,6 @@ export default function ServiceViewDetail({
             ? "Added to cart!"
             : "Quote saved successfully!"
         );
-        // dispatch(setSummaryestimate(apiNavigateData?.data));//when api got called
         if (actionType === "checkout")
           router.push(`/summary-estimate?requestedId=${newRequestedId}`);
 
@@ -554,8 +393,6 @@ export default function ServiceViewDetail({
     }
   };
 
-
-
   const handleUpdateQuote = async (actionType: string,
     e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
@@ -569,6 +406,11 @@ export default function ServiceViewDetail({
           bootstrapModal.show();
         }
       }
+      return;
+    }
+    if (actionType === "cancel") {
+      toast.success("Redirecting to summary...");
+      router.push(`/summary-estimate?requestedId=${requestedId}&is_quote_edit=${is_quote_edit}`);
       return;
     }
 
@@ -610,7 +452,6 @@ export default function ServiceViewDetail({
           formData.append("subCategoryId", String(selectSubCategories));
         }
 
-        // issueId
         console.log("activeIssueId", activeIssueId)
         if (activeIssueId) {
           const cleanIssueId = String(activeIssueId).replace("issue_", "");
@@ -622,11 +463,7 @@ export default function ServiceViewDetail({
         if (currentSpecificIssueId) {
           formData.append("specificIssueId", String(currentSpecificIssueId));
         }
-
-        // description
         formData.append("description", currentProblemDesc);
-
-        // mediaUrls (only new file uploads)
         currentUploadedFiles.forEach((file, index) => {
           formData.append(`mediaUrls[${index}]`, file);
         });
@@ -641,8 +478,7 @@ export default function ServiceViewDetail({
           formData.append("requestId", requestedId);
           formData.append("id", requestedId);
         }
-
-        console.log("formData", formData)
+        
 
         const response = await globalServerRequest({
           endpoint: "quotes/update-quote",
@@ -681,12 +517,6 @@ export default function ServiceViewDetail({
       }
     }
   }
-
-
-
-
-
-
   const activeSubCategory = subCategories?.find(
     (sub: any) => String(sub.id) === String(selectSubCategories)
   );
@@ -695,12 +525,6 @@ export default function ServiceViewDetail({
     !searchSubCategory ||
     sub.name.toLowerCase().includes(searchSubCategory.toLowerCase())
   );
-
-
-
-  // const activeSubCategory = subCategories?.find(
-  //   (sub: any) => String(sub.id) === String(selectSubCategories)
-  // );
   const activeIssues = activeSubCategory?.issues || [];
 
   return (
@@ -821,15 +645,12 @@ export default function ServiceViewDetail({
                         ))}
                       </div>
                     </div>
-
                     <div className="service-details-issues">
                       <h3>What services are you looking for ?</h3>
-
                       {activeIssues && activeIssues.length > 0 ? (
                         activeIssues.map((item: any, index: number) => {
                           const issueIdStr = String(item?.id);
                           const isOpen = activeIssueId === issueIdStr;
-
                           return (
                             <div
                               key={item?.id || index}
@@ -865,7 +686,6 @@ export default function ServiceViewDetail({
                                   </p>
                                 </div>
                               </div>
-
                               <div
                                 className="service-issues-content"
                                 style={{ display: isOpen ? "block" : "none" }}
@@ -877,32 +697,21 @@ export default function ServiceViewDetail({
                                 </p>
                                 <ul>
                                   {item?.specificIssues?.map((option: any) => {
-                                    // const currentSpecificIssueId = selectedSpecificIssueId[issueIdStr]
                                     const currentSelectedIds = selectedSpecificIssueId[issueIdStr] || [];
-
                                     const isSelected =
                                       currentSelectedIds !== null &&
                                       currentSelectedIds !== undefined &&
-                                      // String(currentSpecificIssueId) ===
-                                      // String(option?.id);
                                       currentSelectedIds.includes(Number(option?.id))
                                     return (
                                       <li
                                         key={option?.id}
-                                        onClick={() =>
-                                        // setSelectedSpecificIssueId((prev) => ({
-                                        //   ...prev,
-                                        //   [issueIdStr]: option?.id,
-                                        // }))
-                                        {
+                                        onClick={() => {
                                           setSelectedSpecificIssueId((prev) => {
                                             const currentIds = prev[issueIdStr] || [];
                                             const optionId = Number(option?.id);
-
                                             const updatedIds = currentIds.includes(optionId)
                                               ? currentIds.filter((id) => id !== optionId)
                                               : [...currentIds, optionId];
-
                                             return {
                                               ...prev,
                                               [issueIdStr]: updatedIds,
@@ -1057,21 +866,16 @@ export default function ServiceViewDetail({
                             {
                               quote_update == '1' ? "Save Changes" : "Checkout"
                             }
-
                           </Link>
-
                         </>
                       )
                     )}
-
-
                   </div>
                 </div>
               </div>
             </div>
           </section>
         </div >
-
         <div
           className="modal fade welcome"
           id="confirm-add-to-cart-popup"
@@ -1101,7 +905,6 @@ export default function ServiceViewDetail({
                   <p>
                     <b>Please add the service to the cart before proceeding.</b>
                   </p>
-
                   <a
                     href="#"
                     className="primary-cta"
@@ -1111,13 +914,11 @@ export default function ServiceViewDetail({
                         "#confirm-add-to-cart-popup .btn-close"
                       ) as HTMLButtonElement;
                       if (closeBtn) closeBtn.click();
-
                       handleServiceCart("addtocart", e);
                     }}
                   >
                     Add to Cart
                   </a>
-
                   <button
                     type="button"
                     onClick={() => {
@@ -1125,7 +926,6 @@ export default function ServiceViewDetail({
                         "#confirm-add-to-cart-popup .btn-close"
                       ) as HTMLButtonElement;
                       if (closeBtn) closeBtn.click();
-
                       if (
                         pendingAction?.type === "subcategory" &&
                         pendingAction.subCategoryId
