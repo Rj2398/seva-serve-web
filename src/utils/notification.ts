@@ -23,13 +23,6 @@ import app from "@/config/firebase";
 import toast from "react-hot-toast";
 import React from "react";
 
-interface argtype {
-  toLowerCase(): unknown;
-  payload: any;
-  data: any;
-  screen_type: any;
-}
-
 export const initializeFirebaseNotifications = async () => {
   const supported = await isSupported();
 
@@ -55,6 +48,7 @@ export const initializeFirebaseNotifications = async () => {
         if (screenType && targetId) {
           switch (screenType.toLowerCase()) {
             case "quote":
+            case "alert":
               url = `/quotes?quoteId=${targetId}`;
               break;
             case "booking":

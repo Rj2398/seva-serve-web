@@ -57,11 +57,11 @@ messaging.onBackgroundMessage((payload) => {
 self.addEventListener("notificationclick", (event) => {
   console.log(
     "[firebase-messaging-sw.js] Notification click received.",
-    event.notification.data || event.notification
+    event.notification
   );
   event.notification.close();
 
-  const data = event.notification.data || event.notification || {};
+  const data = event.notification.data || {};
   const screenType = data.screen_type ? data.screen_type.toLowerCase() : null;
   const targetId = data.target_id;
 
@@ -69,11 +69,12 @@ self.addEventListener("notificationclick", (event) => {
   let url = "/";
   if (screenType && targetId) {
     switch (screenType) {
+      case "quote":
       case "alert":
-        // url = "/quotes?quoteId=" + targetId;
-        url = `/quotes?quoteId=${targetId}`;
+        url = "/quotes?quoteId=" + targetId;
+        // url = `/quotes?quoteId=${targetId}`;
         break;
-      case "booking" || "tracking":
+      case "booking":
         url = "/view-booking-detail?bookingId=" + targetId;
         break;
     }
