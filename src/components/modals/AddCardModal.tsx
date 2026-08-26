@@ -6,14 +6,10 @@ import React, { useEffect, useRef } from "react";
 interface AddCardModalProps {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
-  onClose?: () => any;
+  onClose?: () => void;
 }
 
-const AddCardModal: React.FC<AddCardModalProps> = ({
-  isOpen,
-  setIsOpen,
-  onClose,
-}) => {
+const AddCardModal: React.FC<AddCardModalProps> = ({ isOpen, setIsOpen, onClose }) => {
   const modalRef = useRef<HTMLDivElement>(null);
 
   // Sync React's isOpen prop with Bootstrap's programmatic Modal instance

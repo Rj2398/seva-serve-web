@@ -78,7 +78,7 @@ img {
   border: 1px solid #3636361a;
   border-radius: 20px;
   margin-bottom: 10px;
-  height: auto;
+  min-height: 75vh;
 }
 
 p:last-child {
@@ -2445,7 +2445,7 @@ a.primary-cta img {
   border: 1px solid #3636364d;
   border-radius: 10px;
   padding: 10px;
-  margin-bottom: 15px;
+  /* margin-bottom: 15px; */
   width: 100%;
   outline: none;
 }
@@ -4635,9 +4635,10 @@ a.hel-cta {
 .select-pay-met ul {
   padding: 20px;
   margin: 0;
-  display: block;
-  align-items: flex-start;
-  gap: 300px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 15px 120px;
   background-color: #9913180f;
   border-radius: 15px;
   /* flex-direction: column; */
@@ -4653,10 +4654,12 @@ a.hel-cta {
   display: flex;
   align-items: center;
   gap: 10px;
+  cursor: pointer;
 }
 
 .select-pay-met ul li input[type="radio"] {
   accent-color: var(--primary-color);
+  cursor: pointer;
 }
 
 /* CHECKOUT-PAGE */
@@ -4844,7 +4847,7 @@ a.hel-cta {
 /* RATE-CONTRACTOR-POPUP */
 
 #rate-contractor-popup .modal-dialog {
-  max-width: 450px;
+  max-width: 550px;
   margin-top: 5rem;
 }
 
@@ -4886,10 +4889,10 @@ a.hel-cta {
 }
 
 .rate-contractor-wrp form h2 {
-  font-weight: 600;
+  font-weight: 500;
   font-size: 16px;
   color: #363636;
-  margin-bottom: 12px;
+  margin-bottom: 0px;
 }
 
 .rating-group {
@@ -4925,13 +4928,13 @@ a.hel-cta {
   filter: contrast(0.1) brightness(1.8);
 }
 
-.rating-group:hover .rating__label .rating__icon--star {
-  filter: brightness(1) invert(0);
-}
-
-.rating__input:hover~.rating__label .rating__icon--star {
+/* .rating-group:hover .rating__label .rating__icon--star {
   filter: contrast(0.1) brightness(1.8);
-}
+} */
+
+/* .rating__input:hover~.rating__label .rating__icon--star {
+  filter: contrast(0.1) brightness(1.8);
+} */
 
 .rate-contractor-wrp form textarea {
   width: 100%;
@@ -6075,7 +6078,7 @@ div#importantNoticeModal .modal-dialog {
 
 
 /* added by sunil------------ */
- 
+
 .refer-btn {
   background: #FFFFFF;
   border: 1px solid #9F1239;
@@ -6088,114 +6091,242 @@ div#importantNoticeModal .modal-dialog {
   cursor: pointer;
   transition: all 0.2s ease-in-out;
 }
- 
- 
-.share-overlay{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.45);
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  z-index:99999;
-  backdrop-filter:blur(2px);
+
+
+.share-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, .45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 99999;
+  backdrop-filter: blur(2px);
 }
- 
-.share-popup{
-  width:430px;
-  max-width:90%;
-  background:#fff;
-  border-radius:18px;
-  padding:22px;
-  box-shadow:0 20px 50px rgba(0,0,0,.18);
+
+.share-popup {
+  width: 430px;
+  max-width: 90%;
+  background: #fff;
+  border-radius: 18px;
+  padding: 22px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, .18);
 }
- 
-.share-header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:24px;
+
+.share-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
 }
- 
-.share-header h4{
-  margin:0;
-  font-size:22px;
-  font-weight:700;
+
+.share-header h4 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
 }
- 
-.close-btn{
-  width:36px;
-  height:36px;
-  border:none;
-  border-radius:50%;
-  background:#f4f4f4;
-  cursor:pointer;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  transition:.25s;
-  font-size:16px;
+
+.close-btn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: #f4f4f4;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: .25s;
+  font-size: 16px;
 }
- 
-.close-btn:hover{
-  background:#ececec;
+
+.close-btn:hover {
+  background: #ececec;
 }
- 
-.share-grid{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:18px;
+
+.share-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
 }
- 
-.share-item{
-  border:none;
-  background:none;
-  cursor:pointer;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:10px;
+
+.share-item {
+  border: none;
+  background: none;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
 }
- 
-.icon1{
-  width:62px;
-  height:62px;
-  border-radius:50%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:#fff;
-  font-size:28px;
-  transition:.25s;
+
+.icon1 {
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 28px;
+  transition: .25s;
 }
- 
-.share-item:hover .icon1{
-  transform:scale(1.08);
+
+.share-item:hover .icon1 {
+  transform: scale(1.08);
 }
- 
-.whatsapp{
-  background:#25D366;
+
+.whatsapp {
+  background: #25D366;
 }
- 
-.facebook{
-  background:#1877F2;
+
+.facebook {
+  background: #1877F2;
 }
- 
-.twitter{
-  background:#111827;
+
+.twitter {
+  background: #111827;
 }
- 
-.email{
-  background:#EA4335;
+
+.email {
+  background: #EA4335;
 }
- 
-.copy{
-  background:#6B7280;
+
+.copy {
+  background: #6B7280;
 }
- 
-.share-item span{
-  font-size:14px;
-  font-weight:600;
-  color:#333;
+
+.share-item span {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
 }
- 
+
+
+
+/* venmo */
+
+.venmo-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.venmo-modal {
+  width: 420px;
+  max-width: 90%;
+  background: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+  animation: popup 0.25s ease;
+}
+
+@keyframes popup {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.venmo-header {
+  background: #008cff;
+  color: #fff;
+  text-align: center;
+  padding: 18px;
+}
+
+.venmo-header h2 {
+  margin: 0;
+  font-size: 26px;
+}
+
+.venmo-body {
+  padding: 25px;
+}
+
+.venmo-body h3 {
+  text-align: center;
+  margin-bottom: 25px;
+  color: #333;
+}
+
+.payment-details {
+  background: #f5f5f5;
+  border-radius: 10px;
+  padding: 18px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+}
+
+.detail-row:last-child {
+  margin-bottom: 0;
+}
+
+.detail-row span {
+  color: #666;
+}
+
+.detail-row strong {
+  color: #222;
+}
+
+.venmo-text {
+  color: #008cff;
+}
+
+.demo-text {
+  text-align: center;
+  color: #777;
+  margin: 22px 0;
+  font-size: 14px;
+}
+
+.pay-btn,
+.cancel-btn {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: 0.3s;
+}
+
+.pay-btn {
+  background: #008cff;
+  color: white;
+}
+
+.pay-btn:hover {
+  background: #0070d6;
+}
+
+.cancel-btn {
+  margin-top: 12px;
+  background: #e8e8e8;
+  color: #333;
+}
+
+.cancel-btn:hover {
+  background: #dcdcdc;
+}
+
+.pay-btn:disabled,
+.cancel-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

@@ -1,0 +1,261 @@
+"use client";
+import { globalServerRequest } from "@/actions/globalApi";
+import { useRouter, useSearchParams } from "next/navigation";
+import React, { useState, Suspense } from "react";
+import toast from "react-hot-toast";
+import { loadStripe } from "@stripe/stripe-js";
+import {
+  Elements,
+  CardNumberElement,
+  CardExpiryElement,
+  CardCvcElement,
+  useStripe,
+  useElements,
+} from "@stripe/react-stripe-js";
+
+const STRIPE_PUBLISHABLE_KEY =
+  "pk_test_51TpBrKBkqSLQl482FRrfPuOnc3qyndMLw0DCDwOvpl708kbL7NlnZCTttOPAb6nBTYdPf5rfak5IB8Rvf6oWVSXJ00KN2ZUamw";
+const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
+
+interface FormErrors {
+  holderName?: string;
+}
+
+function AddNewCardForm() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const stripe = useStripe();
+  const elements = useElements();
+  const bookingId = searchParams.get("booking_id");
+  const initialpayment = searchParams.get("initialpayment");
+  const remainingPayment = searchParams.get("remaingPayment");
+  const paymenttype = searchParams.get("paymenttype");
+  const planId = searchParams.get("subscription_plan_id");
+  const planType = searchParams.get("type");
+  const planAmount = searchParams.get("amount");
+  const quoteId = searchParams.get("quote_id");
+
+  const [holderName, setHolderName] = useState("");
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!holderName.trim()) {
+      setErrors({ holderName: "Holder name is required" });
+      return;
+    }
+    setErrors({});
+
+    if (!stripe || !elements) {
+      toast.error("Stripe SDK has not fully loaded yet. Please try again.");
+      return;
+    }
+
+    const cardNumberElement = elements.getElement(CardNumberElement);
+    if (!cardNumberElement) return;
+
+    setIsSubmitting(true);
+    const toastId = toast.loading("Processing card details...");
+
+    try {
+      const { error, paymentMethod } = await stripe.createPaymentMethod({
+        type: "card",
+        card: cardNumberElement,
+        billing_details: {
+          name: holderName,
+        },
+      });
+
+      if (error) {
+        console.error("Stripe Element Error:", error);
+        toast.error(error.message || "Invalid card details.", { id: toastId });
+        setIsSubmitting(false);
+        return;
+      }
+
+      console.log("Stripe Token Generated:", paymentMethod.id);
+
+      const response = await globalServerRequest({
+        endpoint: "payment/card/add",
+        method: "POST",
+        payload: {
+          payment_method_id: paymentMethod.id,
+        },
+      });
+
+      if (response.success) {
+        console.log("Response from card add:", response);
+        toast.success("Card added successfully!", { id: toastId });
+        if (quoteId) {
+          router.push(`/payment-method?quote_id=${bookingId}&initialpayment=${initialpayment}&remaingPayment=${remainingPayment}&paymenttype=${paymenttype}`)
+        }
+        if (bookingId) {
+          router.push(
+            `/payment-method?booking_id=${bookingId || ""}&initialpayment=${initialpayment || ""
+            }&remaingPayment=${remainingPayment || ""}&paymenttype=${paymenttype || ""
+            }`
+          );
+        } else {
+          if (!quoteId && !bookingId) {
+            router.push(
+              `/payment-method?subscription_plan_id=${planId}&type=${planType}&amount=${planAmount}`
+            );
+          } else {
+            router.push(
+              `/payment-method?quote_id=${quoteId}&initialpayment=${initialpayment}&remaingPayment=${remainingPayment}&paymenttype=${paymenttype}`
+            );
+          }
+        }
+      } else {
+        toast.error(response.error || "Failed to add card.", { id: toastId });
+        setIsSubmitting(false);
+      }
+    } catch (error) {
+      console.error("An error occurred during card submission:", error);
+      toast.error("Something went wrong. Please try again later.", {
+        id: toastId,
+      });
+      setIsSubmitting(false);
+    }
+  };
+
+  const elementOptions = {
+    style: {
+      base: {
+        fontSize: "16px",
+        color: "#363636",
+        fontFamily: "Inter, sans-serif",
+        "::placeholder": {
+          color: "#3636364d",
+        },
+      },
+      invalid: {
+        color: "#dc3545",
+      },
+    },
+  };
+
+  return (
+    <div className="container home-wraper my-profile">
+      <section>
+        <div className="container">
+          <div className="row">
+            <div className="col-lg-12">
+              <div className="browse-wrp">
+                <div className="browse-ctg-head my-con-head">
+                  <h2 className="sub-cate-page">
+                    <span
+                      onClick={() => router.back()}
+                      style={{ cursor: "pointer" }}
+                    >
+                      <img src="images/home/left-arrow.svg" alt="back" />
+                    </span>
+                    Add New Card
+                  </h2>
+                </div>
+
+                <div className="card-wrp-surname">
+                  <div className="card-wrp form">
+                    {/* Visual Card Preview */}
+                    <div className="single-card">
+                      <img
+                        className="card"
+                        src="images/inner-page/payment-method-cart.svg"
+                        alt=""
+                      />
+                    </div>
+
+                    <form className="Cardholder" onSubmit={handleSubmit}>
+                      <div className="Cardholder-form">
+                        {/* Holder Name */}
+                        <label>Cardholder’s Name</label>
+                        <input
+                          type="text"
+                          placeholder="Enter Cardholder’s Name"
+                          value={holderName}
+                          onChange={(e) => setHolderName(e.target.value)}
+                          className={errors.holderName ? "error-border" : ""}
+                        />
+                        {errors.holderName && (
+                          <span className="text-danger small">
+                            {errors.holderName}
+                          </span>
+                        )}
+                        <label className="mt-3">Card Number</label>
+                        <div className="stripe-card-element-container mb-15">
+                          <CardNumberElement options={elementOptions} />
+                        </div>
+
+                        <div className="multi-row mt-3">
+                          <div className="cvv-exp">
+                            <label>CVV</label>
+                            <div className="stripe-card-element-container">
+                              <CardCvcElement options={elementOptions} />
+                            </div>
+                          </div>
+                          <div className="cvv-exp">
+                            <label>Expiry Date</label>
+                            <div className="stripe-card-element-container">
+                              <CardExpiryElement options={elementOptions} />
+                            </div>
+                          </div>
+                        </div>
+                        <button
+                          type="submit"
+                          className="primary-cta add-card mt-4"
+                          disabled={isSubmitting}
+                        >
+                          {isSubmitting ? "Processing..." : "Add Card"}
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <style jsx>{`
+        .text-danger {
+          color: #dc3545;
+          display: block;
+          margin-top: 5px;
+        }
+        .small {
+          font-size: 12px;
+        }
+        .error-border {
+          border-color: #dc3545 !important;
+        }
+        .stripe-card-element-container {
+          border: 1px solid #3636364d;
+          border-radius: 10px;
+          padding: 12px 10px;
+          background-color: white;
+          width: 100%;
+          outline: none;
+        }
+        .mb-15 {
+          margin-bottom: 15px;
+        }
+      `}</style>
+    </div>
+  );
+}
+
+// Fixed Export wrapping your form wrapper inside a Suspense Boundary
+export default function AddNewCard() {
+  return (
+    <Elements stripe={stripePromise}>
+      <Suspense
+        fallback={
+          <div className="text-center p-5">Loading card registration...</div>
+        }
+      >
+        <AddNewCardForm />
+      </Suspense>
+    </Elements>
+  );
+}

@@ -186,10 +186,7 @@ const ClientComponent = ({ data }: homeprops) => {
       }
     };
 
-    // Spin initialization request loop up safely
     frameId = requestAnimationFrame(initSliders);
-
-    // Context execution logic for simple non-plugin click bindings
     const checkBindings = () => {
       const $ = (window as any).$;
       if ($) {
@@ -226,7 +223,6 @@ const ClientComponent = ({ data }: homeprops) => {
 
     checkBindings();
 
-    // Clean teardown handlers to guarantee no duplicate slider instances on history mutations
     return () => {
       cancelAnimationFrame(frameId);
       const _$ = (window as any).$;
@@ -571,8 +567,9 @@ const ClientComponent = ({ data }: homeprops) => {
                             </p>
                             <p className="sec">
                               Started{" "}
-                              {formatTimeDifference(item.scheduledAt) ||
-                                "Started 20 mins ago"}
+                              {item?.trackingUpdatedAt || "Started 20 mins ago"}
+                              {/* {formatTimeDifference(item.scheduledAt) ||
+                                "Started 20 mins ago"} */}
                             </p>
                           </div>
                         </div>
@@ -765,7 +762,6 @@ const ClientComponent = ({ data }: homeprops) => {
                         ?.map((item: any, index: number) => {
                           const isServicesOpen = !!expandedQuotes[index];
                           const isAdditionalOpen = !!expandedAdditional[index];
-
                           // Dynamic cost resolution logic
                           const resolveCost = () => {
                             if (
@@ -785,7 +781,6 @@ const ClientComponent = ({ data }: homeprops) => {
                                 ?.issues?.[0]?.total_amount || "0.00"
                             );
                           };
-
                           return (
                             <div
                               className="my-quotes-inner"
@@ -800,7 +795,6 @@ const ClientComponent = ({ data }: homeprops) => {
                                   <p className="right">Additional Services</p>
                                 )}
                               </div>
-
                               <div className="plumbing">
                                 {/* Title Link */}
                                 <Link href="/quotes" className="plm">
@@ -810,7 +804,6 @@ const ClientComponent = ({ data }: homeprops) => {
                                     alt="arrow"
                                   />
                                 </Link>
-
                                 {/* Categories & Subcategories List */}
                                 <div className="service-list-type">
                                   <ol className="main-category">
@@ -854,7 +847,6 @@ const ClientComponent = ({ data }: homeprops) => {
                                           )}
                                         </li>
                                       ))}
-
                                     {/* Toggle More / Less Sub-Categories */}
                                     {item?.sub_categories?.length > 1 && (
                                       <>
@@ -929,7 +921,6 @@ const ClientComponent = ({ data }: homeprops) => {
                                                   )}
                                                 </li>
                                               ))}
-
                                             <li
                                               style={{
                                                 cursor: "pointer",
@@ -953,73 +944,6 @@ const ClientComponent = ({ data }: homeprops) => {
                                     )}
                                   </ol>
                                 </div>
-
-                                {/* Schedule Info */}
-                                {/* {item?.schedule && item.schedule.length > 0 ? (
-                                <div
-                                  className="booking-schedule-container"
-                                  style={{
-                                    padding: "15px",
-                                    fontFamily: "'Segoe UI', Roboto, sans-serif",
-                                    color: "#333",
-                                    fontSize: "16px",
-                                    maxWidth: "400px",
-                                  }}
-                                >
-                                  {item.schedule.map((scheduleItem: any, schedIndex: number) => (
-                                    <div
-                                      key={schedIndex}
-                                      style={{
-                                        display: "flex",
-                                        alignItems: "center",
-                                        marginBottom: "12px",
-                                        lineHeight: "1.4",
-                                      }}
-                                    >
-                                      <div style={{ width: "70px", fontWeight: "500", color: "#222" }}>
-                                        {schedIndex === 0 ? "Date :" : ""}
-                                      </div>
-                                      <div style={{ width: "140px", letterSpacing: "0.3px", color: "#222" }}>
-                                        {scheduleItem?.date}
-                                      </div>
-                                      <div style={{ letterSpacing: "0.5px", color: "#222", paddingLeft: "10px" }}>
-                                        {scheduleItem?.time}
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              ) : (item?.date || item?.time) && (
-                                <div
-                                  className="booking-schedule-container"
-                                  style={{
-                                    padding: "15px",
-                                    fontFamily: "'Segoe UI', Roboto, sans-serif",
-                                    color: "#333",
-                                    fontSize: "16px",
-                                    maxWidth: "400px",
-                                  }}
-                                >
-                                  <div
-                                    style={{
-                                      display: "flex",
-                                      alignItems: "center",
-                                      marginBottom: "12px",
-                                      lineHeight: "1.4",
-                                    }}
-                                  >
-                                    <div style={{ width: "70px", fontWeight: "500", color: "#222" }}>
-                                      Date :
-                                    </div>
-                                    <div style={{ width: "140px", letterSpacing: "0.3px", color: "#222" }}>
-                                      {item?.date}
-                                    </div>
-                                    <div style={{ letterSpacing: "0.5px", color: "#222", paddingLeft: "10px" }}>
-                                      {item?.time}
-                                    </div>
-                                  </div>
-                                </div>
-                              )} */}
-
                                 <div
                                   className="booking-schedule-container"
                                   style={{
@@ -1060,7 +984,6 @@ const ClientComponent = ({ data }: homeprops) => {
                                         },
                                       ];
                                     }
-
                                     return scheduleList.map(
                                       (
                                         scheduleItem: any,
@@ -1107,8 +1030,6 @@ const ClientComponent = ({ data }: homeprops) => {
                                     );
                                   })()}
                                 </div>
-
-                                {/* Additional Services */}
                                 {item?.has_additional_services && (
                                   <div className="additional-services">
                                     <p
@@ -1179,23 +1100,52 @@ const ClientComponent = ({ data }: homeprops) => {
                                   <div className="home-quotes-cta">
                                     <button
                                       className="reject-btn"
-                                      data-bs-target="#servicesRejection"
-                                      data-bs-toggle="modal"
-                                      // onClick={() => setServiceId(item?.quote_id || item?.id)}
-                                      style={{ cursor: "pointer" }}
+                                      data-bs-target={
+                                        item?.zelle_payment_status === "pending"
+                                          ? undefined
+                                          : "#servicesRejection"
+                                      }
+                                      data-bs-toggle={
+                                        item?.zelle_payment_status === "pending"
+                                          ? undefined
+                                          : "modal"
+                                      }
+                                      disabled={
+                                        item?.zelle_payment_status === "pending"
+                                      }
+                                      style={{
+                                        cursor:
+                                          item?.zelle_payment_status ===
+                                          "pending"
+                                            ? "not-allowed"
+                                            : "pointer",
+                                        opacity:
+                                          item?.zelle_payment_status ===
+                                          "pending"
+                                            ? 0.5
+                                            : 1,
+                                      }}
                                       onClick={() => {
+                                        if (
+                                          item?.zelle_payment_status ===
+                                          "pending"
+                                        )
+                                          return;
+
                                         setServiceId(
                                           item.has_additional_services
                                             ? item.additional_services
                                                 .booking_id
                                             : item.id
                                         );
+
                                         setAdditionalId(
                                           item.has_additional_services
                                             ? item.additional_services
                                                 ?.items?.[0]?.id
                                             : null
                                         );
+
                                         setIsAddactional(
                                           item.has_additional_services
                                         );
@@ -1206,29 +1156,110 @@ const ClientComponent = ({ data }: homeprops) => {
 
                                     <button
                                       className="primary-cta rgt"
-                                      data-bs-target="#servicesAccepted"
-                                      data-bs-toggle="modal"
-                                      // onClick={() => setServiceId(item?.quote_id || item?.id)}
-                                      onClick={() => {
+                                      onClick={(e) => {
+                                        // Disable button when Zelle payment is pending
+                                        if (
+                                          item?.zelle_payment_status ===
+                                          "pending"
+                                        ) {
+                                          e.preventDefault();
+                                          return;
+                                        }
+
+                                        const today = new Date();
+                                        today.setHours(0, 0, 0, 0);
+
+                                        const scheduleArray =
+                                          item?.schedule || [];
+
+                                        if (scheduleArray.length === 0) {
+                                          toast.error(
+                                            "No schedule date found."
+                                          );
+                                          return;
+                                        }
+
+                                        const timestamps = scheduleArray
+                                          .map((sch: any) => {
+                                            if (!sch?.date) return null;
+
+                                            const [day, month, year] =
+                                              sch.date.split("-");
+                                            const parsedDate = new Date(
+                                              year,
+                                              month - 1,
+                                              day
+                                            );
+
+                                            parsedDate.setHours(0, 0, 0, 0);
+
+                                            return parsedDate.getTime();
+                                          })
+                                          .filter(Boolean);
+
+                                        const maxTimestamp = Math.max(
+                                          ...timestamps
+                                        );
+                                        const latestItemDate = new Date(
+                                          maxTimestamp
+                                        );
+
+                                        if (latestItemDate < today) {
+                                          toast.error(
+                                            "This quote is no longer valid. Please reject this quote so our admin team can reschedule it for you."
+                                          );
+                                          return;
+                                        }
+
                                         setServiceId(
                                           item.has_additional_services
                                             ? item.additional_services
                                                 .booking_id
                                             : item.id
                                         );
+
                                         setAdditionalId(
                                           item.has_additional_services
                                             ? item.additional_services
                                                 ?.items?.[0]?.id
                                             : null
                                         );
+
                                         setIsAddactional(
                                           item.has_additional_services
                                         );
+
+                                        const modalElement =
+                                          document.getElementById(
+                                            "servicesAccepted"
+                                          );
+
+                                        if (modalElement && window.bootstrap) {
+                                          const modalInstance =
+                                            window.bootstrap.Modal.getOrCreateInstance(
+                                              modalElement
+                                            );
+
+                                          modalInstance.show();
+                                        }
                                       }}
-                                      style={{ cursor: "pointer" }}
+                                      disabled={
+                                        item?.zelle_payment_status === "pending"
+                                      }
+                                      style={{
+                                        cursor:
+                                          item?.zelle_payment_status ===
+                                          "pending"
+                                            ? "not-allowed"
+                                            : "pointer",
+                                        opacity:
+                                          item?.zelle_payment_status ===
+                                          "pending"
+                                            ? 0.5
+                                            : 1,
+                                      }}
                                     >
-                                      Accept{" "}
+                                      Accept
                                       <img
                                         src="images/home/right-img.svg"
                                         alt="accept"
@@ -1246,8 +1277,6 @@ const ClientComponent = ({ data }: homeprops) => {
               </div>
             </section>
           )}
-
-          {/* ==================== NEW SECTION: INVITE AND EARN ==================== */}
 
           {/* ==================== INVITE AND EARN ==================== */}
           {data?.refferalBanners?.refferalCode && (
@@ -1566,7 +1595,6 @@ const ClientComponent = ({ data }: homeprops) => {
       />
       <RescheduleRequestSubmit />
       <ServiceRejected />
-      {/* <NewServiceRejectionModal serviceId={serviceId} /> */}
       <NewServiceRejectionModal
         serviceId={serviceId}
         onConfirm={handleReject}
@@ -1577,13 +1605,11 @@ const ClientComponent = ({ data }: homeprops) => {
         isAddactional={isAddactional}
         additionalId={additionalId}
       />
-      {/* <ServiceAccepted serviceId={serviceId} /> */}
       <CancelBooking
         isOpen={showCancle}
         setIsOpen={setShowCancle}
         onCancel={handleCancel}
       />
-
       {showShareMenu && (
         <div
           className="share-overlay"
@@ -1592,7 +1618,6 @@ const ClientComponent = ({ data }: homeprops) => {
           <div className="share-popup" onClick={(e) => e.stopPropagation()}>
             <div className="share-header">
               <h4>Share Referral</h4>
-
               <button
                 className="close-btn"
                 onClick={() => setShowShareMenu(false)}
@@ -1600,7 +1625,6 @@ const ClientComponent = ({ data }: homeprops) => {
                 <FaTimes />
               </button>
             </div>
-
             <div className="share-grid">
               <button className="share-item" onClick={handleWhatsAppShare}>
                 <div className="icon1 whatsapp">
@@ -1608,21 +1632,18 @@ const ClientComponent = ({ data }: homeprops) => {
                 </div>
                 <span>WhatsApp</span>
               </button>
-
               <button className="share-item" onClick={handleFacebookShare}>
                 <div className="icon1 facebook">
                   <FaFacebookF />
                 </div>
                 <span>Facebook</span>
               </button>
-
               <button className="share-item" onClick={handleTwitterShare}>
                 <div className="icon1 twitter">
                   <FaXTwitter />
                 </div>
                 <span>X</span>
               </button>
-
               <button className="share-item" onClick={handleEmailShare}>
                 <div className="icon1 email">
                   <FaEnvelope />

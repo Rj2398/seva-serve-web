@@ -18,6 +18,7 @@ const CheckOutContent = ({ bookingData }: CheckOutProps) => {
 
   const [checkoutData, setCheckoutData] = useState<any>();
   console.log(checkoutData, "check out data*******");
+  const [paymentMethod, setPaymentMethod] = useState<any>('1');
 
   useEffect(() => {
     const fetchCheckoutDetails = async () => {
@@ -130,27 +131,37 @@ const CheckOutContent = ({ bookingData }: CheckOutProps) => {
                           type="radio"
                           value="1"
                           name="payment-method"
-                          defaultChecked
+                          // defaultChecked
+                          checked={paymentMethod === "1"}
+                          onChange={(e) => setPaymentMethod(e.target.value)}
                         />{" "}
-                        Credit Card (Stripe)
+                        PayPal
                       </li>
                       <li>
-                        <input type="radio" value="2" name="payment-method" />{" "}
+                        <input type="radio" value="2" name="payment-method" checked={paymentMethod === "2"}
+                          onChange={(e) => setPaymentMethod(e.target.value)} />{" "}
                         Zelle
                       </li>
-                      <li>
-                        <input type="radio" value="3" name="payment-method" />{" "}
+                      {/* <li>
+                        <input type="radio" value="3" name="payment-method" checked={paymentMethod === "1"}
+                          onChange={(e) => setPaymentMethod(e.target.value)} />{" "}
                         Venmo
-                      </li>
+                      </li> */}
                     </ul>
                   </div>
                 </div>
                 <div className="card-help">
                   <Link
                     href={{
-                      pathname: checkoutData?.hasCard
-                        ? `/payment-method`
-                        : `/add-new-card`,
+                      // pathname: checkoutData?.hasCard
+                      //   ? `/payment-method`
+                      //   : `/add-new-card`,
+                      pathname:
+                        paymentMethod === "2"
+                          ? `/zelle-payment`
+                          : checkoutData?.hasCard
+                            ? `/payment-method`
+                            : `/add-new-card`,
                       query: {
                         booking_id: bookingId || bookingData?.bookingId,
                         initialpayment: initialPayment,

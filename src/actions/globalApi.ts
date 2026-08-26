@@ -30,6 +30,17 @@ interface ApiOptions {
 
 // };
 
+
+
+
+
+// paypal
+
+// Client ID: BAA72Tq28BGmsSOiRC_J7v9DiYI-NsghGlG0Vvf1BwxT94wCBMZwZOYHp3nnnkNAWLwb0mDmgCLP1bxhvA
+
+// Secret key: ELEBBxZWK8-ZTuzuSGq1yz0DTI0Ze0AEQ2dOxen4lBe8L9Tq9paXncUuoh0zQmRY2y60MqE7TCl1b8DJ
+ 
+
 const forceLogoutClient = () => {
   localStorage.clear();
 

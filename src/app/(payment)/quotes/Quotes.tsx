@@ -14,7 +14,9 @@ export default function Quotes() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const is_requested = searchParams.get("is_requested");
-  const booking_id = searchParams.get('bookingId')
+  const booking_id = searchParams.get('bookingId');
+  const quote_id = searchParams.get('quoteId');
+  const status = searchParams.get('status');
   const [activeTab, setActiveTab] = useState(is_requested === "1" ? "requested" : "received");
   const [quotes, setQuotes] = useState<any[]>([]);
   const [showCancle, setShowCancle] = useState<boolean>(false);
@@ -35,12 +37,22 @@ export default function Quotes() {
   const [additionalId, setAdditionalId] = useState<string>("");
   const [isAddactional, setIsAddactional] = useState<boolean>(false);
 
+
+  useEffect(() => {
+    if (status) {
+      setActiveTab(status.toLowerCase());
+    }
+  }, [status]);
+
+
   useEffect(() => {
     const fetchQuotes = async () => {
       setLoading(true);
       try {
+        const endPoint = `quotes/get-quote?${booking_id ? `bookingId=${booking_id}` : `quoteId=${quote_id}`}`;
         const response = await globalServerRequest({
-          endpoint: `quotes/get-quote?bookingId=${booking_id}`,
+          endpoint: endPoint,
+          // `quotes/get-quote?bookingId=${booking_id}`,
           method: "POST",
           payload: { type: activeTab, pageNo, limit },
         });
@@ -48,7 +60,9 @@ export default function Quotes() {
           const data = response?.data?.data?.quotes || response?.data?.data || response?.data || [];
           const pagination = response?.data?.data?.pagination;
           const newQuotes = Array.isArray(data) ? data : [];
-
+          if (booking_id) {
+            setActiveTab(response?.data?.data?.quotes?.status);
+          }
           if (pageNo === 1) {
             setQuotes(newQuotes);
           } else {
@@ -260,12 +274,10 @@ export default function Quotes() {
                           quotes?.map((item: any, index: number) => {
                             const isServicesOpen = !!expandedQuotes[index];
                             const isAdditionalOpen = !!expandedAdditional[index];
-
                             return (
                               <div className="my-quotes-inner" key={index}>
                                 <div className="add-user">
                                   <p className="left">{item.quote_number || `#${item.quote_id}`}</p>
-
                                   {item?.has_additional_services && (
                                     <p className="right">Additional Services</p>
                                   )}
@@ -273,9 +285,7 @@ export default function Quotes() {
                                     <p className="right">Pending From Admin</p>
                                   )}
                                 </div>
-
                                 <div className="plumbing">
-
                                   <Link href={`/serviceDetails?serviceId=${item?.quote_id}`} className="plm">
                                     {item?.category?.name || item.category}{" "}
                                     <img
@@ -441,7 +451,7 @@ export default function Quotes() {
                                       <div className="home-quotes-cta">
                                         {activeTab === "received" && (
                                           <>
-                                            <button
+                                            {/* <button
                                               className="reject-btn"
                                               data-bs-target="#servicesRejection"
                                               data-bs-toggle="modal"
@@ -453,16 +463,84 @@ export default function Quotes() {
                                               style={{ cursor: 'pointer' }}
                                             >
                                               Reject
-                                            </button>
-                                            <a
+                                            </button> */}
+
+                                            <button
+                                                  className="reject-btn"
+                                                  data-bs-target="#servicesRejection"
+                                                  data-bs-toggle="modal"
+                                                  disabled={ item?.zelle_payment_status === "pending"}
+                                                  onClick={() => {
+                                                    setServiceId(
+                                                      item.has_additional_services
+                                                        ? item.additional_services.booking_id
+                                                        : item.quote_id
+                                                    );
+
+                                                    setAdditionalId(
+                                                      item.has_additional_services
+                                                        ? item.additional_services?.items?.[0]?.id
+                                                        : null
+                                                    );
+
+                                                    setIsAddactional(item.has_additional_services);
+                                                  }}
+                                                  style={{
+                                                    cursor:
+                                                       item?.zelle_payment_status === "pending" ? "not-allowed" : "pointer",
+                                                    opacity: item?.zelle_payment_status === "pending" ? 0.5 : 1,
+                                                  }}
+                                                >
+                                                  Reject
+                                                </button>
+                                            {/* <a
                                               className="primary-cta rgt"
-                                              data-bs-target="#servicesAccepted"
-                                              data-bs-toggle="modal"
-                                              onClick={() => {
+                                         
+
+                                              onClick={(e: any) => {
+                                                const today = new Date();
+                                                today.setHours(0, 0, 0, 0);
+
+                                                const scheduleArray = item?.schedule || [];
+
+                                                if (scheduleArray.length === 0) {
+                                                  toast.error("No schedule date found.");
+                                                  return;
+                                                }
+
+                                                const timestamps = scheduleArray
+                                                  .map((sch: any) => {
+                                                    if (!sch?.date) return null;
+                                                    const [day, month, year] = sch.date.split("-");
+                                                    const parsedDate = new Date(year, month - 1, day);
+                                                    parsedDate.setHours(0, 0, 0, 0);
+                                                    return parsedDate.getTime();
+                                                  })
+                                                  .filter(Boolean);
+
+                                                const maxTimestamp = Math.max(...timestamps);
+                                                const latestItemDate = new Date(maxTimestamp);
+
+                                                if (latestItemDate < today) {
+                                                  toast.error("This quote is no longer valid. Please reject this quote so our admin team can reschedule it for you.");
+                                                  return;
+                                                }
+
                                                 setServiceId(item.has_additional_services ? item.additional_services.booking_id : item.quote_id);
                                                 setAdditionalId(item.has_additional_services ? item.additional_services?.items?.[0]?.id : null);
                                                 setIsAddactional(item.has_additional_services)
+
+                                                const modalElement = document.getElementById("servicesAccepted");
+                                                if (modalElement && window.bootstrap) {
+                                                  const modalInstance = window.bootstrap.Modal.getOrCreateInstance(modalElement);
+                                                  modalInstance.show();
+                                                }
                                               }}
+
+                                              
+
+
+
                                               style={{ cursor: 'pointer' }}
                                             >
                                               Accept
@@ -470,7 +548,83 @@ export default function Quotes() {
                                                 src="images/home/right-img.svg"
                                                 alt=""
                                               />
-                                            </a>
+                                            </a> */}
+
+                                            <a
+                                                  className={`primary-cta rgt ${
+                                                     item?.zelle_payment_status === "pending" ? "disabled" : ""
+                                                  }`}
+                                                  onClick={(e: any) => {
+                                                    if (  item?.zelle_payment_status === "pending") {
+                                                      e.preventDefault();
+                                                      return;
+                                                    }
+
+                                                    const today = new Date();
+                                                    today.setHours(0, 0, 0, 0);
+
+                                                    const scheduleArray = item?.schedule || [];
+
+                                                    if (scheduleArray.length === 0) {
+                                                      toast.error("No schedule date found.");
+                                                      return;
+                                                    }
+
+                                                    const timestamps = scheduleArray
+                                                      .map((sch: any) => {
+                                                        if (!sch?.date) return null;
+
+                                                        const [day, month, year] = sch.date.split("-");
+                                                        const parsedDate = new Date(year, month - 1, day);
+
+                                                        parsedDate.setHours(0, 0, 0, 0);
+
+                                                        return parsedDate.getTime();
+                                                      })
+                                                      .filter(Boolean);
+
+                                                    const maxTimestamp = Math.max(...timestamps);
+                                                    const latestItemDate = new Date(maxTimestamp);
+
+                                                    if (latestItemDate < today) {
+                                                      toast.error(
+                                                        "This quote is no longer valid. Please reject this quote so our admin team can reschedule it for you."
+                                                      );
+                                                      return;
+                                                    }
+
+                                                    setServiceId(
+                                                      item.has_additional_services
+                                                        ? item.additional_services.booking_id
+                                                        : item.quote_id
+                                                    );
+
+                                                    setAdditionalId(
+                                                      item.has_additional_services
+                                                        ? item.additional_services?.items?.[0]?.id
+                                                        : null
+                                                    );
+
+                                                    setIsAddactional(item.has_additional_services);
+
+                                                    const modalElement = document.getElementById("servicesAccepted");
+
+                                                    if (modalElement && window.bootstrap) {
+                                                      const modalInstance =
+                                                        window.bootstrap.Modal.getOrCreateInstance(modalElement);
+
+                                                      modalInstance.show();
+                                                    }
+                                                  }}
+                                                  style={{
+                                                    cursor:  item?.zelle_payment_status === "pending" ? "not-allowed" : "pointer",
+                                                    opacity:   item?.zelle_payment_status === "pending" ? 0.5 : 1,
+                                                    pointerEvents:  item?.zelle_payment_status === "pending" ? "none" : "auto",
+                                                  }}
+                                                >
+                                                  Accept
+                                                  <img src="images/home/right-img.svg" alt="" />
+                                                </a>
                                           </>
                                         )}
 
