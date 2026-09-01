@@ -39,5 +39,5 @@ export default async function Homepage() {
     console.error(`Error fetching ${endpoint} data:`, err);
   }
 
-  return <ClientComponent data={data} />;
+  return <ClientComponent data={data} isLogin={!!token} />;
 }

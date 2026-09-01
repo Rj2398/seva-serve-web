@@ -26,9 +26,10 @@ import CancelBooking from "@/components/modals/bookingmodals/CancelBooking";
 
 interface homeprops {
   data: any;
+  isLogin?: boolean;
 }
 
-const ClientComponent = ({ data }: homeprops) => {
+const ClientComponent = ({ data, isLogin = false }: homeprops) => {
   const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
   const [showWelcomeModal, setShowWelcomeModal] = useState<boolean>(false);
   const [showAddCardModal, setShowAddCardModal] = useState<boolean>(false);
@@ -53,12 +54,26 @@ const ClientComponent = ({ data }: homeprops) => {
 
   const [showShareMenu, setShowShareMenu] = useState(false);
 
-  const user =
-    typeof window !== "undefined" ? localStorage.getItem("user") : null;
-  const isNewUser = user ? JSON.parse(user)?.isNewUser : false;
-  const isLoginUser =
-    typeof window !== "undefined" ? localStorage.getItem("isLoggedIn") : null;
-  const isLogin = isLoginUser === "true";
+  const [isNewUser, setIsNewUser] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const userStr = localStorage.getItem("user");
+      if (userStr) {
+        try {
+          const parsed = JSON.parse(userStr);
+          setIsNewUser(
+            parsed?.isNewUser === true ||
+              parsed?.isNewUser === "true" ||
+              parsed?.isNewUser === 1 ||
+              parsed?.isNewUser === "1"
+          );
+        } catch (e) {
+          console.error("Error parsing user from localStorage", e);
+        }
+      }
+    }
+  }, []);
 
   const router = useRouter();
 
@@ -227,10 +242,18 @@ const ClientComponent = ({ data }: homeprops) => {
       cancelAnimationFrame(frameId);
       const _$ = (window as any).$;
       if (_$ && typeof _$.fn?.slick === "function") {
-        if (_$(".hero-slider").hasClass("slick-initialized"))
-          _$(".hero-slider").slick("unslick");
-        if (_$(".upcoming-slider").hasClass("slick-initialized"))
-          _$(".upcoming-slider").slick("unslick");
+        try {
+          if (_$(".hero-slider").hasClass("slick-initialized"))
+            _$(".hero-slider").slick("unslick");
+        } catch (e) {
+          console.warn("Failed to unslick hero-slider", e);
+        }
+        try {
+          if (_$(".upcoming-slider").hasClass("slick-initialized"))
+            _$(".upcoming-slider").slick("unslick");
+        } catch (e) {
+          console.warn("Failed to unslick upcoming-slider", e);
+        }
       }
     };
   }, [data]);
@@ -1153,6 +1176,68 @@ const ClientComponent = ({ data }: homeprops) => {
                                     >
                                       Reject
                                     </button>
+
+                                    {/* <button
+                                    className="primary-cta rgt"
+                                    data-bs-target="#servicesAccepted"
+                                    data-bs-toggle="modal"
+                                    // onClick={() => setServiceId(item?.quote_id || item?.id)}
+                                    onClick={() => {
+                                      setServiceId(item.has_additional_services ? item.additional_services.booking_id : item.id);
+                                      setAdditionalId(item.has_additional_services ? item.additional_services?.items?.[0]?.id : null);
+                                      setIsAddactional(item.has_additional_services)
+                                    }}
+                                    style={{ cursor: "pointer" }}
+                                  >
+                                    Accept{" "}
+                                    <img src="images/home/right-img.svg" alt="accept" />
+                                  </button> */}
+
+                                    {/* <button
+                                    className="primary-cta rgt"
+                                    onClick={(e) => {
+                                      const today = new Date();
+                                      today.setHours(0, 0, 0, 0);
+
+                                      const scheduleArray = item?.schedule || [];
+
+                                      if (scheduleArray.length === 0) {
+                                        toast.error("No schedule date found.");
+                                        return;
+                                      }
+
+                                      const timestamps = scheduleArray
+                                        .map((sch: any) => {
+                                          if (!sch?.date) return null;
+                                          const [day, month, year] = sch.date.split("-");
+                                          const parsedDate = new Date(year, month - 1, day);
+                                          parsedDate.setHours(0, 0, 0, 0);
+                                          return parsedDate.getTime();
+                                        })
+                                        .filter(Boolean);
+
+                                      const maxTimestamp = Math.max(...timestamps);
+                                      const latestItemDate = new Date(maxTimestamp);
+
+                                      if (latestItemDate < today) {
+                                        toast.error("This quote is no longer valid. Please reject this quote so our admin team can reschedule it for you.");
+                                        return;
+                                      }
+
+                                      setServiceId(item.has_additional_services ? item.additional_services.booking_id : item.id);
+                                      setAdditionalId(item.has_additional_services ? item.additional_services?.items?.[0]?.id : null);
+                                      setIsAddactional(item.has_additional_services);
+
+                                      const modalElement = document.getElementById("servicesAccepted");
+                                      if (modalElement && window.bootstrap) {
+                                        const modalInstance = window.bootstrap.Modal.getOrCreateInstance(modalElement);
+                                        modalInstance.show();
+                                      }
+                                    }}
+                                    style={{ cursor: "pointer" }}
+                                  >
+                                    Accept <img src="images/home/right-img.svg" alt="accept" />
+                                  </button> */}
 
                                     <button
                                       className="primary-cta rgt"

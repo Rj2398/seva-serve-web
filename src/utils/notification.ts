@@ -1,23 +1,3 @@
-// utils/firebaseNotification.ts
-
-// import { getMessaging, onMessage, isSupported } from "firebase/messaging";
-// import app from "@/config/firebase";
-// import toast from "react-hot-toast";
-
-// export const initializeFirebaseNotifications = async () => {
-//   const supported = await isSupported();
-
-//   if (!supported) return;
-
-//   const messaging = getMessaging(app);
-
-//   onMessage(messaging, (payload) => {
-//     console.log("Foreground Notification:", payload);
-
-//     toast.success(payload.notification?.title || "New Notification");
-//   });
-// };
-
 import { getMessaging, onMessage, isSupported } from "firebase/messaging";
 import app from "@/config/firebase";
 import toast from "react-hot-toast";
@@ -48,11 +28,16 @@ export const initializeFirebaseNotifications = async () => {
         if (screenType && targetId) {
           switch (screenType.toLowerCase()) {
             case "quote":
-            case "alert":
-              url = `/quotes?quoteId=${targetId}`;
+              url = "/quotes?quoteId=" + targetId;
               break;
             case "booking":
-              url = `/view-booking-detail?bookingId=${targetId}`;
+              url = "/booking";
+              break;
+            case "job_tracking":
+              url = "/view-booking-detail?bookingId=" + targetId;
+              break;
+            case "payment":
+              url = "/my-payment";
               break;
           }
         }
@@ -94,3 +79,23 @@ export const initializeFirebaseNotifications = async () => {
     window.dispatchEvent(new Event("newNotification"));
   });
 };
+
+// utils/firebaseNotification.ts
+
+// import { getMessaging, onMessage, isSupported } from "firebase/messaging";
+// import app from "@/config/firebase";
+// import toast from "react-hot-toast";
+
+// export const initializeFirebaseNotifications = async () => {
+//   const supported = await isSupported();
+
+//   if (!supported) return;
+
+//   const messaging = getMessaging(app);
+
+//   onMessage(messaging, (payload) => {
+//     console.log("Foreground Notification:", payload);
+
+//     toast.success(payload.notification?.title || "New Notification");
+//   });
+// };
