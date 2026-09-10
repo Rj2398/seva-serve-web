@@ -17,9 +17,12 @@ const VerifyProfile = ({ initialMode = "phone" }: VerifyProfileProps) => {
   const [loading, setLoading] = useState(false);
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const phoneRegex = /^(?:\+1\s?)?(?:\([2-9]\d{2}\)|[2-9]\d{2})[-.\s]?[2-9]\d{2}[-.\s]?\d{4}$/;
+  // const phoneRegex = /^(?:\+1\s?)?(?:\([2-9]\d{2}\)|[2-9]\d{2})[-.\s]?[2-9]\d{2}[-.\s]?\d{4}$/;
+  const phoneRegex = /^[0-9]{10}$/;
 
-  const isvalidInput = isEmailLogin ? emailRegex.test(inputValue) : phoneRegex.test(inputValue);
+  const isvalidInput = isEmailLogin
+    ? emailRegex.test(inputValue)
+    : phoneRegex.test(inputValue);
 
   useEffect(() => {
     setIsEmailLogin(initialMode === "email");
@@ -69,7 +72,11 @@ const VerifyProfile = ({ initialMode = "phone" }: VerifyProfileProps) => {
       setLoading(false);
 
       if (response.success) {
-        toast.success(response.data?.message || response.data?.messages || "OTP sent successfully!");
+        toast.success(
+          response.data?.message ||
+            response.data?.messages ||
+            "OTP sent successfully!"
+        );
 
         const currentModal = document.getElementById("verify-profile-screen-1");
         if (currentModal) {
@@ -243,7 +250,12 @@ const VerifyProfile = ({ initialMode = "phone" }: VerifyProfileProps) => {
                       : "Enter your new number to receive a verification code."}
                   </p>
 
-                  <form>
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      handleContinue();
+                    }}
+                  >
                     <div className="phone-number">
                       <input
                         type="text"
@@ -256,7 +268,9 @@ const VerifyProfile = ({ initialMode = "phone" }: VerifyProfileProps) => {
                             setInputValue(e.target.value);
                             setError("");
                           } else {
-                            const onlyNumbers = e.target.value.replace(/\D/g, "").substring(0, 10);
+                            const onlyNumbers = e.target.value
+                              .replace(/\D/g, "")
+                              .substring(0, 10);
                             let formatted = onlyNumbers;
                             setError("");
                             setInputValue(formatted);
@@ -285,7 +299,7 @@ const VerifyProfile = ({ initialMode = "phone" }: VerifyProfileProps) => {
                       </p>
                     )}
                     <button
-                      type="button"
+                      type="submit"
                       disabled={!isvalidInput || loading}
                       onClick={handleContinue}
                       className="continue-btn"
@@ -346,7 +360,10 @@ const VerifyProfile = ({ initialMode = "phone" }: VerifyProfileProps) => {
           </div>
         </div>
       </div>
-      <VerifyProfileOtpModal emailLogin={isEmailLogin} loginValue={inputValue} />
+      <VerifyProfileOtpModal
+        emailLogin={isEmailLogin}
+        loginValue={inputValue}
+      />
     </>
   );
 };

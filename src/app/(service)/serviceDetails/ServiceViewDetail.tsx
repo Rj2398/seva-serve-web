@@ -57,9 +57,7 @@ export default function ServiceViewDetail({
   const dispatch = useDispatch();
   console.log(initialData, "initial data***");
 
-  const cartCount = useSelector(
-    (state: RootState) => state.cart.count
-  );
+  const cartCount = useSelector((state: RootState) => state.cart.count);
 
   const searchParams = useSearchParams();
   const requestedId = searchParams.get("requestedId");
@@ -91,9 +89,13 @@ export default function ServiceViewDetail({
     initialNormalized?.subCategories?.[0]?.id
   );
   const [problemDesc, setProblemDesc] = useState<Record<string, string>>({});
-  const [uploadedImg, setUploadedImage] = useState<Record<string, string[]>>({});
+  const [uploadedImg, setUploadedImage] = useState<Record<string, string[]>>(
+    {}
+  );
   const [activeIssueId, setActiveIssueId] = useState<string | null>(null);
-  const [uploadedFiles, setUploadedFiles] = useState<Record<string, File[]>>({});
+  const [uploadedFiles, setUploadedFiles] = useState<Record<string, File[]>>(
+    {}
+  );
   const [searchSubCategory, setSearchSubCategory] = useState<string>("");
   const [loadedData, setLoadedData] = useState<{
     subCategoryId: number | null;
@@ -133,17 +135,23 @@ export default function ServiceViewDetail({
 
         if (response.success) {
           const savedData = response.data?.data || response.data;
-          console.log("savedData", savedData)
+          console.log("savedData", savedData);
           if (savedData) {
             const matchedSubCategory = savedData?.subCategories?.find(
               (sub: any) => sub.id == subCategoryId
             );
-            console.log("matchedSubCategory", matchedSubCategory)
+            console.log("matchedSubCategory", matchedSubCategory);
             if (matchedSubCategory) {
               const firstService = matchedSubCategory.services?.[0];
-              const savedIssueId = firstService?.id ? String(firstService.id) : null;
-              const savedSpecificIssueIds = Array.isArray(firstService?.specificIssues)
-                ? firstService.specificIssues.map((spec: any) => Number(spec.id))
+              const savedIssueId = firstService?.id
+                ? String(firstService.id)
+                : null;
+              const savedSpecificIssueIds = Array.isArray(
+                firstService?.specificIssues
+              )
+                ? firstService.specificIssues.map((spec: any) =>
+                    Number(spec.id)
+                  )
                 : [];
               setLoadedData({
                 subCategoryId: matchedSubCategory.id || null,
@@ -176,10 +184,15 @@ export default function ServiceViewDetail({
                   }));
                 }
 
-                if (matchedSubCategory.media && Array.isArray(matchedSubCategory.media)) {
+                if (
+                  matchedSubCategory.media &&
+                  Array.isArray(matchedSubCategory.media)
+                ) {
                   setUploadedImage((prev) => ({
                     ...prev,
-                    [savedIssueId]: matchedSubCategory.media.map((item: any) => item.url),
+                    [savedIssueId]: matchedSubCategory.media.map(
+                      (item: any) => item.url
+                    ),
                   }));
                 }
               }
@@ -193,31 +206,51 @@ export default function ServiceViewDetail({
     fetchSavedRequest();
   }, [requestedId]);
 
-
-  console.log("loadedData", loadedData)
-  console.log("requestedId", requestedId)
+  console.log("loadedData", loadedData);
+  console.log("requestedId", requestedId);
 
   const isFormChanged = () => {
     if (!requestedId || !loadedData) return true;
 
-    if (Number(selectSubCategories || 0) !== Number(loadedData.subCategoryId || 0)) return true;
+    if (
+      Number(selectSubCategories || 0) !== Number(loadedData.subCategoryId || 0)
+    )
+      return true;
 
-    const cleanActiveIssueId = activeIssueId ? Number(String(activeIssueId).replace("issue_", "")) : null;
-    const cleanLoadedIssueId = loadedData.issueId ? Number(loadedData.issueId) : null;
+    const cleanActiveIssueId = activeIssueId
+      ? Number(String(activeIssueId).replace("issue_", ""))
+      : null;
+    const cleanLoadedIssueId = loadedData.issueId
+      ? Number(loadedData.issueId)
+      : null;
     if (cleanActiveIssueId !== cleanLoadedIssueId) return true;
-    const currentSpecificIssueId = activeIssueId ? selectedSpecificIssueId[activeIssueId] || [] : [];
-    const currentProblemDesc = activeIssueId ? problemDesc[activeIssueId] || "" : "";
-    const currentUploadedFiles = activeIssueId ? uploadedFiles[activeIssueId] || [] : [];
-    const currentUploadedImg = activeIssueId ? uploadedImg[activeIssueId] || [] : [];
+    const currentSpecificIssueId = activeIssueId
+      ? selectedSpecificIssueId[activeIssueId] || []
+      : [];
+    const currentProblemDesc = activeIssueId
+      ? problemDesc[activeIssueId] || ""
+      : "";
+    const currentUploadedFiles = activeIssueId
+      ? uploadedFiles[activeIssueId] || []
+      : [];
+    const currentUploadedImg = activeIssueId
+      ? uploadedImg[activeIssueId] || []
+      : [];
     const loadedSpecificIssueIds = loadedData?.specificIssueId || [];
 
-    if (currentSpecificIssueId.length !== loadedSpecificIssueIds.length) return true;
-    const isMismatch = currentSpecificIssueId.some(id => !loadedSpecificIssueIds.includes(id));
+    if (currentSpecificIssueId.length !== loadedSpecificIssueIds.length)
+      return true;
+    const isMismatch = currentSpecificIssueId.some(
+      (id) => !loadedSpecificIssueIds.includes(id)
+    );
     if (isMismatch) return true;
 
-    if ((currentProblemDesc || "") !== (loadedData.description || "")) return true;
+    if ((currentProblemDesc || "") !== (loadedData.description || ""))
+      return true;
     if (currentUploadedFiles.length > 0) return true;
-    const currentRemoteUrls = currentUploadedImg.filter((url) => url.startsWith("http"));
+    const currentRemoteUrls = currentUploadedImg.filter((url) =>
+      url.startsWith("http")
+    );
     if (currentRemoteUrls.length !== loadedData.mediaUrls.length) return true;
 
     for (let i = 0; i < currentRemoteUrls.length; i++) {
@@ -241,7 +274,10 @@ export default function ServiceViewDetail({
     }
   }, [initialData]);
 
-  const handleFile = (e: React.ChangeEvent<HTMLInputElement>, issueIdStr: string) => {
+  const handleFile = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    issueIdStr: string
+  ) => {
     const files = e.target.files;
 
     if (files) {
@@ -291,8 +327,12 @@ export default function ServiceViewDetail({
       return;
     }
 
-    const currentUploadedImg = activeIssueId ? uploadedImg[activeIssueId] || [] : [];
-    const currentProblemDesc = activeIssueId ? problemDesc[activeIssueId] || "" : "";
+    const currentUploadedImg = activeIssueId
+      ? uploadedImg[activeIssueId] || []
+      : [];
+    const currentProblemDesc = activeIssueId
+      ? problemDesc[activeIssueId] || ""
+      : "";
 
     if (!addedCategory) {
       toast.error("please select sub Category");
@@ -303,11 +343,24 @@ export default function ServiceViewDetail({
     } else {
       if (requestedId && !isFormChanged()) {
         toast.success(
-          actionType === "addtocart"
+          actionType === "addtocart" || actionType === "checkout_cart"
             ? "Added to cart!"
             : "Redirecting to summary..."
         );
-        if (actionType === "checkout") {
+        if (actionType === "checkout_cart") {
+          if (typeof window !== "undefined" && (window as any).bootstrap) {
+            const offcanvasElement =
+              document.getElementById("offcanvasRightCartFill") ||
+              document.getElementById("offcanvasRightCart");
+            if (offcanvasElement) {
+              const bootstrapOffcanvas =
+                (window as any).bootstrap.Offcanvas.getInstance(
+                  offcanvasElement
+                ) || new (window as any).bootstrap.Offcanvas(offcanvasElement);
+              bootstrapOffcanvas.show();
+            }
+          }
+        } else if (actionType === "checkout") {
           router.push(`/summary-estimate?requestedId=${requestedId}`);
         } else {
           router.push(`/`);
@@ -319,18 +372,22 @@ export default function ServiceViewDetail({
         if (serviceDetailss?.category?.id) {
           formData.append("categoryId", String(serviceDetailss.category.id));
         }
-        console.log("selectSubCategories", selectSubCategories)
+        console.log("selectSubCategories", selectSubCategories);
         if (selectSubCategories) {
           formData.append("subCategoryId", String(selectSubCategories));
         }
 
-        console.log("activeIssueId", activeIssueId)
+        console.log("activeIssueId", activeIssueId);
         if (activeIssueId) {
           const cleanIssueId = String(activeIssueId).replace("issue_", "");
           formData.append("issueId", cleanIssueId);
         }
-        const currentSpecificIssueId = activeIssueId ? selectedSpecificIssueId[activeIssueId] || [] : [];
-        const currentUploadedFiles = activeIssueId ? uploadedFiles[activeIssueId] || [] : [];
+        const currentSpecificIssueId = activeIssueId
+          ? selectedSpecificIssueId[activeIssueId] || []
+          : [];
+        const currentUploadedFiles = activeIssueId
+          ? uploadedFiles[activeIssueId] || []
+          : [];
         if (currentSpecificIssueId.length > 0) {
           formData.append("specificIssueId", currentSpecificIssueId.join(","));
         }
@@ -338,7 +395,9 @@ export default function ServiceViewDetail({
         currentUploadedFiles.forEach((file, index) => {
           formData.append(`mediaUrls[${index}]`, file);
         });
-        const existingRemoteUrls = currentUploadedImg.filter((url) => url.startsWith("http"));
+        const existingRemoteUrls = currentUploadedImg.filter((url) =>
+          url.startsWith("http")
+        );
         existingRemoteUrls.forEach((url, index) => {
           console.log(`existingMediaUrls[${index}]`, url);
           formData.append(`existingMediaUrls[${index}]`, url);
@@ -347,11 +406,12 @@ export default function ServiceViewDetail({
           formData.append("requestId", requestedId);
           formData.append("id", requestedId);
         }
-        console.log("formData", formData)
+        console.log("formData", formData);
         setIsAdding(true);
+        const isCartAction =
+          actionType === "addtocart" || actionType === "checkout_cart";
         const response = await globalServerRequest({
-          endpoint:
-            actionType === "addtocart" ? "cart/add-cart" : "quotes/save-quote",
+          endpoint: isCartAction ? "cart/add-cart" : "quotes/save-quote",
           method: "POST",
           payload: formData,
           isFormData: true,
@@ -360,7 +420,7 @@ export default function ServiceViewDetail({
         if (!response.success) {
           throw new Error(response.error || "Failed to add service to cart");
         }
-        if (actionType === "addtocart") {
+        if (isCartAction) {
           dispatch(incrementCartCount());
           window.dispatchEvent(new Event("cartUpdated"));
         }
@@ -368,19 +428,35 @@ export default function ServiceViewDetail({
         const newRequestedId = response?.data?.data?.requestId || requestedId;
 
         toast.success(
-          actionType === "addtocart"
-            ? "Added to cart!"
-            : "Quote saved successfully!"
+          isCartAction ? "Added to cart!" : "Quote saved successfully!"
         );
-        if (actionType === "checkout")
+
+        if (actionType === "checkout_cart") {
+          if (typeof window !== "undefined" && (window as any).bootstrap) {
+            const offcanvasElement =
+              document.getElementById("offcanvasRightCartFill") ||
+              document.getElementById("offcanvasRightCart");
+            if (offcanvasElement) {
+              const bootstrapOffcanvas =
+                (window as any).bootstrap.Offcanvas.getInstance(
+                  offcanvasElement
+                ) || new (window as any).bootstrap.Offcanvas(offcanvasElement);
+              bootstrapOffcanvas.show();
+            }
+          }
+        } else if (actionType === "checkout") {
           router.push(`/summary-estimate?requestedId=${newRequestedId}`);
+        }
 
         setAddedCategory(false);
         if (activeIssueId) {
           setProblemDesc((prev) => ({ ...prev, [activeIssueId]: "" }));
           setUploadedImage((prev) => ({ ...prev, [activeIssueId]: [] }));
           setUploadedFiles((prev) => ({ ...prev, [activeIssueId]: [] }));
-          setSelectedSpecificIssueId((prev) => ({ ...prev, [activeIssueId]: [] }));
+          setSelectedSpecificIssueId((prev) => ({
+            ...prev,
+            [activeIssueId]: [],
+          }));
         }
         setActiveIssueId(null);
       } catch (error: any) {
@@ -393,8 +469,10 @@ export default function ServiceViewDetail({
     }
   };
 
-  const handleUpdateQuote = async (actionType: string,
-    e: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleUpdateQuote = async (
+    actionType: string,
+    e: React.MouseEvent<HTMLAnchorElement>
+  ) => {
     e.preventDefault();
     if (!isLoggedIn || isLoggedIn === "false") {
       if (typeof window !== "undefined" && (window as any).bootstrap) {
@@ -410,12 +488,18 @@ export default function ServiceViewDetail({
     }
     if (actionType === "cancel") {
       toast.success("Redirecting to summary...");
-      router.push(`/summary-estimate?requestedId=${requestedId}&is_quote_edit=${is_quote_edit}`);
+      router.push(
+        `/summary-estimate?requestedId=${requestedId}&is_quote_edit=${is_quote_edit}`
+      );
       return;
     }
 
-    const currentUploadedImg = activeIssueId ? uploadedImg[activeIssueId] || [] : [];
-    const currentProblemDesc = activeIssueId ? problemDesc[activeIssueId] || "" : "";
+    const currentUploadedImg = activeIssueId
+      ? uploadedImg[activeIssueId] || []
+      : [];
+    const currentProblemDesc = activeIssueId
+      ? problemDesc[activeIssueId] || ""
+      : "";
 
     if (!addedCategory) {
       toast.error("please select sub Category");
@@ -431,9 +515,13 @@ export default function ServiceViewDetail({
             : "Redirecting to summary..."
         );
         if (actionType === "cancel") {
-          router.push(`/summary-estimate?requestedId=${requestedId}&is_quote_edit=${is_quote_edit}`);
+          router.push(
+            `/summary-estimate?requestedId=${requestedId}&is_quote_edit=${is_quote_edit}`
+          );
         } else {
-          router.push(`/summary-estimate?requestedId=${requestedId}&is_quote_edit=${is_quote_edit}`);
+          router.push(
+            `/summary-estimate?requestedId=${requestedId}&is_quote_edit=${is_quote_edit}`
+          );
         }
         return;
       }
@@ -446,20 +534,26 @@ export default function ServiceViewDetail({
 
         console.log("selectSubCategories", selectSubCategories);
         if (!(selectSubCategories == subCategoryId)) {
-          toast.error("You can't update subcategory you can only update there data")
+          toast.error(
+            "You can't update subcategory you can only update there data"
+          );
         }
         if (selectSubCategories) {
           formData.append("subCategoryId", String(selectSubCategories));
         }
 
-        console.log("activeIssueId", activeIssueId)
+        console.log("activeIssueId", activeIssueId);
         if (activeIssueId) {
           const cleanIssueId = String(activeIssueId).replace("issue_", "");
           formData.append("issueId", cleanIssueId);
         }
 
-        const currentSpecificIssueId = activeIssueId ? selectedSpecificIssueId[activeIssueId] : null;
-        const currentUploadedFiles = activeIssueId ? uploadedFiles[activeIssueId] || [] : [];
+        const currentSpecificIssueId = activeIssueId
+          ? selectedSpecificIssueId[activeIssueId]
+          : null;
+        const currentUploadedFiles = activeIssueId
+          ? uploadedFiles[activeIssueId] || []
+          : [];
         if (currentSpecificIssueId) {
           formData.append("specificIssueId", String(currentSpecificIssueId));
         }
@@ -468,7 +562,9 @@ export default function ServiceViewDetail({
           formData.append(`mediaUrls[${index}]`, file);
         });
 
-        const existingRemoteUrls = currentUploadedImg.filter((url) => url.startsWith("http"));
+        const existingRemoteUrls = currentUploadedImg.filter((url) =>
+          url.startsWith("http")
+        );
         existingRemoteUrls.forEach((url, index) => {
           console.log(`existingMediaUrls[${index}]`, url);
           formData.append(`existingMediaUrls[${index}]`, url);
@@ -478,7 +574,6 @@ export default function ServiceViewDetail({
           formData.append("requestId", requestedId);
           formData.append("id", requestedId);
         }
-        
 
         const response = await globalServerRequest({
           endpoint: "quotes/update-quote",
@@ -498,15 +593,23 @@ export default function ServiceViewDetail({
         );
 
         if (actionType === "cancel")
-          router.push(`/summary-estimate?requestedId=${requestedId}&is_quote_edit=${is_quote_edit}`);
-        if (actionType === "updateQuote") router.push(`/summary-estimate?requestedId=${requestedId}&is_quote_edit=${is_quote_edit}`);
+          router.push(
+            `/summary-estimate?requestedId=${requestedId}&is_quote_edit=${is_quote_edit}`
+          );
+        if (actionType === "updateQuote")
+          router.push(
+            `/summary-estimate?requestedId=${requestedId}&is_quote_edit=${is_quote_edit}`
+          );
 
         setAddedCategory(false);
         if (activeIssueId) {
           setProblemDesc((prev) => ({ ...prev, [activeIssueId]: "" }));
           setUploadedImage((prev) => ({ ...prev, [activeIssueId]: [] }));
           setUploadedFiles((prev) => ({ ...prev, [activeIssueId]: [] }));
-          setSelectedSpecificIssueId((prev) => ({ ...prev, [activeIssueId]: [] }));
+          setSelectedSpecificIssueId((prev) => ({
+            ...prev,
+            [activeIssueId]: [],
+          }));
         }
         setActiveIssueId(null);
       } catch (error: any) {
@@ -516,14 +619,15 @@ export default function ServiceViewDetail({
         );
       }
     }
-  }
+  };
   const activeSubCategory = subCategories?.find(
     (sub: any) => String(sub.id) === String(selectSubCategories)
   );
 
-  const filtersubCategory = subCategories?.filter((sub: any) =>
-    !searchSubCategory ||
-    sub.name.toLowerCase().includes(searchSubCategory.toLowerCase())
+  const filtersubCategory = subCategories?.filter(
+    (sub: any) =>
+      !searchSubCategory ||
+      sub.name.toLowerCase().includes(searchSubCategory.toLowerCase())
   );
   const activeIssues = activeSubCategory?.issues || [];
 
@@ -545,14 +649,27 @@ export default function ServiceViewDetail({
                           style={{ cursor: "pointer" }}
                           onClick={(e) => {
                             e.preventDefault();
-                            if (activeIssueId && addedCategory && is_quote_edit !== "1") {
+                            if (
+                              activeIssueId &&
+                              addedCategory &&
+                              is_quote_edit !== "1"
+                            ) {
                               setPendingAction({ type: "back" });
-                              if (typeof window !== "undefined" && (window as any).bootstrap) {
-                                const modalElement = document.getElementById("confirm-add-to-cart-popup");
+                              if (
+                                typeof window !== "undefined" &&
+                                (window as any).bootstrap
+                              ) {
+                                const modalElement = document.getElementById(
+                                  "confirm-add-to-cart-popup"
+                                );
                                 if (modalElement) {
                                   const bootstrapModal =
-                                    (window as any).bootstrap.Modal.getInstance(modalElement) ||
-                                    new (window as any).bootstrap.Modal(modalElement);
+                                    (window as any).bootstrap.Modal.getInstance(
+                                      modalElement
+                                    ) ||
+                                    new (window as any).bootstrap.Modal(
+                                      modalElement
+                                    );
                                   bootstrapModal.show();
                                 }
                               }
@@ -607,21 +724,35 @@ export default function ServiceViewDetail({
                         {filtersubCategory?.map((item) => (
                           <button
                             type="button"
-
                             onClick={() => {
                               if (
-                                String(selectSubCategories) !== String(item?.id) &&
+                                String(selectSubCategories) !==
+                                  String(item?.id) &&
                                 activeIssueId &&
                                 addedCategory &&
                                 is_quote_edit !== "1"
                               ) {
-                                setPendingAction({ type: "subcategory", subCategoryId: item?.id });
-                                if (typeof window !== "undefined" && (window as any).bootstrap) {
-                                  const modalElement = document.getElementById("confirm-add-to-cart-popup");
+                                setPendingAction({
+                                  type: "subcategory",
+                                  subCategoryId: item?.id,
+                                });
+                                if (
+                                  typeof window !== "undefined" &&
+                                  (window as any).bootstrap
+                                ) {
+                                  const modalElement = document.getElementById(
+                                    "confirm-add-to-cart-popup"
+                                  );
                                   if (modalElement) {
                                     const bootstrapModal =
-                                      (window as any).bootstrap.Modal.getInstance(modalElement) ||
-                                      new (window as any).bootstrap.Modal(modalElement);
+                                      (
+                                        window as any
+                                      ).bootstrap.Modal.getInstance(
+                                        modalElement
+                                      ) ||
+                                      new (window as any).bootstrap.Modal(
+                                        modalElement
+                                      );
                                     bootstrapModal.show();
                                   }
                                 }
@@ -631,14 +762,16 @@ export default function ServiceViewDetail({
                                 setAddedCategory(false);
                               }
                             }}
-
                             className={
                               String(selectSubCategories) === String(item?.id)
                                 ? "active"
                                 : ""
                             }
                             key={item?.id}
-                            disabled={is_quote_edit === "1" && String(subCategoryId) !== String(item?.id)}
+                            disabled={
+                              is_quote_edit === "1" &&
+                              String(subCategoryId) !== String(item?.id)
+                            }
                           >
                             {item?.name}
                           </button>
@@ -654,8 +787,9 @@ export default function ServiceViewDetail({
                           return (
                             <div
                               key={item?.id || index}
-                              className={`service-issues-in ${isOpen ? "active" : ""
-                                }`}
+                              className={`service-issues-in ${
+                                isOpen ? "active" : ""
+                              }`}
                             >
                               <div
                                 className="service-issues-tab"
@@ -678,12 +812,8 @@ export default function ServiceViewDetail({
                                   alt=""
                                 />
                                 <div className="service-issues-tab-data">
-                                  <h4>
-                                    {item?.title || "NA"}
-                                  </h4>
-                                  <p>
-                                    {item?.description || ""}
-                                  </p>
+                                  <h4>{item?.title || "NA"}</h4>
+                                  <p>{item?.description || ""}</p>
                                 </div>
                               </div>
                               <div
@@ -697,21 +827,28 @@ export default function ServiceViewDetail({
                                 </p>
                                 <ul>
                                   {item?.specificIssues?.map((option: any) => {
-                                    const currentSelectedIds = selectedSpecificIssueId[issueIdStr] || [];
+                                    const currentSelectedIds =
+                                      selectedSpecificIssueId[issueIdStr] || [];
                                     const isSelected =
                                       currentSelectedIds !== null &&
                                       currentSelectedIds !== undefined &&
-                                      currentSelectedIds.includes(Number(option?.id))
+                                      currentSelectedIds.includes(
+                                        Number(option?.id)
+                                      );
                                     return (
                                       <li
                                         key={option?.id}
                                         onClick={() => {
                                           setSelectedSpecificIssueId((prev) => {
-                                            const currentIds = prev[issueIdStr] || [];
+                                            const currentIds =
+                                              prev[issueIdStr] || [];
                                             const optionId = Number(option?.id);
-                                            const updatedIds = currentIds.includes(optionId)
-                                              ? currentIds.filter((id) => id !== optionId)
-                                              : [...currentIds, optionId];
+                                            const updatedIds =
+                                              currentIds.includes(optionId)
+                                                ? currentIds.filter(
+                                                    (id) => id !== optionId
+                                                  )
+                                                : [...currentIds, optionId];
                                             return {
                                               ...prev,
                                               [issueIdStr]: updatedIds,
@@ -745,8 +882,8 @@ export default function ServiceViewDetail({
                                         <div className="hover-data">
                                           Upgrade your space with a new sink
                                           installation. We handle removal,
-                                          fitting, and leak-proof connections for
-                                          a hassle-free experience.
+                                          fitting, and leak-proof connections
+                                          for a hassle-free experience.
                                         </div>
                                       </li>
                                     );
@@ -779,39 +916,46 @@ export default function ServiceViewDetail({
                                       type="file"
                                       multiple
                                       accept="image/*,video/*"
-                                      onChange={(e) => handleFile(e, issueIdStr)}
+                                      onChange={(e) =>
+                                        handleFile(e, issueIdStr)
+                                      }
                                       hidden
                                     />
                                   </label>
 
                                   <div className="service-issues-content-problem-thumbs">
-                                    {(uploadedImg[issueIdStr] || []).map((imgUrl, imgIndex) => (
-                                      <div
-                                        key={imgIndex}
-                                        className="service-issues-content-problem-thumbs-image"
-                                      >
-                                        <button
-                                          type="button"
-                                          onClick={() =>
-                                            handleRemoveImage(imgIndex, issueIdStr)
-                                          }
+                                    {(uploadedImg[issueIdStr] || []).map(
+                                      (imgUrl, imgIndex) => (
+                                        <div
+                                          key={imgIndex}
+                                          className="service-issues-content-problem-thumbs-image"
                                         >
-                                          <img
-                                            src="/images/service-details/cancel-icon.svg"
-                                            alt=""
-                                          />
-                                        </button>
+                                          <button
+                                            type="button"
+                                            onClick={() =>
+                                              handleRemoveImage(
+                                                imgIndex,
+                                                issueIdStr
+                                              )
+                                            }
+                                          >
+                                            <img
+                                              src="/images/service-details/cancel-icon.svg"
+                                              alt=""
+                                            />
+                                          </button>
 
-                                        <img
-                                          src={
-                                            imgUrl ||
-                                            "/images/service-details/thumb-image.svg"
-                                          }
-                                          alt=""
-                                          width={100}
-                                        />
-                                      </div>
-                                    ))}
+                                          <img
+                                            src={
+                                              imgUrl ||
+                                              "/images/service-details/thumb-image.svg"
+                                            }
+                                            alt=""
+                                            width={100}
+                                          />
+                                        </div>
+                                      )
+                                    )}
                                   </div>
                                 </div>
                               </div>
@@ -819,7 +963,17 @@ export default function ServiceViewDetail({
                           );
                         })
                       ) : (
-                        <div className="no-issues-message" style={{ padding: "20px", textAlign: "center", color: "#666", background: "#f9f9f9", borderRadius: "8px", marginTop: "20px" }}>
+                        <div
+                          className="no-issues-message"
+                          style={{
+                            padding: "20px",
+                            textAlign: "center",
+                            color: "#666",
+                            background: "#f9f9f9",
+                            borderRadius: "8px",
+                            marginTop: "20px",
+                          }}
+                        >
                           No issues available.
                         </div>
                       )}
@@ -844,8 +998,8 @@ export default function ServiceViewDetail({
                         </Link>
                       </>
                     ) : (
-                      (activeIssues && activeIssues.length > 0) &&
-                      (
+                      activeIssues &&
+                      activeIssues.length > 0 && (
                         <>
                           <Link
                             href=""
@@ -853,19 +1007,40 @@ export default function ServiceViewDetail({
                               if (!isAdding) handleServiceCart("addtocart", e);
                             }}
                             className="primary-cta"
-                            style={{ opacity: isAdding ? 0.7 : 1, pointerEvents: isAdding ? "none" : "auto" }}
+                            style={{
+                              opacity: isAdding ? 0.7 : 1,
+                              pointerEvents: isAdding ? "none" : "auto",
+                            }}
                           >
-                            {isAdding ? "Adding..." : cartCount > 0 ? `Add to Cart (${cartCount})` : "Add to Cart"}
+                            {isAdding
+                              ? "Adding..."
+                              : cartCount > 0
+                              ? `Add to Cart (${cartCount})`
+                              : "Add to Cart"}
                           </Link>
                           <Link
                             href=""
-                            onClick={(e) => handleServiceCart("checkout", e)}
+                            onClick={(e) => {
+                              if (!isAdding) {
+                                if (quote_update == "1") {
+                                  handleUpdateQuote("updateQuote", e);
+                                } else {
+                                  handleServiceCart("checkout_cart", e);
+                                }
+                              }
+                            }}
                             className="primary-cta"
-                            style={{ marginRight: "10px" }}
+                            style={{
+                              marginRight: "10px",
+                              opacity: isAdding ? 0.7 : 1,
+                              pointerEvents: isAdding ? "none" : "auto",
+                            }}
                           >
-                            {
-                              quote_update == '1' ? "Save Changes" : "Checkout"
-                            }
+                            {isAdding
+                              ? "Processing..."
+                              : quote_update == "1"
+                              ? "Save Changes"
+                              : "Checkout"}
                           </Link>
                         </>
                       )
@@ -875,7 +1050,7 @@ export default function ServiceViewDetail({
               </div>
             </div>
           </section>
-        </div >
+        </div>
         <div
           className="modal fade welcome"
           id="confirm-add-to-cart-popup"
@@ -962,7 +1137,7 @@ export default function ServiceViewDetail({
             </div>
           </div>
         </div>
-      </main >
+      </main>
     </>
   );
 }

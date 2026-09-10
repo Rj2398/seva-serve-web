@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from "react";
 // import { notifications } from '../../json/notification.json'
-import { globalServerRequest } from '@/actions/globalApi';
-import { useRouter } from 'next/navigation';
-
+import { globalServerRequest } from "@/actions/globalApi";
+import { useRouter } from "next/navigation";
 
 // function getNotificationDetails(title: string) {
 //   console.log("title", title)
@@ -48,9 +47,6 @@ import { useRouter } from 'next/navigation';
 //   };
 // }
 
-
-
-
 function getNotificationDetails(title: string) {
   console.log("title received:", title);
 
@@ -59,13 +55,13 @@ function getNotificationDetails(title: string) {
   }
 
   // 1. Lowercase karo, trim karo aur last ka dot (.) hatao
-  const normalizedTitle = title
-    .trim()
-    .toLowerCase()
-    .replace(/\.$/, ""); // Strips trailing dot
+  const normalizedTitle = title.trim().toLowerCase().replace(/\.$/, ""); // Strips trailing dot
 
   // 2. Saari keys bilkul lowercase me rakhi gayi hain
-  const notificationMap: Record<string, { screenName: string; status: string | null }> = {
+  const notificationMap: Record<
+    string,
+    { screenName: string; status: string | null }
+  > = {
     "quote request submitted": { screenName: "Quote", status: "Requested" },
     "your quotes are ready": { screenName: "Quote", status: "Received" },
     "booking request submitted": { screenName: "Booking", status: "upcoming" },
@@ -73,8 +69,14 @@ function getNotificationDetails(title: string) {
     "contractor suggested a new time": { screenName: "Tracking", status: null },
     "contractor declined the job": { screenName: "Booking", status: "Cancel" },
     "upcoming booking reminder": { screenName: "Booking", status: "upcoming" },
-    "contractor has arrived": { screenName: "Tracking", status: null },
-    "contractor on the way": { screenName: "Tracking", status: null },
+    "contractor has arrived": {
+      screenName: "view-booking-detail",
+      status: null,
+    },
+    "contractor on the way": {
+      screenName: "view-booking-detail",
+      status: null,
+    },
     "job started": { screenName: "Tracking", status: null },
     "additional task requested": { screenName: "Quote", status: "Received" },
     "job completed": { screenName: "Booking", status: "completed" },
@@ -84,7 +86,7 @@ function getNotificationDetails(title: string) {
     "contractor running late": { screenName: "Tracking", status: null },
     "booking cancelled": { screenName: "Booking", status: "cancelled" },
     "rate your service": { screenName: "Booking", status: "completed" },
-    "referral reward credited": { screenName: "referral", status: null }
+    "referral reward credited": { screenName: "referral", status: null },
   };
 
   const result = notificationMap[normalizedTitle];
@@ -92,19 +94,15 @@ function getNotificationDetails(title: string) {
   if (result) {
     return {
       screenName: result.screenName,
-      status: result.status
+      status: result.status,
     };
   }
 
   return {
     screenName: null,
-    status: null
+    status: null,
   };
 }
-
-
-
-
 
 const NotificationDropdown = () => {
   const router = useRouter();
@@ -115,14 +113,12 @@ const NotificationDropdown = () => {
   const [hasNextPage, setHasNextPage] = useState(true);
   const [loading, setLoading] = useState(false);
 
-
   console.log("activeTab", activeTab);
   const typeMap = {
     All: "all",
     Offers: "offer",
     Alerts: "alert",
   };
-
 
   const fetchNotifications = async (page = 1) => {
     if (loading) return;
@@ -144,29 +140,29 @@ const NotificationDropdown = () => {
         const data = response?.data?.data;
 
         if (page === 1) {
-          setNotificationsData(data?.notifications);
+          setNotificationsData(data?.notifications || []);
         } else {
           setNotificationsData((prev: any[]) => [
             ...prev,
-            ...data.notifications,
-          ])
+            ...(data?.notifications || []),
+          ]);
         }
 
-        setHasNextPage(data?.hasNextPage);
-        // setNotificationsData(response?.data?.data?.notifications || []);
+        setHasNextPage(data?.hasNextPage || false);
+      } else {
+        if (page === 1) {
+          setNotificationsData([]);
+        }
+        setHasNextPage(false);
       }
     } finally {
       setLoading(false);
     }
   };
 
-
   console.log(getNotificationDetails("Quote request submitted"));
   console.log(getNotificationDetails("Contractor assigned"));
   console.log(getNotificationDetails("Job completed — rate prompt"));
-
-
-
 
   const markNotificationAsRead = async () => {
     try {
@@ -220,17 +216,21 @@ const NotificationDropdown = () => {
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
     if (
-      scrollHeight - scrollTop <= clientHeight + 20 && hasNextPage && !loading
+      scrollHeight - scrollTop <= clientHeight + 20 &&
+      hasNextPage &&
+      !loading
     ) {
       const nextPage = pageNo + 1;
       setPageNo(nextPage);
       fetchNotifications(nextPage);
     }
-  }
+  };
 
   console.log("notificationsData", notificationsData);
 
-  const unreadCount = notificationsData.filter((notification: any) => !notification.isRead).length;
+  const unreadCount = notificationsData.filter(
+    (notification: any) => !notification.isRead
+  ).length;
   const tabs = ["All", "Offers", "Alerts"];
   // const handleRediraction = (notif: any) => {
   //   console.log("handleRediraction", notif);
@@ -253,10 +253,6 @@ const NotificationDropdown = () => {
   //   }
   // };
 
-
-
-
-
   const handleRedirection = (notif: any) => {
     console.log("handleRedirection", notif);
 
@@ -264,7 +260,7 @@ const NotificationDropdown = () => {
 
     const { screenName, status } = getNotificationDetails(notif.title);
 
-    console.log("screenName", screenName, "  status", status)
+    console.log("screenName", screenName, "  status", status);
 
     let baseUrl = "";
     const queryParams = new URLSearchParams();
@@ -282,7 +278,6 @@ const NotificationDropdown = () => {
       if (notif.meta?.booking_id) {
         queryParams.append("bookingId", notif.meta.booking_id);
       }
-
     } else if (metaScreenType === "request-quote" || screenName === "Quote") {
       baseUrl = "/quotes";
       if (notif.meta?.quote_id) {
@@ -301,17 +296,23 @@ const NotificationDropdown = () => {
     } else if (screenName === "referral") {
       baseUrl = "/referral";
     }
-    console.log("baseUrl", baseUrl)
+    console.log("baseUrl", baseUrl);
     if (!baseUrl && notif.title) {
       const lowerTitle = notif.title.toLowerCase();
       const quoteIndex = lowerTitle.indexOf("quote");
       const bookingIndex = lowerTitle.indexOf("booking");
-      if (quoteIndex !== -1 && (bookingIndex === -1 || quoteIndex < bookingIndex)) {
+      if (
+        quoteIndex !== -1 &&
+        (bookingIndex === -1 || quoteIndex < bookingIndex)
+      ) {
         baseUrl = "/quotes";
         if (notif.meta?.quote_id) {
           queryParams.append("quoteId", notif.meta.quote_id);
         }
-      } else if (bookingIndex !== -1 && (quoteIndex === -1 || bookingIndex < quoteIndex)) {
+      } else if (
+        bookingIndex !== -1 &&
+        (quoteIndex === -1 || bookingIndex < quoteIndex)
+      ) {
         baseUrl = "/view-booking-detail";
         if (notif.meta?.booking_id) {
           queryParams.append("bookingId", notif.meta.booking_id);
@@ -330,7 +331,6 @@ const NotificationDropdown = () => {
     // console.log("finalUrl", finalUrl);
     router.push(finalUrl);
   };
-
 
   return (
     <div className="icon bell-icon position-relative dropdown">
@@ -355,7 +355,7 @@ const NotificationDropdown = () => {
         </span>
       )}
       <div className="dropdown-menu dropdown-menu-end">
-        <div className="notification-list" >
+        <div className="notification-list">
           <h1>Notifications</h1>
           <div className="top-fltr">
             {tabs.map((tab, index) => (
@@ -370,14 +370,13 @@ const NotificationDropdown = () => {
             ))}
           </div>
           <div className="notification-in" onScroll={handleScroll}>
-            {
-              notificationsData?.length === 0 && (
-                <div className="notification-item">
-                  <div className="notification-data">
-                    <p>No notifications to display.</p>
-                  </div>
+            {notificationsData?.length === 0 && (
+              <div className="notification-item">
+                <div className="notification-data">
+                  <p>No notifications to display.</p>
                 </div>
-              )}
+              </div>
+            )}
             {notificationsData?.map((notif: any) => (
               <div
                 className="notification-item"
@@ -391,14 +390,12 @@ const NotificationDropdown = () => {
                 <span>{notif.displayTime}</span>
               </div>
             ))}
-            {loading && (
-              <p style={{ textAlign: "center" }}>Loading...</p>
-            )}
+            {loading && <p style={{ textAlign: "center" }}>Loading...</p>}
           </div>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
 export default NotificationDropdown;

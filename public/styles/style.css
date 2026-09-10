@@ -272,6 +272,7 @@ button.menu-btn span.sec {
   background: var(--black);
   position: relative;
   border-radius: 20px;
+  overflow: hidden;
 }
 
 .hero-img img {
@@ -409,7 +410,6 @@ button.menu-btn span.sec {
   background-color: var(--line-color);
 }
 
-
 .continue-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
@@ -512,9 +512,11 @@ a.wrp-img {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg,
-      rgba(255, 255, 255, 0) -0.03%,
-      #000000 99.71%);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0) -0.03%,
+    #000000 99.71%
+  );
   border-radius: 25px;
 }
 
@@ -936,11 +938,14 @@ p.user-seva-text {
   padding-bottom: 30px;
   margin-bottom: 10px;
   border-bottom: 1px solid transparent;
-  border-image: repeating-linear-gradient(to right,
+  border-image: repeating-linear-gradient(
+      to right,
       #991318 0,
       #991318 10px,
       transparent 10px,
-      transparent 20px) 1;
+      transparent 20px
+    )
+    1;
 }
 
 .agent-off-canvas-wrp {
@@ -1961,9 +1966,11 @@ img.thd-img {
 }
 
 .left-slider-pop {
-  background: linear-gradient(270deg,
-      rgba(238, 209, 211, 0.25) 0%,
-      rgba(136, 119, 121, 0) 77%);
+  background: linear-gradient(
+    270deg,
+    rgba(238, 209, 211, 0.25) 0%,
+    rgba(136, 119, 121, 0) 77%
+  );
   border-radius: 20px;
   width: 50%;
 }
@@ -2249,7 +2256,7 @@ a.primary-cta.requ-suc {
 /* My Quotes */
 
 .tab-left .nav-pills .nav-link.active,
-.nav-pills .show>.nav-link {
+.nav-pills .show > .nav-link {
   color: #991318;
   background-color: #9913180f;
   border: 1px solid #991318;
@@ -3043,7 +3050,7 @@ p.body-text a {
   align-items: flex-start;
   background: #9913180f;
   padding: 22px;
-  justify-content: flex-start;
+  justify-content: space-between;
   border-radius: 20px;
   margin-bottom: 18px;
 
@@ -3301,7 +3308,7 @@ p.body-text a {
   }
 }
 
-.select-time-btn-grp input[type="radio"]:checked+label {
+.select-time-btn-grp input[type="radio"]:checked + label {
   border: 1px solid #991318;
   background-color: #9913181a;
 }
@@ -3590,9 +3597,12 @@ a.hel-cta {
   width: 100%;
   opacity: 1;
   border: 1px solid transparent;
-  border-image: repeating-linear-gradient(90deg,
+  border-image: repeating-linear-gradient(
+      90deg,
       #991318 0 10px,
-      transparent 10px 20px) 1;
+      transparent 10px 20px
+    )
+    1;
   background: none;
 }
 
@@ -3793,7 +3803,7 @@ a.hel-cta {
   margin-bottom: 15px;
 }
 
-.svd-add-wrp input[type="radio"]:checked+label {
+.svd-add-wrp input[type="radio"]:checked + label {
   background: #9913180f;
 }
 
@@ -4021,9 +4031,11 @@ a.hel-cta {
 }
 
 .services-sec-in .upcoming-my-slide .upcoming-img::before {
-  background: linear-gradient(180deg,
-      rgba(255, 255, 255, 0.1) 20%,
-      #000000 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.1) 20%,
+    #000000 100%
+  );
 }
 
 .featured-category-slider .browse-inner ul {
@@ -4726,9 +4738,12 @@ a.hel-cta {
   width: 100%;
   opacity: 1;
   border: 1px solid transparent;
-  border-image: repeating-linear-gradient(90deg,
+  border-image: repeating-linear-gradient(
+      90deg,
       #991318 0 10px,
-      transparent 10px 20px) 1;
+      transparent 10px 20px
+    )
+    1;
   background: none;
 }
 
@@ -4924,7 +4939,7 @@ a.hel-cta {
   width: 25px;
 }
 
-.rating__input:checked~.rating__label .rating__icon--star {
+.rating__input:checked ~ .rating__label .rating__icon--star {
   filter: contrast(0.1) brightness(1.8);
 }
 
@@ -5851,7 +5866,7 @@ div#importantNoticeModal .modal-dialog {
   border: none;
   border-radius: 20px;
   background-color: #f1f5f9;
-  color: #4B5563;
+  color: #4b5563;
   font-weight: 500;
   font-size: 14px;
   cursor: pointer;
@@ -5877,7 +5892,7 @@ div#importantNoticeModal .modal-dialog {
 .referral-table th {
   padding: 1rem 0;
   font-size: 12px;
-  color: #6B7280;
+  color: #6b7280;
   text-transform: uppercase;
   font-weight: 700;
   border-bottom: 1px solid #f1f5f9;
@@ -5924,7 +5939,8 @@ div#importantNoticeModal .modal-dialog {
   width: 4%;
 }
 
-.referral-table td:nth-child(8) {}
+.referral-table td:nth-child(8) {
+}
 
 .sort-icon {
   color: var(--primary-color);
@@ -5979,17 +5995,17 @@ div#importantNoticeModal .modal-dialog {
 
 .status-badge.Paid {
   background-color: #dcfce7;
-  color: #16A34A;
+  color: #16a34a;
 }
 
 .status-badge.Pending {
   background-color: #ffedd5;
-  color: #EA580C;
+  color: #ea580c;
 }
 
 .status-badge.Expired {
   background-color: #f1f5f9;
-  color: #6B7280;
+  color: #6b7280;
 }
 
 .action-btn {
@@ -6075,14 +6091,12 @@ div#importantNoticeModal .modal-dialog {
   font-size: 0.8rem;
 }
 
-
-
 /* added by sunil------------ */
 
 .refer-btn {
-  background: #FFFFFF;
-  border: 1px solid #9F1239;
-  color: #9F1239;
+  background: #ffffff;
+  border: 1px solid #9f1239;
+  color: #9f1239;
   padding: 0 20px;
   border-radius: 8px;
   height: 44px;
@@ -6092,11 +6106,10 @@ div#importantNoticeModal .modal-dialog {
   transition: all 0.2s ease-in-out;
 }
 
-
 .share-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, .45);
+  background: rgba(0, 0, 0, 0.45);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -6110,7 +6123,7 @@ div#importantNoticeModal .modal-dialog {
   background: #fff;
   border-radius: 18px;
   padding: 22px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, .18);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.18);
 }
 
 .share-header {
@@ -6136,7 +6149,7 @@ div#importantNoticeModal .modal-dialog {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: .25s;
+  transition: 0.25s;
   font-size: 16px;
 }
 
@@ -6169,7 +6182,7 @@ div#importantNoticeModal .modal-dialog {
   justify-content: center;
   color: #fff;
   font-size: 28px;
-  transition: .25s;
+  transition: 0.25s;
 }
 
 .share-item:hover .icon1 {
@@ -6177,11 +6190,11 @@ div#importantNoticeModal .modal-dialog {
 }
 
 .whatsapp {
-  background: #25D366;
+  background: #25d366;
 }
 
 .facebook {
-  background: #1877F2;
+  background: #1877f2;
 }
 
 .twitter {
@@ -6189,11 +6202,11 @@ div#importantNoticeModal .modal-dialog {
 }
 
 .email {
-  background: #EA4335;
+  background: #ea4335;
 }
 
 .copy {
-  background: #6B7280;
+  background: #6b7280;
 }
 
 .share-item span {
@@ -6201,8 +6214,6 @@ div#importantNoticeModal .modal-dialog {
   font-weight: 600;
   color: #333;
 }
-
-
 
 /* venmo */
 

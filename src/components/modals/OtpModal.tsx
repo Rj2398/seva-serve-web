@@ -14,7 +14,7 @@ const OtpModal = ({ emailLogin = false, loginValue = "" }: OtpModalProps) => {
   // console.log(emailLogin, "emailLogin");
 
   const router = useRouter();
-const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const [otp, setOtp] = useState(["", "", "", "", ""]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -39,68 +39,66 @@ const intervalRef = useRef<NodeJS.Timeout | null>(null);
   //   }, 1000);
 
   //   return () => clearInterval(intervalId); // Cleanup interval on unmount
-  // }, []); 
+  // }, []);
 
-const startOtpTimer = () => {
-  if (intervalRef.current) {
-    clearInterval(intervalRef.current);
-  }
+  const startOtpTimer = () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
 
-  setTimer(30);
+    setTimer(30);
 
-  intervalRef.current = setInterval(() => {
-    setTimer((prev) => {
-      if (prev <= 1) {
-        clearInterval(intervalRef.current!);
-        return 0;
-      }
+    intervalRef.current = setInterval(() => {
+      setTimer((prev) => {
+        if (prev <= 1) {
+          clearInterval(intervalRef.current!);
+          return 0;
+        }
 
-      return prev - 1;
-    });
-  }, 1000);
-};
+        return prev - 1;
+      });
+    }, 1000);
+  };
 
-const value = loginValue || userData?.value;
+  const value = loginValue || userData?.value;
 
-const displayValue = emailLogin
-  ? value
-  : value?.replace(/\d(?=\d{4})/g, "*");
+  const displayValue = emailLogin ? value : value?.replace(/\d(?=\d{4})/g, "*");
 
   const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  const pastedData = e.clipboardData
-    .getData("text")
-    .replace(/\D/g, "")
-    .slice(0, 5);
+    const pastedData = e.clipboardData
+      .getData("text")
+      .replace(/\D/g, "")
+      .slice(0, 5);
 
-  if (!pastedData) return;
+    if (!pastedData) return;
 
-  const newOtp = [...otp];
+    const newOtp = [...otp];
 
-  pastedData.split("").forEach((digit, index) => {
-    newOtp[index] = digit;
-  });
+    pastedData.split("").forEach((digit, index) => {
+      newOtp[index] = digit;
+    });
 
-  setOtp(newOtp);
+    setOtp(newOtp);
 
-  // Focus the last filled input
-  const lastIndex = Math.min(pastedData.length - 1, 4);
-  document.getElementById(`otp-${lastIndex}`)?.focus();
-};
-
-useEffect(() => {
-  const handleStartTimer = () => {
-    startOtpTimer();
+    // Focus the last filled input
+    const lastIndex = Math.min(pastedData.length - 1, 4);
+    document.getElementById(`otp-${lastIndex}`)?.focus();
   };
 
-  window.addEventListener("start-otp-timer", handleStartTimer);
+  useEffect(() => {
+    const handleStartTimer = () => {
+      startOtpTimer();
+    };
 
-  return () => {
-    window.removeEventListener("start-otp-timer", handleStartTimer);
-  };
-}, []); // Empty dependency array ensures it runs only once on mount
-  // Start the timer when the component mounts 
+    window.addEventListener("start-otp-timer", handleStartTimer);
+
+    return () => {
+      window.removeEventListener("start-otp-timer", handleStartTimer);
+    };
+  }, []); // Empty dependency array ensures it runs only once on mount
+  // Start the timer when the component mounts
   // Empty array ensures it initializes immediately on mount
 
   // ✅ INPUT FIX: Smooth auto-focus that allows continuous typing without lockups
@@ -238,8 +236,10 @@ useEffect(() => {
       setLoading(false);
 
       if (response.success) {
-        toast.success(response?.data?.message || "A brand new OTP has been sent!");
-        startOtpTimer();; // Cleanly restart our timer back to 30 seconds
+        toast.success(
+          response?.data?.message || "A brand new OTP has been sent!"
+        );
+        startOtpTimer(); // Cleanly restart our timer back to 30 seconds
         setOtp(["", "", "", "", ""]);
       } else {
         setError(response.error || "Failed to resend OTP. Try again.");
@@ -378,7 +378,9 @@ useEffect(() => {
                 </div>
               </div>
               <div className="right-slider-pop">
-                <h5>{emailLogin ? "Verify Your Email" : "Verify Your Number"}</h5>
+                <h5>
+                  {emailLogin ? "Verify Your Email" : "Verify Your Number"}
+                </h5>
                 {/* <p>
                   Enter the 5-digit code we sent to <br />
                   {emailLogin ? "" : "+1"} {loginValue || userData?.value || maskedPhone}
@@ -388,7 +390,12 @@ useEffect(() => {
                   Enter the 5-digit code we sent to <br />
                   {emailLogin ? displayValue : `+1 ${displayValue}`}
                 </p>
-                <form>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handleVerify();
+                  }}
+                >
                   <div className="input-multigrp">
                     {otp?.map((digit, index) => (
                       <input
@@ -413,8 +420,7 @@ useEffect(() => {
                   )}
 
                   <button
-                    type="button"
-                    onClick={handleVerify}
+                    type="submit"
                     className="vry-fy-btn"
                     disabled={loading}
                   >

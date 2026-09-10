@@ -109,7 +109,6 @@ const Header = () => {
     );
   };
 
-
   useEffect(() => {
     if (loginStatus === "true") {
       handleCurrentLocation();
@@ -164,9 +163,7 @@ const Header = () => {
                   alt="location"
                   className="loca"
                 />
-                <span>
-                  {Address ? Address : address}
-                </span>
+                <span>{Address ? Address : address}</span>
                 <img
                   src="/images/header/down-icon.svg"
                   alt="down-icon"
@@ -448,8 +445,9 @@ const Header = () => {
         >
           <i
             id="bar-cross"
-            className={`fa-solid ${isMobileMenuOpen ? "fa-circle-xmark" : "fa-bars"
-              }`}
+            className={`fa-solid ${
+              isMobileMenuOpen ? "fa-circle-xmark" : "fa-bars"
+            }`}
           ></i>
         </div>
       </header>

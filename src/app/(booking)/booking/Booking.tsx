@@ -43,6 +43,7 @@ export default function Booking({ initialBookingData }: BookingProps) {
   const [bookingId, setbookingId] = useState<number | null>(null);
   const [showCancle, setShowCancle] = useState<boolean>(false);
   const [selectedBookingData, setSelectedBookingData] = useState<any>(null);
+  const [isReschedule, setisReschedule] = useState<boolean>(false);
 
   const [expandedQuotes, setExpandedQuotes] = useState<Record<number, boolean>>(
     {}
@@ -317,9 +318,7 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                 "isContractorReschedule",
                                 isContractorReschedule
                               );
-
-                              const pdfUrl = item?.payment?.invoiceUrl;
-                              console.log("pdfUrl", pdfUrl);
+                              console.log("isGivenRating", isGivenRating);
                               return (
                                 <div
                                   className="my-inner-boking-top"
@@ -631,15 +630,16 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                                   ) ? (
                                                     <button
                                                       className="primary-cta rgt"
-                                                      onClick={() =>
+                                                      onClick={() => {
                                                         canRescheduleBooking
                                                           ? handleLoadRescheduleRequest(
                                                               item
                                                             )
                                                           : toast.error(
                                                               "You have already rescheduled this booking once. Further rescheduling is not allowed."
-                                                            )
-                                                      }
+                                                            ),
+                                                          setisReschedule(true);
+                                                      }}
                                                       disabled={
                                                         !canRescheduleBooking
                                                       }
@@ -707,6 +707,24 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                                         Add Feedback
                                                       </button>
                                                     )}
+                                                    {/* <a
+                                                    href="#pay-remaining-popup"
+                                                    data-bs-toggle="modal"
+                                                    className="primary-cta rgt"
+                                                    onClick={() => {
+                                                      setbookingId(item?.bookingId);
+                                                      setBookingPaymentInfo(item?.payment);
+                                                      setQuoteId(item?.quoteId);
+                                                    }}
+                                                  >
+                                                    Confirm & Pay
+                                                    <img
+                                                      src="images/modal/right-arrow-icon.svg"
+                                                      className="img-right"
+                                                      alt=""
+                                                    />
+                                                  </a> */}
+
                                                     <a
                                                       href={
                                                         item?.zelle_payment_status ===
@@ -787,18 +805,7 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                                         Add Feedback
                                                       </button>
                                                     )}
-                                                    <button
-                                                      className="primary-cta rgt"
-                                                      disabled={pdfUrl == null}
-                                                      onClick={() => {
-                                                        if (pdfUrl) {
-                                                          window.open(
-                                                            pdfUrl,
-                                                            "_blank"
-                                                          );
-                                                        }
-                                                      }}
-                                                    >
+                                                    <button className="primary-cta rgt">
                                                       <img
                                                         src="images/inner-page/download-icon.svg"
                                                         className="img-left"
@@ -1107,6 +1114,8 @@ export default function Booking({ initialBookingData }: BookingProps) {
         isOpen={showDatePicker}
         setIsOpen={setShowDatePicker}
         onConfirm={handleRescheduleBooking}
+        rescheduleKey={isReschedule}
+        booking_Id={bookingId !== null ? bookingId : undefined}
       />
       <ContractorRequest
         booking={selectedBooking}

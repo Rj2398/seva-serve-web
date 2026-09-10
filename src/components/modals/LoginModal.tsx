@@ -8,7 +8,6 @@ import OtpModal from "./OtpModal";
 import { generateFCMToken } from "@/utils/generateFCMToken";
 import { VscReferences } from "react-icons/vsc";
 
-
 const LoginModal = () => {
   const [isEmailLogin, setIsEmailLogin] = useState(false);
   const [inputValue, setInputValue] = useState("");
@@ -17,10 +16,12 @@ const LoginModal = () => {
   const [referCode, setReferCode] = useState("");
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const phoneRegex = /^(?:\+1\s?)?(?:\([2-9]\d{2}\)|[2-9]\d{2})[-.\s]?[2-9]\d{2}[-.\s]?\d{4}$/;
+  const phoneRegex =
+    /^(?:\+1\s?)?(?:\([2-9]\d{2}\)|[2-9]\d{2})[-.\s]?[2-9]\d{2}[-.\s]?\d{4}$/;
 
-  const isvalidInput = isEmailLogin ? emailRegex.test(inputValue) : phoneRegex.test(inputValue);
-
+  const isvalidInput = isEmailLogin
+    ? emailRegex.test(inputValue)
+    : phoneRegex.test(inputValue);
 
   const handleContinue = async () => {
     // 1. FRONTEND VALIDATION
@@ -62,21 +63,21 @@ const LoginModal = () => {
 
       const payload = isEmailLogin
         ? {
-          value: inputValue,
-          channel: "email",
-          role: "customer",
-          fcmToken: fcmToken || "",
-          referralCode: referCode.trim(),
-          // referrerId:257,
-        }
+            value: inputValue,
+            channel: "email",
+            role: "customer",
+            fcmToken: fcmToken || "",
+            referralCode: referCode.trim(),
+            // referrerId:257,
+          }
         : {
-          value: inputValue,
-          channel: "phone",
-          role: "customer",
-          fcmToken: fcmToken || "",
-          referralCode: referCode.trim(),
-          // referrerId:257,
-        };
+            value: inputValue,
+            channel: "phone",
+            role: "customer",
+            fcmToken: fcmToken || "",
+            referralCode: referCode.trim(),
+            // referrerId:257,
+          };
 
       console.log("OTP Request Payload:", payload);
 
@@ -275,7 +276,12 @@ const LoginModal = () => {
                       : "Enter your number to receive a verification code."}
                   </p>
 
-                  <form>
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      handleContinue();
+                    }}
+                  >
                     <div className="phone-number">
                       <input
                         type="text"
@@ -327,7 +333,15 @@ const LoginModal = () => {
                     )}
 
                     <div className="phone-number mt-3">
-                      <VscReferences style={{ position: "absolute", left: "13px", top: "50%", transform: "translateY(-50%)", color: "#999" }} />
+                      <VscReferences
+                        style={{
+                          position: "absolute",
+                          left: "13px",
+                          top: "50%",
+                          transform: "translateY(-50%)",
+                          color: "#999",
+                        }}
+                      />
                       <input
                         type="text"
                         placeholder="Enter Referral Code (Optional)"
@@ -335,15 +349,15 @@ const LoginModal = () => {
                         maxLength={20}
                         onChange={(e) => setReferCode(e.target.value)}
                       />
-
                     </div>
 
                     <button
-                      type="button"
+                      // type="button"
                       // data-bs-toggle="modal"
                       // data-bs-target="#login-screen-2"
 
-                      onClick={handleContinue}
+                      // onClick={handleContinue}
+                      type="submit"
                       className="continue-btn"
                       disabled={!isvalidInput || loading}
                     >

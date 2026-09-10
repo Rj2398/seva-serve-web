@@ -45,6 +45,7 @@ interface DatePopupProps {
   onConfirm?: (data: ReschedulePayload) => void;
   getAddressIdCallback?: (addressId: string) => void;
   booking_Id?: number | string;
+  rescheduleKey?: boolean;
 }
 
 const getTodayString = () => {
@@ -61,6 +62,7 @@ const DatePopup: React.FC<DatePopupProps> = ({
   onConfirm,
   getAddressIdCallback,
   booking_Id,
+  rescheduleKey,
 }) => {
   // console.log("onConfirm up", onConfirm)
   // console.log("isOpen up", isOpen)
@@ -92,13 +94,32 @@ const DatePopup: React.FC<DatePopupProps> = ({
 
   const fetchAddresses = async () => {
     try {
-      const response = await globalServerRequest({
-        endpoint: "profile/address",
-        method: "GET",
-      });
+      let response;
+      if (rescheduleKey) {
+        response = await globalServerRequest({
+          endpoint: "booking/get-booking-address",
+          method: "POST",
+          payload: { booking_id: booking_Id },
+        });
+      } else {
+        response = await globalServerRequest({
+          endpoint: "profile/address",
+          method: "GET",
+        });
+      }
+
       if (response.success) {
         const data = response?.data?.data || response?.data;
-        const addressArray = Array.isArray(data) ? data : [];
+        let addressArray = [];
+        if (rescheduleKey) {
+          if (data?.address) {
+            addressArray = [data.address];
+          } else if (data && typeof data === "object" && !Array.isArray(data)) {
+            addressArray = [data];
+          }
+        } else if (Array.isArray(data)) {
+          addressArray = data;
+        }
         setSavedAddresses(addressArray);
         if (addressArray.length > 0) {
           const firstAddr = addressArray[0];
@@ -207,7 +228,9 @@ const DatePopup: React.FC<DatePopupProps> = ({
           dateFormat: "yy-mm-dd", // Changed to match your JSON payload format (YYYY-MM-DD)
           onSelect: (dateText: string) => {
             const currentSelectedSlots = selectedSlotsRef.current;
-            const uniqueDates = Array.from(new Set(currentSelectedSlots.map(item => item.date)));
+            const uniqueDates = Array.from(
+              new Set(currentSelectedSlots.map((item) => item.date))
+            );
 
             // Check if clicking a NEW date and already have 3 dates selected
             if (!uniqueDates.includes(dateText) && uniqueDates.length >= 3) {
@@ -217,7 +240,10 @@ const DatePopup: React.FC<DatePopupProps> = ({
               // Passed as string since dateFormat is 'yy-mm-dd'
               setTimeout(() => {
                 const $ = (window as any).$;
-                $("#datepicker-2").datepicker("setDate", selectedDateRef.current);
+                $("#datepicker-2").datepicker(
+                  "setDate",
+                  selectedDateRef.current
+                );
               }, 10);
               return;
             }
@@ -279,7 +305,6 @@ const DatePopup: React.FC<DatePopupProps> = ({
     );
   };
 
-
   const handleConfirmBooking = () => {
     if (selectedSlots.length === 0) {
       toast.error("Please select at least one date and time slot");
@@ -329,7 +354,9 @@ const DatePopup: React.FC<DatePopupProps> = ({
     //   nextInstance.hide();
     // }
 
-    const modalElement = document.getElementById("select-date-time-popup") || document.getElementById("#select-date-time-popup");
+    const modalElement =
+      document.getElementById("select-date-time-popup") ||
+      document.getElementById("#select-date-time-popup");
     if (modalElement) {
       const bootstrap = (window as any).bootstrap;
       const nextInstance =
@@ -337,8 +364,6 @@ const DatePopup: React.FC<DatePopupProps> = ({
         new bootstrap.Modal(modalElement);
       nextInstance.hide();
     }
-
-
   };
 
   const formatDateLabel = (dateStr: string) => {
@@ -417,7 +442,8 @@ const DatePopup: React.FC<DatePopupProps> = ({
 
                       <h2>
                         Available Time Slots
-                        {selectedDate && ` for ${formatDateLabel(selectedDate)}`}
+                        {selectedDate &&
+                          ` for ${formatDateLabel(selectedDate)}`}
                       </h2>
 
                       <div
@@ -479,31 +505,30 @@ const DatePopup: React.FC<DatePopupProps> = ({
 
                   <div className="service-address position-relative dropdown">
                     <p>Service Address</p>
-                    {savedAddresses.length > 0 ? <input
-                      type="text"
-                      placeholder="Enter full address"
-
-                      value={address}
-                      onChange={(e) => {
-                        setAddress(e.target.value);
-                        setSelectedAddressId(""); // Reset ID if user types custom address
-                      }}
-                      className="dropdown-toggle"
-                      data-bs-toggle="dropdown"
-                      aria-expanded="false"
-                    /> :
+                    {savedAddresses.length > 0 ? (
                       <input
                         type="text"
                         placeholder="Enter full address"
-
+                        value={address}
+                        onChange={(e) => {
+                          setAddress(e.target.value);
+                          setSelectedAddressId(""); // Reset ID if user types custom address
+                        }}
+                        className="dropdown-toggle"
+                        data-bs-toggle="dropdown"
+                        aria-expanded="false"
+                      />
+                    ) : (
+                      <input
+                        type="text"
+                        placeholder="Enter full address"
                         data-bs-target="#add-address-popup"
                         data-bs-toggle="modal"
-
                         className="dropdown-toggle"
                         // data-bs-toggle="dropdown"
                         aria-expanded="false"
                       />
-                    }
+                    )}
                     {savedAddresses.length > 0 && (
                       <ul
                         className="dropdown-menu"
@@ -556,9 +581,7 @@ const DatePopup: React.FC<DatePopupProps> = ({
                     <button
                       type="button"
                       className="filled"
-                      onClick={
-                        handleConfirmBooking
-                      }
+                      onClick={handleConfirmBooking}
                     >
                       Confirm & Book
                       <img src="images/home/right-img.svg" alt="" />
@@ -570,7 +593,7 @@ const DatePopup: React.FC<DatePopupProps> = ({
           </div>
         </div>
       </div>
-      <NewAddressModal 
+      <NewAddressModal
         selectedAddress={null}
         onSave={() => {
           fetchAddresses();
@@ -578,7 +601,6 @@ const DatePopup: React.FC<DatePopupProps> = ({
         onClose={() => {}}
       />
     </>
-
   );
 };
 

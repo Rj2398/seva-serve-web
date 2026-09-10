@@ -39,6 +39,7 @@ const ClientComponent = ({ data, isLogin = false }: homeprops) => {
   const [showCancle, setShowCancle] = useState<boolean>(false);
   const [selectedBookingData, setSelectedBookingData] = useState<any>(null);
   const [isAddactional, setIsAddactional] = useState<boolean>(false);
+  const [isReschedule, setisReschedule] = useState<boolean>(false);
 
   console.log("bookingId", bookingId);
 
@@ -108,7 +109,15 @@ const ClientComponent = ({ data, isLogin = false }: homeprops) => {
               userData?.isNewUser === "1";
 
             const userHasCard =
-              data?.user?.hasCard === true || data?.user?.hasCard === "true";
+              data?.user?.hasCard === true ||
+              data?.user?.hasCard === "true" ||
+              userData?.hasCard === true ||
+              userData?.hasCard === "true";
+
+            if (userHasCard) {
+              shouldShowAddCard = false;
+              localStorage.setItem("hasSeenAddCardModal", "true");
+            }
 
             const isProfileCompleted =
               userData?.user?.isProfileCompleted ||
@@ -190,13 +199,15 @@ const ClientComponent = ({ data, isLogin = false }: homeprops) => {
       ) {
         $upcoming.slick({
           dots: false,
-          infinite: true,
+          infinite: false,
           speed: 300,
           slidesToShow: 1,
-          // centerMode: true,
-          autoplay: true,
+          autoplay: $upcoming.children().length > 3,
+          autoplaySpeed: 3000,
           arrows: false,
           variableWidth: true,
+          swipeToSlide: true,
+          touchMove: true,
         });
       }
     };
@@ -513,7 +524,7 @@ const ClientComponent = ({ data, isLogin = false }: homeprops) => {
 
       <main>
         <div className="container home-wraper">
-          {(!isLogin || isNewUser) && data?.topServiceCards?.length > 0 && (
+          {data?.topServiceCards?.length > 0 && (
             <section>
               <div className="container">
                 <div className="row">
@@ -521,35 +532,78 @@ const ClientComponent = ({ data, isLogin = false }: homeprops) => {
                     <div className="hero-slider">
                       {data?.topServiceCards.map((item: any, index: any) => (
                         <div className="item-inner" key={index}>
-                          <div className="inner-hero">
-                            <div className="hero-img">
+                          <div
+                            className="inner-hero"
+                            style={{ minHeight: "276px" }}
+                          >
+                            <div
+                              className="hero-img"
+                              style={{
+                                position: "absolute",
+                                inset: 0,
+                                width: "100%",
+                                height: "100%",
+                                zIndex: 0,
+                                margin: 0,
+                              }}
+                            >
                               <img
                                 src={
                                   item?.image ||
                                   "images/home/hero-slider-img.svg"
                                 }
                                 alt=""
-                              />
-                            </div>
-                            <p>{item?.title}</p>
-                            <div className="hero-btn">
-                              <button
-                                onClick={() => {
-                                  if (isLogin) {
-                                    router.push("/category");
-                                  }
+                                style={{
+                                  width: "100%",
+                                  height: "100%",
+                                  objectFit: "cover",
                                 }}
-                                data-bs-toggle={!isLogin ? "modal" : undefined}
-                                data-bs-target={
-                                  !isLogin ? "#login-screen-1" : undefined
-                                }
+                              />
+                              {/* Overlay for text readability */}
+                              <div
+                                style={{
+                                  position: "absolute",
+                                  inset: 0,
+                                  background:
+                                    "linear-gradient(to right, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.1) 100%)",
+                                }}
+                              ></div>
+                            </div>
+                            <div
+                              style={{
+                                position: "absolute",
+                                inset: 0,
+                                zIndex: 1,
+                                pointerEvents: "none",
+                              }}
+                            >
+                              <p style={{ pointerEvents: "auto" }}>
+                                {item?.title}
+                              </p>
+                              <div
+                                className="hero-btn"
+                                style={{ pointerEvents: "auto" }}
                               >
-                                Book Now{" "}
-                                <img
-                                  src="/images/home/right-arrow.svg"
-                                  alt="arrow"
-                                />
-                              </button>
+                                <button
+                                  onClick={() => {
+                                    if (isLogin) {
+                                      router.push("/category");
+                                    }
+                                  }}
+                                  data-bs-toggle={
+                                    !isLogin ? "modal" : undefined
+                                  }
+                                  data-bs-target={
+                                    !isLogin ? "#login-screen-1" : undefined
+                                  }
+                                >
+                                  Book Now{" "}
+                                  <img
+                                    src="/images/home/right-arrow.svg"
+                                    alt="arrow"
+                                  />
+                                </button>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -700,7 +754,10 @@ const ClientComponent = ({ data, isLogin = false }: homeprops) => {
                     >
                       {data?.upcomingBookings?.map(
                         (item: any, index: number) => (
-                          <div className="upcoming-my-slide" key={index}>
+                          <div
+                            className="upcoming-my-slide"
+                            key={item?.bookingId}
+                          >
                             <div
                               className="upcoming-img"
                               style={{ width: "320px" }}
@@ -726,7 +783,8 @@ const ClientComponent = ({ data, isLogin = false }: homeprops) => {
                                 <button
                                   className="primary-cta upcm-btn"
                                   onClick={() => {
-                                    handleLoadRescheduleRequest(item);
+                                    handleLoadRescheduleRequest(item),
+                                      setisReschedule(true);
                                     // setShowDatePicker(true), setBookingId(item?.bookingId)
                                   }}
                                   disabled={item?.is_previous_rescheduled}
@@ -1677,6 +1735,8 @@ const ClientComponent = ({ data, isLogin = false }: homeprops) => {
         isOpen={showDatePicker}
         setIsOpen={setShowDatePicker}
         onConfirm={handleRescheduleBooking}
+        booking_Id={bookingId !== null ? bookingId : undefined}
+        rescheduleKey={isReschedule}
       />
       <RescheduleRequestSubmit />
       <ServiceRejected />
