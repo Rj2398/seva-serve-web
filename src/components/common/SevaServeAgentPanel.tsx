@@ -988,7 +988,7 @@ const SevaServeAgentPanel = () => {
                             >
                               {msg.text}
                             </p>
-                            <p
+                            {/* <p
                               style={{
                                 margin: 0,
                                 fontSize: "14px",
@@ -998,7 +998,7 @@ const SevaServeAgentPanel = () => {
                               }}
                             >
                               Do you want to review all entered details?
-                            </p>
+                            </p> */}
                             <a
                               href={msg.link?.url || "#"}
                               className="btn"
