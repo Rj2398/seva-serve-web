@@ -133,6 +133,7 @@ const DatePopup: React.FC<DatePopupProps> = ({
             .join(" ");
           setAddress(addrString);
           setSelectedAddressId(String(firstAddr.id));
+          getAddressIdCallback?.(String(firstAddr.id));
         }
       }
     } catch (error) {

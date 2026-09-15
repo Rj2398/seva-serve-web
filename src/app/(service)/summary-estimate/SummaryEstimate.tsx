@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import { RootState } from "@/store";
 import { useSelector } from "react-redux";
 import { globalServerRequest } from "@/actions/globalApi";
+import DatePopup from "@/components/modals/bookingmodals/DatePopup";
 import QuoteDatePopup from "@/components/modals/bookingmodals/QuoteDatePopup";
 
 interface UserState {
@@ -59,7 +60,8 @@ const SummaryEstimate = () => {
   const is_quote = searchParams.get("is_quote_edit");
   console.log("Edit", is_quote, "   requestedId ", requestedId);
   const router = useRouter();
-  const [showReschedule, setShowReschedule] = useState<boolean>(false);
+  const [showDatePopup, setShowDatePopup] = useState<boolean>(false);
+  const [showQuoteDatePopup, setShowQuoteDatePopup] = useState<boolean>(false);
   const [isOpenModal, setIsOpenModal] = useState<boolean>(false);
   const [availabilitySlots, setAvailabilitySlots] = useState<any[]>([]);
   const [addressId, setAddressId] = useState("");
@@ -117,15 +119,25 @@ const SummaryEstimate = () => {
     const targetSlots = incomingSlots || availabilitySlots;
 
     if (!targetSlots || targetSlots.length === 0) {
-      setShowReschedule(true);
+      setShowDatePopup(true);
+      return;
+    }
+
+    const targetAddressId =
+      incomingAddressId !== undefined && incomingAddressId !== ""
+        ? incomingAddressId
+        : addressId;
+
+    if (!targetAddressId) {
+      toast.error("Address ID is required. Please select a service address.");
+      setShowDatePopup(true);
       return;
     }
 
     try {
       const payload = {
         requestId: summary_estimate.requestId,
-        addressId:
-          incomingAddressId !== undefined ? incomingAddressId : addressId,
+        addressId: targetAddressId,
         availabilitySlots: targetSlots,
       };
 
@@ -139,7 +151,8 @@ const SummaryEstimate = () => {
         toast.success("Quote requested successfully!");
         window.dispatchEvent(new Event("cartUpdated"));
         window.dispatchEvent(new Event("newNotification"));
-        setShowReschedule(false);
+        setShowDatePopup(false);
+        setShowQuoteDatePopup(false);
         setIsOpenModal(true);
       } else {
         toast.error(response?.error || "Failed to request quote");
@@ -488,7 +501,7 @@ const SummaryEstimate = () => {
                               </p>
                               <button
                                 type="button"
-                                onClick={() => setShowReschedule(true)}
+                                onClick={() => setShowQuoteDatePopup(true)}
                                 style={{
                                   background: "none",
                                   border: "none",
@@ -620,9 +633,26 @@ const SummaryEstimate = () => {
         </div>
       </main>
       <RequestModal isOpen={isOpenModal} setIsOpen={setIsOpenModal} />
+      <DatePopup
+        isOpen={showDatePopup}
+        setIsOpen={setShowDatePopup}
+        onConfirm={(data) => {
+          const formattedSlots = data.availabilitySlots.map((item) => ({
+            slotId: item.slotId,
+            date: item.date,
+          }));
+          setAvailabilitySlots(formattedSlots);
+          const chosenAddressId = data.address || addressId;
+          if (chosenAddressId) {
+            setAddressId(chosenAddressId);
+          }
+          requestQuote(formattedSlots, chosenAddressId);
+        }}
+        getAddressIdCallback={setAddressId}
+      />
       <QuoteDatePopup
-        isOpen={showReschedule}
-        setIsOpen={setShowReschedule}
+        isOpen={showQuoteDatePopup}
+        setIsOpen={setShowQuoteDatePopup}
         quoteId={activeRequestId || summary_estimate?.requestId}
         onSuccess={() => {
           fetchQuote();
