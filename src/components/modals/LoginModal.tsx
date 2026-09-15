@@ -16,8 +16,9 @@ const LoginModal = () => {
   const [referCode, setReferCode] = useState("");
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const phoneRegex =
-    /^(?:\+1\s?)?(?:\([2-9]\d{2}\)|[2-9]\d{2})[-.\s]?[2-9]\d{2}[-.\s]?\d{4}$/;
+  // const phoneRegex =
+  //   /^(?:\+1\s?)?(?:\([2-9]\d{2}\)|[2-9]\d{2})[-.\s]?[2-9]\d{2}[-.\s]?\d{4}$/;
+   const phoneRegex = /^[0-9]{10}$/;
 
   const isvalidInput = isEmailLogin
     ? emailRegex.test(inputValue)

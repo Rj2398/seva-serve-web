@@ -443,13 +443,15 @@ const ClientComponent = ({ data, isLogin = false }: homeprops) => {
     console.log("reason", reason, "isAddactional", isAddactional);
     const updatedEndpoint = isAddactional
       ? `booking/approve-additional-servies-request`
-      : `quotes/reject/${serviceId}`;
+      : `quotes/reject`;
     try {
       const response = await globalServerRequest({
         endpoint: updatedEndpoint,
         method: isAddactional ? "POST" : "PUT",
         payload: {
           rejection_reason: reason,
+          id: serviceId,
+
           ...(isAddactional && {
             booking_id: serviceId,
             status: "reject",
@@ -460,6 +462,8 @@ const ClientComponent = ({ data, isLogin = false }: homeprops) => {
 
       console.log(" rejected services response  ", response);
       if (response.success) {
+
+        toast.success("Service rejected successfully!");
         window.dispatchEvent(new Event("quoteUpdated"));
         const bootstrap = (window as any).bootstrap;
         const currentModalEl = document.getElementById("servicesRejection");

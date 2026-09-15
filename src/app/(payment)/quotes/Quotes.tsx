@@ -129,19 +129,27 @@ export default function Quotes() {
   const handleReject = async (reason: string, isAddactional: boolean) => {
     console.log("reason", reason, "isAddactional", isAddactional, "  additionalId", additionalId)
 
-    const updatedEndpoint = isAddactional ? `booking/approve-additional-servies-request` : `quotes/reject/${serviceId}`
+    // const updatedEndpoint = isAddactional ? `booking/approve-additional-servies-request` : `quotes/reject`
+
+    const updatedEndpoint = isAddactional
+    ? "booking/approve-additional-servies-request"
+    : "quotes/reject";
+
     try {
       const response = await globalServerRequest({
         endpoint: updatedEndpoint,
         method: isAddactional ? "POST" : "PUT",
         payload: {
           rejection_reason: reason,
+          id:serviceId,
+        
           ...(isAddactional && { booking_id: serviceId, status: 'reject', additional_work_id: additionalId }),
         }
       });
 
       console.log(" rejected services response  ", response)
       if (response.success) {
+        toast.success("Service rejected successfully!");
 
         window.dispatchEvent(new Event("quoteUpdated"));
         const bootstrap = (window as any).bootstrap;
@@ -180,7 +188,7 @@ export default function Quotes() {
 
     try {
       const response = await globalServerRequest({
-        endpoint: `booking/delete-quote`,
+        endpoint: `quotes/delete-quote`,
         method: "POST",
         payload: {
           quote_id: selectedBookingData?.quote_id,

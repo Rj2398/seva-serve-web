@@ -612,6 +612,18 @@ const SevaServeAgentPanel = () => {
     handleSendMessage(inputValue, selectedFiles);
   };
 
+
+  const handleCall = () => {
+    // Mobile/tablet → phone dialer
+  if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+    window.location.href = "tel:+919876543210";
+    return;
+  }
+
+  // Desktop → show call message
+  alert("Call: +91 98765 43210");
+  };
+
   return (
     <div
       className="offcanvas offcanvas-end agent-off-canvas-wrp"
@@ -659,9 +671,28 @@ const SevaServeAgentPanel = () => {
               Reset
             </button>
 
-            <h5 className="agent-call-icon mb-0">
+            {/* <h5 className="agent-call-icon mb-0">
               <img src="/images/off-canvas/agent-call-icon.svg" alt="Call" />
-            </h5>
+            </h5> */}
+
+            <a
+                 onClick={() => {
+                    handleCall()
+                  }}
+
+              style={{ textDecoration: "none", cursor: "pointer" }}
+                className="text-decoration-none"
+              >
+                        <h5
+            className="agent-call-icon mb-0"
+            title="+91 98765 43210"
+          >
+            <img
+              src="/images/off-canvas/agent-call-icon.svg"
+              alt="Call"
+            />
+          </h5>
+              </a>
           </div>
         </div>
 
