@@ -4,6 +4,11 @@ import { globalServerRequest } from "@/actions/globalApi";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
+import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
+
+const PAYPAL_CLIENT_ID =
+  process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID ||
+  "AcSjcn-dI9WSpKGaQ27OCtb_k3yuMpaNpEk_uc6EieJ-MIaVvWUu4mgCrdc5T7cEo3tOciK2e0cEN6ye";
 
 interface CheckOutProps {
   bookingData?: any;
@@ -61,6 +66,90 @@ const CheckOutContent = ({ bookingData }: CheckOutProps) => {
     initialPayment + remainingPayment;
 
   const finalAmount = initialPayment;
+
+  const currentQuoteId = checkoutData?.quote_id || bookingData?.quoteId || bookingId;
+
+  const handleCreatePayPalOrder = async () => {
+    try {
+      const response = await globalServerRequest({
+        endpoint: "payment/card/create-paypal-order",
+        method: "POST",
+        payload: {
+          amount: String(finalAmount.toFixed(2)),
+          booking_id: Number(currentQuoteId),
+        },
+      });
+
+      if (response?.success) {
+        const orderId =
+          response.data?.data?.order_id ||
+          response.data?.order_id ||
+          response.data?.data?.id;
+
+        if (orderId) {
+          return orderId;
+        }
+      }
+      const errorMsg =
+        response?.error ||
+        response?.data?.message ||
+        "Failed to create PayPal order.";
+      toast.error(errorMsg);
+      throw new Error(errorMsg);
+    } catch (error: any) {
+      console.error("Error creating PayPal order:", error);
+      toast.error(error?.message || "Failed to create PayPal order.");
+      throw error;
+    }
+  };
+
+  const handleApprovePayPalOrder = async (data: any) => {
+    const toastId = toast.loading("Processing payment...");
+    try {
+      const response = await globalServerRequest({
+        endpoint: "payment/card/customer-pay-now",
+        method: "POST",
+        payload: {
+          type: paymenttype || "initial",
+          quote_id: String(currentQuoteId),
+          amount: String(finalAmount.toFixed(2)),
+          order_id: String(data?.orderID),
+        },
+      });
+
+      if (response?.success) {
+        toast.success(
+          response?.data?.message || "Payment completed successfully!",
+          { id: toastId }
+        );
+        router.push("/booking");
+      } else {
+        toast.error(
+          response?.error ||
+          response?.data?.message ||
+          "Failed to complete payment.",
+          { id: toastId }
+        );
+      }
+    } catch (error) {
+      console.error("PayPal payment execution error:", error);
+      toast.error("Something went wrong during payment processing.", {
+        id: toastId,
+      });
+    }
+  };
+
+  const handleConfirmPaymentClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    try {
+      const orderId = await handleCreatePayPalOrder();
+      if (orderId) {
+        window.location.href = `https://www.paypal.com/checkoutnow?token=${orderId}`;
+      }
+    } catch (err) {
+      console.error("PayPal order creation error:", err);
+    }
+  };
 
   return (
     <main>
@@ -216,32 +305,65 @@ const CheckOutContent = ({ bookingData }: CheckOutProps) => {
                   </div>
                 </div>
                 <div className="card-help">
-                  <Link
-                    href={{
-                      // pathname: checkoutData?.hasCard
-                      //   ? `/payment-method`
-                      //   : `/add-new-card`,
-                      pathname:
-                        paymentMethod === "2"
-                          ? `/zelle-payment`
-                          : checkoutData?.hasCard
-                            ? `/payment-method`
-                            : `/add-new-card`,
-                      query: {
-                        booking_id: bookingId || bookingData?.bookingId,
-                        initialpayment: initialPayment,
-                        remaingPayment: remainingPayment,
-                        paymenttype: paymenttype,
-                        quoteId:
-                          checkoutData?.quote_id || bookingData?.quoteId || "",
-                        zelle_phone: checkoutData?.zelle_phone || "",
-                        zelle_email: checkoutData?.zelle_email || "",
-                      },
-                    }}
-                    className="primary-cta"
-                  >
-                    Confirm Payment
-                  </Link>
+                  {paymentMethod === "1" ? (
+                    <div style={{ position: "relative", display: "inline-flex" }}>
+                      <a
+                        onClick={handleConfirmPaymentClick}
+                        className="primary-cta"
+                        style={{ cursor: "pointer" }}
+                      >
+                        Confirm Payment
+                      </a>
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          width: "100%",
+                          height: "100%",
+                          opacity: 0.001,
+                          overflow: "hidden",
+                          zIndex: 10,
+                        }}
+                      >
+                        <PayPalScriptProvider
+                          options={{
+                            clientId: PAYPAL_CLIENT_ID,
+                            currency: "USD",
+                          }}
+                        >
+                          <PayPalButtons
+                            style={{ layout: "horizontal", height: 40, tagline: false }}
+                            createOrder={handleCreatePayPalOrder}
+                            onApprove={handleApprovePayPalOrder}
+                            onError={(err) => {
+                              console.error("PayPal Error:", err);
+                              toast.error("PayPal initialization or transaction error.");
+                            }}
+                          />
+                        </PayPalScriptProvider>
+                      </div>
+                    </div>
+                  ) : (
+                    <Link
+                      href={{
+                        pathname: `/zelle-payment`,
+                        query: {
+                          booking_id: bookingId || bookingData?.bookingId,
+                          initialpayment: initialPayment,
+                          remaingPayment: remainingPayment,
+                          paymenttype: paymenttype,
+                          quoteId:
+                            checkoutData?.quote_id || bookingData?.quoteId || "",
+                          zelle_phone: checkoutData?.zelle_phone || "",
+                          zelle_email: checkoutData?.zelle_email || "",
+                        },
+                      }}
+                      className="primary-cta"
+                    >
+                      Confirm Payment
+                    </Link>
+                  )}
                 </div>
               </div>
             </div>
