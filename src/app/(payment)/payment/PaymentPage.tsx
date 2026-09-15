@@ -30,6 +30,17 @@ const PaymentPage = ({ bookingData }: CheckOutProps) => {
   const [checkoutData, setCheckoutData] = useState<any>();
   const [couponCode, setCouponCode] = useState<string>("");
 
+  const isFirstPayment =
+    checkoutData?.first_payment_status === true ||
+    checkoutData?.first_payment_status === 1 ||
+    checkoutData?.first_payment_status === "true";
+
+  useEffect(() => {
+    if (isFirstPayment) {
+      setSelectedMethod("paypal");
+    }
+  }, [isFirstPayment]);
+
   const fetchCheckoutDetails = async () => {
     if (!bookingId) return;
     try {
@@ -114,6 +125,8 @@ const PaymentPage = ({ bookingData }: CheckOutProps) => {
         remaingPayment:
           checkoutData?.job_summary?.remaining_cost?.toString() || "",
         paymenttype: paymentType || "full",
+        zelle_phone: checkoutData?.zelle_phone || "",
+        zelle_email: checkoutData?.zelle_email || "",
       });
 
       router.push(`/zelle-payment?${queryParams.toString()}`);
@@ -224,9 +237,9 @@ const PaymentPage = ({ bookingData }: CheckOutProps) => {
                     <div className="select-pay-met">
                       <h4>Select Payment Method</h4>
 
-                      <ul>
-                        <li>
-                          <label>
+                      <ul style={{ display: "flex", flexDirection: "column", gap: "15px", alignItems: "flex-start", justifyContent: "flex-start", width: "100%", textAlign: "left" }}>
+                        <li style={{ width: "100%", justifyContent: "flex-start", alignItems: "center", display: "flex" }}>
+                          <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", width: "100%", justifyContent: "flex-start" }}>
                             <input
                               type="radio"
                               value="paypal"
@@ -240,20 +253,64 @@ const PaymentPage = ({ bookingData }: CheckOutProps) => {
                           </label>
                         </li>
 
-                        <li>
-                          <label>
-                            <input
-                              type="radio"
-                              value="zelle"
-                              name="payment"
-                              checked={selectedMethod === "zelle"}
-                              onChange={(e) =>
-                                setSelectedMethod(e.target.value)
-                              }
-                            />{" "}
-                            Zelle
-                          </label>
-                        </li>
+                        {!isFirstPayment && (
+                          <li style={{ width: "100%", flexDirection: "column", alignItems: "flex-start", justifyContent: "flex-start", display: "flex" }}>
+                            <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", width: "100%", justifyContent: "flex-start" }}>
+                              <input
+                                type="radio"
+                                value="zelle"
+                                name="payment"
+                                checked={selectedMethod === "zelle"}
+                                onChange={(e) =>
+                                  setSelectedMethod(e.target.value)
+                                }
+                              />{" "}
+                              Zelle
+                            </label>
+                            {selectedMethod === "zelle" && (
+                              <div style={{ marginTop: "12px", width: "100%", paddingLeft: "25px" }}>
+                                {checkoutData?.zelle_phone && (
+                                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px", fontSize: "14px", fontWeight: "400" }}>
+                                    <span>Send amount to: <b>{checkoutData.zelle_phone}</b></span>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        navigator.clipboard.writeText(checkoutData.zelle_phone);
+                                        toast.success("Phone number copied!");
+                                      }}
+                                      style={{ background: "none", border: "none", cursor: "pointer", padding: "2px 6px", color: "#363636" }}
+                                      title="Copy phone number"
+                                    >
+                                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                      </svg>
+                                    </button>
+                                  </div>
+                                )}
+                                {checkoutData?.zelle_email && (
+                                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px", fontSize: "14px", fontWeight: "400" }}>
+                                    <span>Send amount to: <b>{checkoutData.zelle_email}</b></span>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        navigator.clipboard.writeText(checkoutData.zelle_email);
+                                        toast.success("Email copied!");
+                                      }}
+                                      style={{ background: "none", border: "none", cursor: "pointer", padding: "2px 6px", color: "#363636" }}
+                                      title="Copy email"
+                                    >
+                                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                      </svg>
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </li>
+                        )}
                       </ul>
 
                       <h4>Have a Coupon?</h4>

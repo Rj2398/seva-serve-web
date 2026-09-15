@@ -132,8 +132,8 @@ export default function Quotes() {
     // const updatedEndpoint = isAddactional ? `booking/approve-additional-servies-request` : `quotes/reject`
 
     const updatedEndpoint = isAddactional
-    ? "booking/approve-additional-servies-request"
-    : "quotes/reject";
+      ? "booking/approve-additional-servies-request"
+      : "quotes/reject";
 
     try {
       const response = await globalServerRequest({
@@ -141,8 +141,8 @@ export default function Quotes() {
         method: isAddactional ? "POST" : "PUT",
         payload: {
           rejection_reason: reason,
-          id:serviceId,
-        
+          id: serviceId,
+
           ...(isAddactional && { booking_id: serviceId, status: 'reject', additional_work_id: additionalId }),
         }
       });
@@ -235,7 +235,7 @@ export default function Quotes() {
                           id="customTabs-tab"
                           role="tablist"
                         >
-                          {["Received", "Requested", "Accepted"].map(
+                          {["Received", "Requested", "Accepted", "Rejected"].map(
                             (item, index) => (
                               <li
                                 className="nav-item"
@@ -277,6 +277,7 @@ export default function Quotes() {
                             {activeTab === "received" && <h5>No received quotes available.</h5>}
                             {activeTab === "requested" && <h5>No requested quotes found.</h5>}
                             {activeTab === "accepted" && <h5>No accepted quotes yet.</h5>}
+                            {activeTab === "rejected" && <h5>No rejected quotes found.</h5>}
                           </div>
                         ) : (
                           quotes?.map((item: any, index: number) => {
@@ -474,33 +475,33 @@ export default function Quotes() {
                                             </button> */}
 
                                             <button
-                                                  className="reject-btn"
-                                                  data-bs-target="#servicesRejection"
-                                                  data-bs-toggle="modal"
-                                                  disabled={ item?.zelle_payment_status === "pending"}
-                                                  onClick={() => {
-                                                    setServiceId(
-                                                      item.has_additional_services
-                                                        ? item.additional_services.booking_id
-                                                        : item.quote_id
-                                                    );
+                                              className="reject-btn"
+                                              data-bs-target="#servicesRejection"
+                                              data-bs-toggle="modal"
+                                              disabled={item?.zelle_payment_status === "pending"}
+                                              onClick={() => {
+                                                setServiceId(
+                                                  item.has_additional_services
+                                                    ? item.additional_services.booking_id
+                                                    : item.quote_id
+                                                );
 
-                                                    setAdditionalId(
-                                                      item.has_additional_services
-                                                        ? item.additional_services?.items?.[0]?.id
-                                                        : null
-                                                    );
+                                                setAdditionalId(
+                                                  item.has_additional_services
+                                                    ? item.additional_services?.items?.[0]?.id
+                                                    : null
+                                                );
 
-                                                    setIsAddactional(item.has_additional_services);
-                                                  }}
-                                                  style={{
-                                                    cursor:
-                                                       item?.zelle_payment_status === "pending" ? "not-allowed" : "pointer",
-                                                    opacity: item?.zelle_payment_status === "pending" ? 0.5 : 1,
-                                                  }}
-                                                >
-                                                  Reject
-                                                </button>
+                                                setIsAddactional(item.has_additional_services);
+                                              }}
+                                              style={{
+                                                cursor:
+                                                  item?.zelle_payment_status === "pending" ? "not-allowed" : "pointer",
+                                                opacity: item?.zelle_payment_status === "pending" ? 0.5 : 1,
+                                              }}
+                                            >
+                                              Reject
+                                            </button>
                                             {/* <a
                                               className="primary-cta rgt"
                                          
@@ -559,80 +560,79 @@ export default function Quotes() {
                                             </a> */}
 
                                             <a
-                                                  className={`primary-cta rgt ${
-                                                     item?.zelle_payment_status === "pending" ? "disabled" : ""
-                                                  }`}
-                                                  onClick={(e: any) => {
-                                                    if (  item?.zelle_payment_status === "pending") {
-                                                      e.preventDefault();
-                                                      return;
-                                                    }
+                                              className={`primary-cta rgt ${item?.zelle_payment_status === "pending" ? "disabled" : ""
+                                                }`}
+                                              onClick={(e: any) => {
+                                                if (item?.zelle_payment_status === "pending") {
+                                                  e.preventDefault();
+                                                  return;
+                                                }
 
-                                                    const today = new Date();
-                                                    today.setHours(0, 0, 0, 0);
+                                                const today = new Date();
+                                                today.setHours(0, 0, 0, 0);
 
-                                                    const scheduleArray = item?.schedule || [];
+                                                const scheduleArray = item?.schedule || [];
 
-                                                    if (scheduleArray.length === 0) {
-                                                      toast.error("No schedule date found.");
-                                                      return;
-                                                    }
+                                                if (scheduleArray.length === 0) {
+                                                  toast.error("No schedule date found.");
+                                                  return;
+                                                }
 
-                                                    const timestamps = scheduleArray
-                                                      .map((sch: any) => {
-                                                        if (!sch?.date) return null;
+                                                const timestamps = scheduleArray
+                                                  .map((sch: any) => {
+                                                    if (!sch?.date) return null;
 
-                                                        const [day, month, year] = sch.date.split("-");
-                                                        const parsedDate = new Date(year, month - 1, day);
+                                                    const [day, month, year] = sch.date.split("-");
+                                                    const parsedDate = new Date(year, month - 1, day);
 
-                                                        parsedDate.setHours(0, 0, 0, 0);
+                                                    parsedDate.setHours(0, 0, 0, 0);
 
-                                                        return parsedDate.getTime();
-                                                      })
-                                                      .filter(Boolean);
+                                                    return parsedDate.getTime();
+                                                  })
+                                                  .filter(Boolean);
 
-                                                    const maxTimestamp = Math.max(...timestamps);
-                                                    const latestItemDate = new Date(maxTimestamp);
+                                                const maxTimestamp = Math.max(...timestamps);
+                                                const latestItemDate = new Date(maxTimestamp);
 
-                                                    if (latestItemDate < today) {
-                                                      toast.error(
-                                                        "This quote is no longer valid. Please reject this quote so our admin team can reschedule it for you."
-                                                      );
-                                                      return;
-                                                    }
+                                                if (latestItemDate < today) {
+                                                  toast.error(
+                                                    "This quote is no longer valid. Please reject this quote so our admin team can reschedule it for you."
+                                                  );
+                                                  return;
+                                                }
 
-                                                    setServiceId(
-                                                      item.has_additional_services
-                                                        ? item.additional_services.booking_id
-                                                        : item.quote_id
-                                                    );
+                                                setServiceId(
+                                                  item.has_additional_services
+                                                    ? item.additional_services.booking_id
+                                                    : item.quote_id
+                                                );
 
-                                                    setAdditionalId(
-                                                      item.has_additional_services
-                                                        ? item.additional_services?.items?.[0]?.id
-                                                        : null
-                                                    );
+                                                setAdditionalId(
+                                                  item.has_additional_services
+                                                    ? item.additional_services?.items?.[0]?.id
+                                                    : null
+                                                );
 
-                                                    setIsAddactional(item.has_additional_services);
+                                                setIsAddactional(item.has_additional_services);
 
-                                                    const modalElement = document.getElementById("servicesAccepted");
+                                                const modalElement = document.getElementById("servicesAccepted");
 
-                                                    if (modalElement && window.bootstrap) {
-                                                      const modalInstance =
-                                                        window.bootstrap.Modal.getOrCreateInstance(modalElement);
+                                                if (modalElement && window.bootstrap) {
+                                                  const modalInstance =
+                                                    window.bootstrap.Modal.getOrCreateInstance(modalElement);
 
-                                                      modalInstance.show();
-                                                    }
-                                                  }}
-                                                  style={{
-                                                    cursor:  item?.zelle_payment_status === "pending" ? "not-allowed" : "pointer",
-                                                    opacity:   item?.zelle_payment_status === "pending" ? 0.5 : 1,
-                                                    pointerEvents:  item?.zelle_payment_status === "pending" ? "none" : "auto",
-                                                  }}
-                                                >
-                                                  Accept
-                                                  <img src="images/home/right-img.svg" alt="" />
-                                                </a>
+                                                  modalInstance.show();
+                                                }
+                                              }}
+                                              style={{
+                                                cursor: item?.zelle_payment_status === "pending" ? "not-allowed" : "pointer",
+                                                opacity: item?.zelle_payment_status === "pending" ? 0.5 : 1,
+                                                pointerEvents: item?.zelle_payment_status === "pending" ? "none" : "auto",
+                                              }}
+                                            >
+                                              Accept
+                                              <img src="images/home/right-img.svg" alt="" />
+                                            </a>
                                           </>
                                         )}
 

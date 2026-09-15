@@ -104,7 +104,7 @@ export default function ZellePaymentScreen() {
         }}
       >
         <h5 className="fw-bold text-dark mb-3">
-          Please upload Zelle Transaction Screenshot
+          Kindly upload Zelle Transaction Screenshot
         </h5>
 
         <div
@@ -112,11 +112,10 @@ export default function ZellePaymentScreen() {
           style={{ borderColor: "#d1d5db" }}
         >
           <label
-            className={`btn btn-sm fw-semibold px-4 py-2 ${
-              imagePreview
+            className={`btn btn-sm fw-semibold px-4 py-2 ${imagePreview
                 ? "btn-secondary opacity-50 cursor-not-allowed"
                 : "btn-outline-secondary cursor-pointer"
-            }`}
+              }`}
             style={{
               borderRadius: "8px",
               backgroundColor: imagePreview ? "#070707" : "rgb(128, 0, 32)",

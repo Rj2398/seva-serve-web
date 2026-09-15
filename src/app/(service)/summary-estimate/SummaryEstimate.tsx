@@ -7,7 +7,7 @@ import toast from "react-hot-toast";
 import { RootState } from "@/store";
 import { useSelector } from "react-redux";
 import { globalServerRequest } from "@/actions/globalApi";
-import DatePopup from "@/components/modals/bookingmodals/DatePopup";
+import QuoteDatePopup from "@/components/modals/bookingmodals/QuoteDatePopup";
 
 interface UserState {
   requestId: number;
@@ -22,7 +22,35 @@ interface UserState {
   status: string;
   createdAt: string;
   ai_summary: any;
+  schedule?: any[];
 }
+
+const formatDate = (dateStr?: string) => {
+  if (!dateStr) return "";
+  const dmyMatch = dateStr.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+  if (dmyMatch) {
+    const day = parseInt(dmyMatch[1], 10);
+    const month = parseInt(dmyMatch[2], 10) - 1;
+    const year = parseInt(dmyMatch[3], 10);
+    const dateObj = new Date(year, month, day);
+    if (!isNaN(dateObj.getTime())) {
+      return dateObj.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+    }
+  }
+  const dateObj = new Date(dateStr);
+  if (!isNaN(dateObj.getTime())) {
+    return dateObj.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  }
+  return dateStr;
+};
 
 const SummaryEstimate = () => {
   const searchParams = useSearchParams();
@@ -54,26 +82,26 @@ const SummaryEstimate = () => {
 
   const activeRequestId = requestedId || summary_estimate?.requestId;
 
-  useEffect(() => {
-    const fetchQuote = async () => {
-      if (!activeRequestId) return;
-      try {
-        const response = await globalServerRequest({
-          endpoint: `quotes/${activeRequestId}`,
-          method: "GET",
-        });
+  const fetchQuote = async () => {
+    if (!activeRequestId) return;
+    try {
+      const response = await globalServerRequest({
+        endpoint: `quotes/${activeRequestId}`,
+        method: "GET",
+      });
 
-        const fetchedData = response?.data?.data || response?.data || response;
-        console.log("response", fetchedData);
-        if (fetchedData) {
-          setApiEstimate(fetchedData);
-        }
-      } catch (error) {
-        console.error("Failed to fetch quote data:", error);
-        toast.error("Could not load fresh quote details.");
+      const fetchedData = response?.data?.data || response?.data || response;
+      console.log("response", fetchedData);
+      if (fetchedData) {
+        setApiEstimate(fetchedData);
       }
-    };
+    } catch (error) {
+      console.error("Failed to fetch quote data:", error);
+      toast.error("Could not load fresh quote details.");
+    }
+  };
 
+  useEffect(() => {
     fetchQuote();
   }, [activeRequestId]);
 
@@ -145,7 +173,7 @@ const SummaryEstimate = () => {
                           <img src="images/home/left-arrow.svg" alt="Back" />
                         </a>
                         {summary_estimate?.subCategories &&
-                        summary_estimate.subCategories.length > 1
+                          summary_estimate.subCategories.length > 1
                           ? "View Details"
                           : "Summary & Estimate"}
                       </h2>
@@ -208,13 +236,10 @@ const SummaryEstimate = () => {
                                     ▼
                                   </span>
                                   <Link
-                                    href={`/serviceDetails?categoryId=${
-                                      summary_estimate?.category?.id || ""
-                                    }&requestedId=${
-                                      activeRequestId || ""
-                                    }&subCategoryId=${subCat?.id || ""}${
-                                      is_quote === "1" ? "&is_quote_edit=1" : ""
-                                    }&is_quote_update=1`}
+                                    href={`/serviceDetails?categoryId=${summary_estimate?.category?.id || ""
+                                      }&requestedId=${activeRequestId || ""
+                                      }&subCategoryId=${subCat?.id || ""}${is_quote === "1" ? "&is_quote_edit=1" : ""
+                                      }&is_quote_update=1`}
                                     className="ml-2"
                                     onClick={(e) => e.stopPropagation()} // Header toggle event ko rokne ke liye
                                   >
@@ -268,7 +293,7 @@ const SummaryEstimate = () => {
                                                   : item}{" "}
                                                 {item.specificIssues &&
                                                   item.specificIssues.length >
-                                                    0 && (
+                                                  0 && (
                                                     <ul
                                                       className="list-unstyled pl-4 m-0"
                                                       style={{
@@ -294,7 +319,7 @@ const SummaryEstimate = () => {
                                                           >
                                                             -{" "}
                                                             {typeof issue ===
-                                                            "object"
+                                                              "object"
                                                               ? issue?.name
                                                               : issue}
                                                           </li>
@@ -308,15 +333,12 @@ const SummaryEstimate = () => {
                                         </ul>
                                       </div>
                                       <Link
-                                        href={`/serviceDetails?categoryId=${
-                                          summary_estimate?.category?.id || ""
-                                        }&requestedId=${
-                                          activeRequestId || ""
-                                        }&subCategoryId=${subCat?.id || ""}${
-                                          is_quote === "1"
+                                        href={`/serviceDetails?categoryId=${summary_estimate?.category?.id || ""
+                                          }&requestedId=${activeRequestId || ""
+                                          }&subCategoryId=${subCat?.id || ""}${is_quote === "1"
                                             ? "&is_quote_edit=1"
                                             : ""
-                                        }&is_quote_update=1`}
+                                          }&is_quote_update=1`}
                                       >
                                         <img
                                           src="images/inner-page/edit-icon-c.svg"
@@ -354,15 +376,12 @@ const SummaryEstimate = () => {
                                         </p>
                                       </div>
                                       <Link
-                                        href={`/serviceDetails?categoryId=${
-                                          summary_estimate?.category?.id || ""
-                                        }&requestedId=${
-                                          activeRequestId || ""
-                                        }&subCategoryId=${subCat?.id || ""}${
-                                          is_quote === "1"
+                                        href={`/serviceDetails?categoryId=${summary_estimate?.category?.id || ""
+                                          }&requestedId=${activeRequestId || ""
+                                          }&subCategoryId=${subCat?.id || ""}${is_quote === "1"
                                             ? "&is_quote_edit=1"
                                             : ""
-                                        }&is_quote_update=1`}
+                                          }&is_quote_update=1`}
                                       >
                                         <img
                                           src="images/inner-page/edit-icon-c.svg"
@@ -394,11 +413,10 @@ const SummaryEstimate = () => {
                                               typeof url === "object"
                                                 ? url?.url
                                                 : url ||
-                                                  "images/inner-page/issue-icon.svg"
+                                                "images/inner-page/issue-icon.svg"
                                             }
-                                            alt={`Uploaded attachment ${
-                                              index + 1
-                                            }`}
+                                            alt={`Uploaded attachment ${index + 1
+                                              }`}
                                             style={{
                                               width: "100px",
                                               height: "100px",
@@ -411,10 +429,10 @@ const SummaryEstimate = () => {
                                       )}
                                       {(!subCat?.media ||
                                         subCat?.media?.length === 0) && (
-                                        <p className="text-muted small m-0">
-                                          No media uploaded
-                                        </p>
-                                      )}
+                                          <p className="text-muted small m-0">
+                                            No media uploaded
+                                          </p>
+                                        )}
                                     </div>
                                   </div>
                                 </div>
@@ -450,6 +468,91 @@ const SummaryEstimate = () => {
                           </p>
                         </div>
                       )}
+
+                      {/* Date & Timeslot Section */}
+                      {summary_estimate?.schedule &&
+                        summary_estimate.schedule.length > 0 && (
+                          <div
+                            className="p-3 bg-white position-relative"
+                            style={{
+                              borderRadius: "24px",
+                              border: "1px solid #99131833",
+                            }}
+                          >
+                            <div className="d-flex justify-content-between align-items-center mb-3">
+                              <p
+                                className="small m-0 fw-semibold text-muted"
+                                style={{ fontSize: "13px" }}
+                              >
+                                Date & Timeslot
+                              </p>
+                              <button
+                                type="button"
+                                onClick={() => setShowReschedule(true)}
+                                style={{
+                                  background: "none",
+                                  border: "none",
+                                  padding: 0,
+                                  cursor: "pointer",
+                                }}
+                              >
+                                <img
+                                  src="images/inner-page/edit-icon-c.svg"
+                                  alt="Edit"
+                                  style={{ width: "14px" }}
+                                />
+                              </button>
+                            </div>
+
+                            {summary_estimate.schedule.map(
+                              (sched: any, idx: number) => {
+                                const formattedDate = formatDate(sched?.date);
+                                const timeSlots = sched?.time
+                                  ? sched.time
+                                    .split(",")
+                                    .map((t: string) => t.trim())
+                                    .filter(Boolean)
+                                  : [];
+
+                                return (
+                                  <div
+                                    key={idx}
+                                    className="p-3 rounded-3"
+                                    style={{
+                                      backgroundColor: "#9913180f",
+                                      borderRadius: "16px",
+                                      marginBottom:
+                                        idx < (summary_estimate.schedule?.length || 0) - 1
+                                          ? "10px"
+                                          : "0px",
+                                    }}
+                                  >
+                                    <h5
+                                      className="fw-bold text-dark mb-2"
+                                      style={{ fontSize: "15px" }}
+                                    >
+                                      {formattedDate}
+                                    </h5>
+                                    {timeSlots.map(
+                                      (slot: string, slotIdx: number) => (
+                                        <p
+                                          key={slotIdx}
+                                          className="m-0 text-secondary small fw-medium"
+                                          style={{
+                                            fontSize: "13px",
+                                            lineHeight: "1.6",
+                                          }}
+                                        >
+                                          • {slot}
+                                        </p>
+                                      )
+                                    )}
+                                  </div>
+                                );
+                              }
+                            )}
+                          </div>
+                        )}
                       {/* Total Estimate Price Section */}
                       <div
                         className="estimated-total mt-3 p-3 d-flex justify-content-between align-items-center"
@@ -492,8 +595,7 @@ const SummaryEstimate = () => {
                             className="secondary-cta"
                             onClick={() =>
                               router.push(
-                                `/serviceDetails?categoryId=${
-                                  summary_estimate?.category?.id || ""
+                                `/serviceDetails?categoryId=${summary_estimate?.category?.id || ""
                                 }&requestedId=${activeRequestId || ""}`
                               )
                             }
@@ -518,18 +620,12 @@ const SummaryEstimate = () => {
         </div>
       </main>
       <RequestModal isOpen={isOpenModal} setIsOpen={setIsOpenModal} />
-      <DatePopup
+      <QuoteDatePopup
         isOpen={showReschedule}
         setIsOpen={setShowReschedule}
-        onConfirm={(data: any) => {
-          console.log("data****", data);
-          const slots = data?.availabilitySlots || [];
-          setAvailabilitySlots(slots);
-          const selectedAddrId = data?.address || "";
-          setAddressId(selectedAddrId);
-          if (slots.length > 0) {
-            requestQuote(slots, selectedAddrId);
-          }
+        quoteId={activeRequestId || summary_estimate?.requestId}
+        onSuccess={() => {
+          fetchQuote();
         }}
         getAddressIdCallback={setAddressId}
       />
