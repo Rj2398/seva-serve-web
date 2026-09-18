@@ -103,8 +103,8 @@ export default function ZellePaymentScreen() {
           border: "1px solid #e5e7eb",
         }}
       >
-        <h5 className="fw-bold text-dark mb-3">
-          Kindly upload Zelle Transaction Screenshot
+        <h5 className="fw-bold text-center text-dark mb-3">
+          Kindly upload Screenshot- for zelle payment
         </h5>
 
         <div

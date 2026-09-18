@@ -582,7 +582,7 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                                         setSelectedBooking(item)
                                                       }
                                                     >
-                                                      View Contractor Request
+                                                      View Technician Request
                                                     </button>
                                                   </div>
                                                 )

@@ -24,7 +24,7 @@ const ReviewAdditionalServices = ({ bookingId }: AdditionalServicesProps) => {
               <div className="welcome-seva-ser">
                 <img src="images/modal/review-check.svg" className="check" alt="" />
                 <h4>Review Additional Services</h4>
-                <p>The contractor has requested additional services for this job.</p>
+                <p>The Technician has requested additional services for this job.</p>
                 <p> Please review the details and quotation carefully before making a decision.</p>
                 <Link
                   href="/quotes"

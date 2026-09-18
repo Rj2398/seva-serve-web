@@ -20,7 +20,7 @@ const CompletedService = ({ bookingTrackingData, bookingId }: BookingUpdateProps
               <div className="welcome-seva-ser">
                 <img src="images/modal/service-check.svg" className="check" alt="" />
                 <h4>Service Completed</h4>
-                <p>The service is completed by your contractor successfully. <br /> Please approve!</p>
+                <p>The service is completed by your Technician successfully. <br /> Please approve!</p>
                 <a href="#completePayment" data-bs-toggle="modal" className="primary-cta requ-suc same">Approved</a>
                 <Link href="/help-support" className="secondary-cta"> Help & Support</Link>
               </div>

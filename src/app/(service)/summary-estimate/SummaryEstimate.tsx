@@ -455,7 +455,7 @@ const SummaryEstimate = () => {
                         }
                       )}
 
-                      {summary_estimate?.ai_summary && (
+                      {summary_estimate?.ai_summary && summary_estimate?.ai_summary.length > 0  && (
                         <div
                           className="p-3 position-relative d-flex flex-column justify-content-center"
                           style={{
@@ -475,10 +475,11 @@ const SummaryEstimate = () => {
                             className="m-0 text-muted"
                             style={{ fontSize: "13px", lineHeight: "1.5" }}
                           >
-                            {summary_estimate?.ai_summary
-                              ? summary_estimate?.ai_summary
-                              : "The system detected that the seal may be broken causing leakage. You can upload more images or a short video for better diagnosis."}
-                          </p>
+                            {
+                               summary_estimate?.ai_summary
+                            }  
+
+                            </p>
                         </div>
                       )}
 

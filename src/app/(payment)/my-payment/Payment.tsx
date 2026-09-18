@@ -177,7 +177,7 @@ const Payment = () => {
                                                                         <button className="secondary-cta" onClick={() => router.push(`/view-booking-detail?bookingId=${item.booking_id}`)}>
                                                                             View Job
                                                                         </button>
-                                                                        {isPending && (
+                                                                        {/* {isPending && (
                                                                             <button
                                                                                 className="primary-cta"
                                                                                 onClick={() => router.push(checkoutUrl)}
@@ -189,7 +189,7 @@ const Payment = () => {
                                                                                 />
                                                                                 Pay Now
                                                                             </button>
-                                                                        )}
+                                                                        )} */}
                                                                     </div>
                                                                 </div>
                                                             );

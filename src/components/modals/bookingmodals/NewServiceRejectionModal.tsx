@@ -105,9 +105,9 @@ export default function NewServiceRejectionModal({ serviceId = "", onConfirm, is
                 <button type="button" data-bs-dismiss="modal" className="reject-btn">Cancel</button>
               </div>
 
-              <div className="d-flex align-items-center justify-content-center gap-2 mt-3" style={{ fontSize: "13px", color: "#666" }}>
+              <div className="d-flex align-items-center justify-content-center gap-2 mt-3" style={{ fontSize: "13px", color: "#666" ,padding:'10px 10px' ,borderRadius:'20px',boxShadow: "0 2px 8px rgba(153, 19, 24, 0.15)" }}>
                 <i className="fa-solid fa-circle-info" style={{ color: "#991318", fontSize: "15px" }}></i>
-                <span>Need help? Call <a href="tel:+18888888888" style={{ color: "#991318", fontWeight: "600" }}>+1 8888888888</a></span>
+                <span>Need help? Call <a href="tel:+18888888888" style={{ color: "#991318", fontWeight: "600",backgroundColor:'FCF3F3' }}>+1 8888888888</a></span>
               </div>
             </div>
           </div>

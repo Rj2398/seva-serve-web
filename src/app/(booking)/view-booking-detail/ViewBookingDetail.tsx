@@ -183,7 +183,7 @@ const ViewBookingDetail = ({ bookingtrackingData }: BookingUpdateProps) => {
                                 </div>
 
                                 <div className="contract-left-text">
-                                  <h3>Your contractor is running late</h3>
+                                  <h3>Your Technician is running late</h3>
                                   <p>They've requested to push your booking by <span className="hours">{bookingData?.lateAlert?.delayDuration}</span>.</p>
                                 </div>
                               </div>

@@ -17,6 +17,7 @@
     "@types/bootstrap": "^5.2.10",
     "axios": "^1.16.1",
     "bootstrap": "^5.3.8",
+    "braintree-web": "^3.146.0",
     "firebase": "^12.17.1",
     "formik": "^2.4.9",
     "jsencrypt": "^3.5.4",

@@ -96,7 +96,7 @@ const BookingUpdate = ({ bookingData }: BookingUpdateProps) => {
                         <img src="images/clock-color-icon.svg" alt="" />
                       </div>
                       <div className="text-data">
-                        <h3>Your contractor is running late</h3>
+                        <h3>Your Technician is running late</h3>
                         <p>They've requested to push your booking by <span className="hors">{bookings?.duration}</span>.</p>
                       </div>
                     </div>

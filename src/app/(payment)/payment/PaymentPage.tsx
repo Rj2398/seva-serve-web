@@ -4,11 +4,10 @@ import { useSearchParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { globalServerRequest } from "@/actions/globalApi";
 import toast from "react-hot-toast";
-import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
+// @ts-ignore
+import * as braintree from "braintree-web";
 
-const PAYPAL_CLIENT_ID =
-  process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID ||
-  "AcSjcn-dI9WSpKGaQ27OCtb_k3yuMpaNpEk_uc6EieJ-MIaVvWUu4mgCrdc5T7cEo3tOciK2e0cEN6ye";
+const braintreeTokenizationKey = "sandbox_bkv6vn9s_8gjjrj3w6gpngkmr";
 
 interface CheckOutProps {
   bookingData?: any;
@@ -34,6 +33,14 @@ const PaymentPage = ({ bookingData }: CheckOutProps) => {
   const paymentType = searchParams.get("paymenttype") || "initial";
   const [checkoutData, setCheckoutData] = useState<any>();
   const [couponCode, setCouponCode] = useState<string>("");
+
+  const [paypalInstance, setPaypalInstance] = useState<any>(null);
+  const [paypalLoading, setPaypalLoading] = useState(true);
+
+  const [venmoInstance, setVenmoInstance] = useState<any>(null);
+  const [venmoLoading, setVenmoLoading] = useState(true);
+
+  const [isTokenizing, setIsTokenizing] = useState(false);
 
   const isFirstPayment =
     checkoutData?.first_payment_status === true ||
@@ -144,42 +151,58 @@ const PaymentPage = ({ bookingData }: CheckOutProps) => {
     checkoutData?.job_summary?.initial_deposit_paid?.amount ||
     0;
 
-  const handleCreatePayPalOrder = async () => {
+  const initializeBraintree = async () => {
     try {
-      const response = await globalServerRequest({
-        endpoint: "payment/card/create-paypal-order",
-        method: "POST",
-        payload: {
-          amount: String(Number(payAmount).toFixed(2)),
-          booking_id: Number(currentQuoteId),
-        },
+      setPaypalLoading(true);
+      setVenmoLoading(true);
+
+      const clientInstance = await braintree.client.create({
+        authorization: braintreeTokenizationKey,
       });
 
-      if (response?.success) {
-        const orderId =
-          response.data?.data?.order_id ||
-          response.data?.order_id ||
-          response.data?.data?.id;
+      console.log("Braintree client created");
 
-        if (orderId) {
-          return orderId;
+      const paypalInstance = await braintree.paypal.create({
+        client: clientInstance,
+      });
+
+      console.log("Braintree PayPal created");
+      setPaypalInstance(paypalInstance);
+
+      if (braintree.venmo) {
+        try {
+          const venmoInstance = await braintree.venmo.create({
+            client: clientInstance,
+            allowDesktop: true,
+            allowDesktopWebLogin: true,
+            allowNewBrowserTab: true,
+            paymentMethodUsage: 'multi_use'
+          });
+          console.log("Braintree Venmo created");
+          setVenmoInstance(venmoInstance);
+        } catch (venmoError) {
+          console.error("Braintree Venmo initialization error:", venmoError);
         }
       }
-      const errorMsg =
-        response?.error ||
-        response?.data?.message ||
-        "Failed to create PayPal order.";
-      toast.error(errorMsg);
-      throw new Error(errorMsg);
-    } catch (error: any) {
-      console.error("Error creating PayPal order:", error);
-      toast.error(error?.message || "Failed to create PayPal order.");
-      throw error;
+
+    } catch (error) {
+      console.error("Braintree initialization error:", error);
+      toast.error("Unable to initialize Braintree payment methods");
+    } finally {
+      setPaypalLoading(false);
+      setVenmoLoading(false);
     }
   };
 
-  const handleApprovePayPalOrder = async (data: any) => {
+  useEffect(() => {
+    if (!checkoutData || !braintreeTokenizationKey) return;
+
+    initializeBraintree();
+  }, [checkoutData, braintreeTokenizationKey]);
+
+  const handleBraintreePayment = async (nonce: string) => {
     const toastId = toast.loading("Processing payment...");
+
     try {
       const response = await globalServerRequest({
         endpoint: "payment/card/customer-pay-now",
@@ -187,42 +210,100 @@ const PaymentPage = ({ bookingData }: CheckOutProps) => {
         payload: {
           type: paymentType,
           quote_id: String(currentQuoteId),
-          amount: String(Number(payAmount).toFixed(2)),
-          order_id: String(data?.orderID),
+          amount: selectedMethod === "paypal" ? String(1) : String(Number(payAmount).toFixed(2)),
+          nonce: nonce,
         },
       });
 
       if (response?.success) {
         toast.success(
-          response?.data?.message || "Payment completed successfully!",
-          { id: toastId }
+          response?.data?.message ||
+          "Payment completed successfully!",
+          {
+            id: toastId,
+          }
         );
+
         router.push("/booking");
       } else {
         toast.error(
           response?.error ||
           response?.data?.message ||
           "Failed to complete payment.",
-          { id: toastId }
+          {
+            id: toastId,
+          }
         );
       }
     } catch (error) {
-      console.error("PayPal payment execution error:", error);
-      toast.error("Something went wrong during payment processing.", {
-        id: toastId,
-      });
+      console.error("Braintree payment error:", error);
+
+      toast.error(
+        "Something went wrong during payment processing.",
+        {
+          id: toastId,
+        }
+      );
     }
   };
 
-  const handleConfirmPaymentClick = async (e: React.MouseEvent) => {
-    e.preventDefault();
+  const handleStartPayPal = async (e?: React.MouseEvent) => {
+    if (e) e.preventDefault();
+    if (isTokenizing) return;
+    if (!paypalInstance) {
+      toast.error("PayPal is still loading...");
+      return;
+    }
+
     try {
-      const orderId = await handleCreatePayPalOrder();
-      if (orderId) {
-        window.location.href = `https://www.paypal.com/checkoutnow?token=${orderId}`;
+      setIsTokenizing(true);
+      const payload = await paypalInstance.tokenize({
+        flow: 'checkout',
+        amount: "1.00",
+        currency: 'USD'
+      });
+
+      console.log("Braintree nonce:", payload.nonce);
+
+      await handleBraintreePayment(payload.nonce);
+    } catch (error: any) {
+      if (error.code === 'PAYPAL_POPUP_CLOSED') {
+        console.error("Customer closed PayPal popup.");
+        toast.error("PayPal popup was closed.");
+      } else {
+        console.error("PayPal start error:", error);
+        toast.error("Unable to open PayPal. Please check popup blockers.");
       }
-    } catch (err) {
-      console.error("PayPal order creation error:", err);
+    } finally {
+      setIsTokenizing(false);
+    }
+  };
+
+  const handleStartVenmo = async (e?: React.MouseEvent) => {
+    if (e) e.preventDefault();
+    if (isTokenizing) return;
+    if (!venmoInstance) {
+      toast.error("Venmo is still loading or unavailable...");
+      return;
+    }
+
+    try {
+      setIsTokenizing(true);
+      const payload = await venmoInstance.tokenize();
+
+      console.log("Braintree Venmo nonce:", payload.nonce);
+
+      await handleBraintreePayment(payload.nonce);
+    } catch (error: any) {
+      if (error.code === 'VENMO_CANCELED') {
+        console.error("Customer canceled Venmo.");
+        toast.error("Venmo payment was canceled.");
+      } else {
+        console.error("Venmo start error:", error);
+        toast.error("Unable to open Venmo. Please check popup blockers.");
+      }
+    } finally {
+      setIsTokenizing(false);
     }
   };
 
@@ -346,6 +427,21 @@ const PaymentPage = ({ bookingData }: CheckOutProps) => {
                           </label>
                         </li>
 
+                        <li style={{ width: "100%", justifyContent: "flex-start", alignItems: "center", display: "flex" }}>
+                          <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", width: "100%", justifyContent: "flex-start" }}>
+                            <input
+                              type="radio"
+                              value="venmo"
+                              name="payment"
+                              checked={selectedMethod === "venmo"}
+                              onChange={(e) =>
+                                setSelectedMethod(e.target.value)
+                              }
+                            />{" "}
+                            Venmo
+                          </label>
+                        </li>
+
                         {!isFirstPayment && (
                           <li style={{ width: "100%", flexDirection: "column", alignItems: "flex-start", justifyContent: "flex-start", display: "flex" }}>
                             <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", width: "100%", justifyContent: "flex-start" }}>
@@ -433,44 +529,27 @@ const PaymentPage = ({ bookingData }: CheckOutProps) => {
                   <div className="payment-btom">
                     <div className="card-help">
                       {selectedMethod === "paypal" ? (
-                        <div style={{ position: "relative", display: "inline-flex" }}>
-                          <a
-                            onClick={handleConfirmPaymentClick}
-                            className="primary-cta"
-                            style={{ cursor: "pointer" }}
-                          >
-                            Pay Now
-                          </a>
-                          <div
-                            style={{
-                              position: "absolute",
-                              top: 0,
-                              left: 0,
-                              width: "100%",
-                              height: "100%",
-                              opacity: 0.001,
-                              overflow: "hidden",
-                              zIndex: 10,
-                            }}
-                          >
-                            <PayPalScriptProvider
-                              options={{
-                                clientId: PAYPAL_CLIENT_ID,
-                                currency: "USD",
-                              }}
-                            >
-                              <PayPalButtons
-                                style={{ layout: "horizontal", height: 40, tagline: false }}
-                                createOrder={handleCreatePayPalOrder}
-                                onApprove={handleApprovePayPalOrder}
-                                onError={(err) => {
-                                  console.error("PayPal Error:", err);
-                                  toast.error("PayPal initialization or transaction error.");
-                                }}
-                              />
-                            </PayPalScriptProvider>
-                          </div>
-                        </div>
+                        <a
+                          onClick={handleStartPayPal}
+                          className="primary-cta"
+                          style={{
+                            cursor: (paypalLoading || isTokenizing) ? "not-allowed" : "pointer",
+                            opacity: (paypalLoading || isTokenizing) ? 0.6 : 1,
+                          }}
+                        >
+                          {paypalLoading ? "Loading PayPal..." : isTokenizing ? "Opening..." : "Pay Now"}
+                        </a>
+                      ) : selectedMethod === "venmo" ? (
+                        <a
+                          onClick={handleStartVenmo}
+                          className="primary-cta"
+                          style={{
+                            cursor: (venmoLoading || isTokenizing) ? "not-allowed" : "pointer",
+                            opacity: (venmoLoading || isTokenizing) ? 0.6 : 1,
+                          }}
+                        >
+                          {venmoLoading ? "Loading Venmo..." : isTokenizing ? "Opening..." : "Pay Now"}
+                        </a>
                       ) : (
                         <button
                           type="button"

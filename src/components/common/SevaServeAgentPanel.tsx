@@ -177,14 +177,14 @@ const SevaServeAgentPanel = () => {
         prev.map((msg) =>
           msg.id === msgId
             ? {
-                ...msg,
-                text: editingText,
-                serverMedia: allFinalMediaUrls,
-                media: allFinalMediaUrls.map((url) => ({
-                  url,
-                  type: "image/jpeg",
-                })),
-              }
+              ...msg,
+              text: editingText,
+              serverMedia: allFinalMediaUrls,
+              media: allFinalMediaUrls.map((url) => ({
+                url,
+                type: "image/jpeg",
+              })),
+            }
             : msg
         )
       );
@@ -613,17 +613,6 @@ const SevaServeAgentPanel = () => {
   };
 
 
-  const handleCall = () => {
-    // Mobile/tablet → phone dialer
-  if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-    window.location.href = "tel:+919876543210";
-    return;
-  }
-
-  // Desktop → show call message
-  alert("Call: +91 98765 43210");
-  };
-
   return (
     <div
       className="offcanvas offcanvas-end agent-off-canvas-wrp"
@@ -676,23 +665,20 @@ const SevaServeAgentPanel = () => {
             </h5> */}
 
             <a
-                 onClick={() => {
-                    handleCall()
-                  }}
-
+              href="tel:+18764680987"
               style={{ textDecoration: "none", cursor: "pointer" }}
-                className="text-decoration-none"
+              className="text-decoration-none"
+            >
+              <h5
+                className="agent-call-icon mb-0"
+                title="+18764680987"
               >
-                        <h5
-            className="agent-call-icon mb-0"
-            title="+91 98765 43210"
-          >
-            <img
-              src="/images/off-canvas/agent-call-icon.svg"
-              alt="Call"
-            />
-          </h5>
-              </a>
+                <img
+                  src="/images/off-canvas/agent-call-icon.svg"
+                  alt="Call"
+                />
+              </h5>
+            </a>
           </div>
         </div>
 

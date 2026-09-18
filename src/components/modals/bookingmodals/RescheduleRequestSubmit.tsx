@@ -14,7 +14,7 @@ const RescheduleRequestSubmit = () => {
                 <div className="welcome-seva-ser">
                   <img src="images/modal/requ-sucess.svg" className="check" alt=""/>
                   <h4>Reschedule Request Submitted</h4>
-                  <p>Your reschedule request has been submitted. You’ll be notified once the contractor reviews and confirms the updated time.</p>
+                  <p>Your reschedule request has been submitted. You’ll be notified once the Technician reviews and confirms the updated time.</p>
                   <a href="#add-Your-Card" data-bs-toggle="modal" className="primary-cta requ-suc">Okay<img src="images/modal/right-arrow-icon.svg" className="arrow" alt=""/></a>
                 </div>
               </div>

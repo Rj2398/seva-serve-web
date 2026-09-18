@@ -150,8 +150,8 @@ export default function ServiceViewDetail({
                 firstService?.specificIssues
               )
                 ? firstService.specificIssues.map((spec: any) =>
-                    Number(spec.id)
-                  )
+                  Number(spec.id)
+                )
                 : [];
               setLoadedData({
                 subCategoryId: matchedSubCategory.id || null,
@@ -411,7 +411,7 @@ export default function ServiceViewDetail({
         const isCartAction =
           actionType === "addtocart" || actionType === "checkout_cart";
         const response = await globalServerRequest({
-          endpoint: isCartAction ? "cart/add-cart" : "quotes/save-quote",
+          endpoint: actionType === "addtocart" ? "cart/add-cart" : "quotes/save-quote",
           method: "POST",
           payload: formData,
           isFormData: true,
@@ -705,7 +705,7 @@ export default function ServiceViewDetail({
                         <p>
                           Fast <i className="fa-solid fa-circle"></i> Reliable
                           <i className="fa-solid fa-circle"></i> Verified
-                          Contractors
+                          Technicians
                         </p>
                       </div>
                       <img
@@ -727,7 +727,7 @@ export default function ServiceViewDetail({
                             onClick={() => {
                               if (
                                 String(selectSubCategories) !==
-                                  String(item?.id) &&
+                                String(item?.id) &&
                                 activeIssueId &&
                                 addedCategory &&
                                 is_quote_edit !== "1"
@@ -787,9 +787,8 @@ export default function ServiceViewDetail({
                           return (
                             <div
                               key={item?.id || index}
-                              className={`service-issues-in ${
-                                isOpen ? "active" : ""
-                              }`}
+                              className={`service-issues-in ${isOpen ? "active" : ""
+                                }`}
                             >
                               <div
                                 className="service-issues-tab"
@@ -846,8 +845,8 @@ export default function ServiceViewDetail({
                                             const updatedIds =
                                               currentIds.includes(optionId)
                                                 ? currentIds.filter(
-                                                    (id) => id !== optionId
-                                                  )
+                                                  (id) => id !== optionId
+                                                )
                                                 : [...currentIds, optionId];
                                             return {
                                               ...prev,
@@ -1015,8 +1014,8 @@ export default function ServiceViewDetail({
                             {isAdding
                               ? "Adding..."
                               : cartCount > 0
-                              ? `Add to Cart (${cartCount})`
-                              : "Add to Cart"}
+                                ? `Add to Cart (${cartCount})`
+                                : "Add to Cart"}
                           </Link>
                           <Link
                             href=""
@@ -1039,8 +1038,8 @@ export default function ServiceViewDetail({
                             {isAdding
                               ? "Processing..."
                               : quote_update == "1"
-                              ? "Save Changes"
-                              : "Checkout"}
+                                ? "Save Changes"
+                                : "Checkout"}
                           </Link>
                         </>
                       )

@@ -2,7 +2,11 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import toast from "react-hot-toast";
+import { globalServerRequest } from "@/actions/globalApi";
+// @ts-ignore
+import * as braintree from "braintree-web";
 
 interface PlanProps {
   initialPlanData?: {
@@ -27,10 +31,64 @@ export default function ChoosePlan({ initialPlanData }: PlanProps) {
 
   const [copied, setCopied] = useState(false);
 
-  const handleSubscribe = (plan: any) => {
-    // URL parameters build karein (Safe navigation ?. ke saath)
 
-    console.log("plan", plan)
+  const [paypalInstance, setPaypalInstance] = useState<any>(null);
+  const [paypalLoading, setPaypalLoading] = useState(true);
+  const [isTokenizing, setIsTokenizing] = useState(false);
+  const braintreeTokenizationKey = "sandbox_bkv6vn9s_8gjjrj3w6gpngkmr";
+
+  const initializeBraintree = async () => {
+    try {
+      setPaypalLoading(true);
+      const clientInstance = await braintree.client.create({
+        authorization: braintreeTokenizationKey,
+      });
+
+      const instance = await braintree.paypal.create({
+        client: clientInstance,
+      });
+
+      setPaypalInstance(instance);
+    } catch (error) {
+      console.error("Braintree initialization error:", error);
+    } finally {
+      setPaypalLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    initializeBraintree();
+  }, []);
+
+  const handleSubscription = async (plan: any, nonce: string) => {
+    const formData = new FormData();
+    formData.append("subscription_plan_id", plan?.id || "");
+    formData.append("nonce", nonce);
+    formData.append("type", plan?.type || "");
+    formData.append("amount", "1"); // As requested, payment amount is $1
+
+    try {
+      const response = await globalServerRequest({
+        endpoint: "payment/card/subscription-pay-now",
+        method: "POST",
+        payload: formData,
+        isFormData: true,
+      });
+
+      if (response?.success) {
+        toast.success(response?.data?.message || "Subscription payment successful");
+        router.push("/");
+      } else {
+        toast.error(response?.data?.message || response?.error || "Failed to process payment");
+      }
+    } catch (error) {
+      console.error("Subscription payment failed:", error);
+      toast.error("Subscription payment failed");
+    }
+  };
+
+  const handleSubscribe = async (plan: any) => {
+    console.log("plan", plan);
     const planId = plan?.id || "";
     const planType = plan?.type || "";
     const planAmount = plan?.price?.amount || "";
@@ -42,11 +100,34 @@ export default function ChoosePlan({ initialPlanData }: PlanProps) {
       return;
     }
 
-    router.push(
-      hasCard
-        ? `/payment-method?subscription_plan_id=${planId}&type=${planType}&amount=${planAmount}`
-        : `/add-new-card?subscription_plan_id=${planId}&type=${planType}&amount=${planAmount}`
-    );
+    if (isTokenizing) return;
+    if (!paypalInstance) {
+      toast.error("PayPal is still loading... Please wait.");
+      return;
+    }
+
+    try {
+      setIsTokenizing(true);
+      const payload = await paypalInstance.tokenize({
+        flow: 'checkout',
+        amount: "1.00",
+        currency: 'USD'
+      });
+
+      console.log("Braintree nonce:", payload.nonce);
+      await handleSubscription(plan, payload.nonce);
+    } catch (error: any) {
+      if (error.code === 'PAYPAL_POPUP_CLOSED') {
+        toast.error("PayPal popup was closed.");
+      } else if (error.code === 'PAYPAL_TOKENIZATION_REQUEST_ACTIVE') {
+        toast.error("Another PayPal request is already active.");
+      } else {
+        console.error("PayPal start error:", error);
+        toast.error("Unable to open PayPal.");
+      }
+    } finally {
+      setIsTokenizing(false);
+    }
   };
 
   const isExpired =
@@ -131,7 +212,7 @@ export default function ChoosePlan({ initialPlanData }: PlanProps) {
                               ? isExpired
                                 ? "Renew Subscription"
                                 : "Current Plan"
-                              : "Subscribe Now"
+                              : "Subscribe Now" 
                           }
                           <img
                             src="images/inner-page/right-subcription.svg"

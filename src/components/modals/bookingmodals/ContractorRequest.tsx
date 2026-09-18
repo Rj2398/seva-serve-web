@@ -170,7 +170,7 @@ const ContractorRequest = ({ booking, onConfirm }: ContractorRequestProps) => {
                 data-bs-dismiss="modal"
                 aria-label="Close"
               ></button>
-              <h5 className="modal-title">Contractor’s Time Request</h5>
+              <h5 className="modal-title">Technician’s Time Request</h5>
             </div>
             <div className="modal-body">
               <div className="welcome-seva-ser full-bdr">
@@ -188,7 +188,7 @@ const ContractorRequest = ({ booking, onConfirm }: ContractorRequestProps) => {
                   </p>
                 </div>
                 <div className="contractor-new">
-                  <h6>Contractor Suggested New Time</h6>
+                  <h6>Technician Suggested New Time</h6>
                   <p>
                     {/* {booking?.contractorTimeRequest?.contractorSuggestedSlot} */}
                     {formatSlot(booking?.contractorTimeRequest?.contractorSuggestedSlot)}

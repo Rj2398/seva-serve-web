@@ -599,7 +599,7 @@ const DatePopup: React.FC<DatePopupProps> = ({
         onSave={() => {
           fetchAddresses();
         }}
-        onClose={() => {}}
+        onClose={() => { }}
       />
     </>
   );

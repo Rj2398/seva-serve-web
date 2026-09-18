@@ -305,40 +305,26 @@ const QuoteDatePopup: React.FC<QuoteDatePopupProps> = ({
     <>
       <style>{`
         #quote-date-time-popup .modal-dialog {
-          max-width: 780px !important;
+          max-width: 900px;
+          margin-top: 5rem;
         }
-        #quote-date-time-popup .select-date-time-inner {
-          display: flex !important;
-          gap: 20px !important;
-          align-items: flex-start !important;
+        #quote-date-time-popup .modal-content {
+          padding: 0;
         }
-        #quote-date-time-popup .select-date-in {
-          flex: 0 0 330px !important;
-          width: 330px !important;
-          max-width: 330px !important;
-        }
-        #quote-date-time-popup .select-time-in {
-          flex: 1 !important;
-          min-width: 0 !important;
-          width: auto !important;
-        }
-        #quote-datepicker table th {
-          width: 14.28% !important;
-          font-size: 13px !important;
-          text-align: center !important;
-        }
-        #quote-datepicker .ui-datepicker-calendar td a,
-        #quote-datepicker .ui-datepicker-calendar td span {
-          width: 34px !important;
-          height: 34px !important;
-          line-height: 34px !important;
-          font-size: 13px !important;
-          margin: 0 auto !important;
-        }
-        #quote-datepicker .ui-datepicker-inline {
-          width: 100% !important;
-          box-sizing: border-box !important;
-          padding: 10px !important;
+        #quote-date-time-popup .modal-dialog button.btn-close {
+          position: absolute;
+          top: -45px;
+          right: 0;
+          background-color: #ffffff;
+          opacity: 1;
+          width: 35px;
+          height: 35px;
+          border-radius: 50px;
+          padding: 0;
+          display: flex;
+          align-items: center;
+          background-size: 13px;
+          justify-content: center;
         }
       `}</style>
       <div
@@ -349,20 +335,18 @@ const QuoteDatePopup: React.FC<QuoteDatePopupProps> = ({
         aria-hidden="true"
       >
         <div className="modal-dialog modal-lg">
-          <div className="modal-content" style={{ borderRadius: "20px", padding: "10px" }}>
+          {" "}
+          <div className="modal-content">
             <button
               type="button"
               className="btn-close"
               onClick={() => setIsOpen(false)}
               aria-label="Close"
-              style={{ position: "absolute", top: "20px", right: "20px", zIndex: 10 }}
             ></button>
 
-            <div className="modal-body p-4">
+            <div className="modal-body">
               <div className="select-date-time-wrp">
-                <h3 className="fw-bold mb-4" style={{ fontSize: "20px", color: "#1f2937" }}>
-                  Select Date & Time
-                </h3>
+                <h1>Update Schedule</h1>
 
                 <form onSubmit={(e) => e.preventDefault()}>
                   <div className="select-date-time-inner">
@@ -380,15 +364,13 @@ const QuoteDatePopup: React.FC<QuoteDatePopupProps> = ({
                             marginBottom: "15px",
                           }}
                         >
-                          <h4 style={{ fontSize: "14px", fontWeight: 600, marginBottom: "8px" }}>
-                            Selected Slots ({selectedSlots.length})
-                          </h4>
+                          <h3>Selected Slots ({selectedSlots.length})</h3>
                           {selectedSlots.map((item, index) => (
                             <div
                               key={index}
-                              className="d-flex align-items-center justify-content-between mb-1 bg-light p-2 rounded-3"
+                              className="d-flex align-items-center justify-content-between mb-1 bg-light p-1 rounded"
                             >
-                              <small style={{ fontSize: "12px", color: "#374151" }}>
+                              <small style={{ fontSize: "12px" }}>
                                 <strong>{formatDateLabel(item.date)}</strong>:{" "}
                                 {item.label}
                               </small>
@@ -406,11 +388,11 @@ const QuoteDatePopup: React.FC<QuoteDatePopupProps> = ({
                         </div>
                       )}
 
-                      <h4 style={{ fontSize: "16px", fontWeight: 600, marginBottom: "12px", color: "#111827" }}>
+                      <h2>
                         Available Time Slots
                         {selectedDate &&
                           ` for ${formatDateLabel(selectedDate)}`}
-                      </h4>
+                      </h2>
 
                       <div
                         className="select-time-btn-grp"
@@ -424,9 +406,9 @@ const QuoteDatePopup: React.FC<QuoteDatePopupProps> = ({
                         }}
                       >
                         {loadingSlots ? (
-                          <p className="text-muted small">Loading available slots...</p>
+                          <p>Loading available slots...</p>
                         ) : timeSlots.length === 0 ? (
-                          <p className="text-muted small">No time slots available</p>
+                          <p>No time slots available</p>
                         ) : (
                           timeSlots.map((slot) => {
                             const isChecked = selectedSlots.some(
@@ -451,25 +433,14 @@ const QuoteDatePopup: React.FC<QuoteDatePopupProps> = ({
                                   style={{
                                     width: "100%",
                                     border: isChecked
-                                      ? "1px solid #800020"
-                                      : "1px solid #e5e7eb",
+                                      ? "1px solid #b30000"
+                                      : "1px solid #ccc",
                                     backgroundColor: isChecked
                                       ? "#fff5f5"
-                                      : "#ffffff",
-                                    color: isChecked ? "#800020" : "#374151",
-                                    padding: "10px 12px",
-                                    borderRadius: "14px",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    gap: "8px",
-                                    fontSize: "13px",
-                                    fontWeight: 500,
-                                    cursor: "pointer",
-                                    transition: "all 0.2s ease",
+                                      : "transparent",
                                   }}
                                 >
-                                  <i className="fa-regular fa-clock" style={{ fontSize: "14px" }}></i>{" "}
+                                  <i className="fa-regular fa-clock"></i>{" "}
                                   {slot.label}
                                 </label>
                               </React.Fragment>
@@ -480,10 +451,8 @@ const QuoteDatePopup: React.FC<QuoteDatePopupProps> = ({
                     </div>
                   </div>
 
-                  <div className="service-address position-relative dropdown mt-4">
-                    <p className="fw-semibold mb-2" style={{ fontSize: "15px", color: "#111827" }}>
-                      Service Address
-                    </p>
+                  <div className="service-address position-relative dropdown">
+                    <p>Service Address</p>
                     {savedAddresses.length > 0 ? (
                       <input
                         type="text"
@@ -496,15 +465,6 @@ const QuoteDatePopup: React.FC<QuoteDatePopupProps> = ({
                         className="dropdown-toggle"
                         data-bs-toggle="dropdown"
                         aria-expanded="false"
-                        style={{
-                          width: "100%",
-                          height: "46px",
-                          padding: "12px 18px",
-                          borderRadius: "30px",
-                          border: "1px solid #d1d5db",
-                          fontSize: "14px",
-                          outline: "none",
-                        }}
                       />
                     ) : (
                       <input
@@ -514,25 +474,15 @@ const QuoteDatePopup: React.FC<QuoteDatePopupProps> = ({
                         data-bs-toggle="modal"
                         className="dropdown-toggle"
                         aria-expanded="false"
-                        style={{
-                          width: "100%",
-                          height: "46px",
-                          padding: "12px 18px",
-                          borderRadius: "30px",
-                          border: "1px solid #d1d5db",
-                          fontSize: "14px",
-                          outline: "none",
-                        }}
                       />
                     )}
                     {savedAddresses.length > 0 && (
                       <ul
-                        className="dropdown-menu shadow-sm border-0 mt-1"
+                        className="dropdown-menu"
                         style={{
                           width: "100%",
                           maxHeight: "200px",
                           overflowY: "auto",
-                          borderRadius: "14px",
                         }}
                       >
                         {savedAddresses.map((addr) => {
@@ -548,7 +498,7 @@ const QuoteDatePopup: React.FC<QuoteDatePopupProps> = ({
                           return (
                             <li key={addr.id}>
                               <a
-                                className="dropdown-item py-2 px-3"
+                                className="dropdown-item"
                                 href="#"
                                 onClick={(e) => {
                                   e.preventDefault();
@@ -566,37 +516,24 @@ const QuoteDatePopup: React.FC<QuoteDatePopupProps> = ({
                     )}
                   </div>
 
-                  <div className="select-date-time-foot mt-4 d-flex justify-content-end gap-3">
+                  <div className="select-date-time-foot">
                     <button
                       type="button"
-                      className="btn px-4 py-2 fw-semibold"
+                      className="unfilled"
                       onClick={() => setIsOpen(false)}
                       disabled={isSubmitting}
-                      style={{
-                        borderRadius: "30px",
-                        border: "1px solid #d1d5db",
-                        backgroundColor: "#ffffff",
-                        color: "#374151",
-                        fontSize: "14px",
-                      }}
                     >
                       Cancel
                     </button>
 
                     <button
                       type="button"
-                      className="btn px-4 py-2 fw-bold text-white d-flex align-items-center gap-2"
+                      className="filled"
                       onClick={handleConfirmBooking}
                       disabled={isSubmitting}
-                      style={{
-                        borderRadius: "30px",
-                        backgroundColor: "#800020",
-                        borderColor: "#800020",
-                        fontSize: "14px",
-                      }}
                     >
                       {isSubmitting ? "Updating..." : "Update Schedule"}
-                      <i className="fa-solid fa-arrow-right fs-6"></i>
+                      <img src="images/home/right-img.svg" alt="" />
                     </button>
                   </div>
                 </form>
@@ -610,7 +547,7 @@ const QuoteDatePopup: React.FC<QuoteDatePopupProps> = ({
         onSave={() => {
           fetchAddresses();
         }}
-        onClose={() => {}}
+        onClose={() => { }}
       />
     </>
   );
