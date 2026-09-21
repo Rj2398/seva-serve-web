@@ -338,6 +338,7 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                           {isCompleted && (
                                             <>
                                               <p className="plm cmp">
+                                                <p>{`#${item?.quoteNumber}`}</p>
                                                 {item?.categoryName}
                                                 <img
                                                   src="images/home/up-right-arrow.svg"
@@ -375,6 +376,7 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                         {isCancelled && (
                                           <div className="plumbing-top">
                                             <p className="plm">
+                                              <p>{`#${item?.quoteNumber}`}</p>
                                               {item?.categoryName}
                                               <img
                                                 src="images/home/up-right-arrow.svg"
@@ -407,7 +409,9 @@ export default function Booking({ initialBookingData }: BookingProps) {
 
                                         {(isUpcoming || isOngoing) && (
                                           <div className="plumbing-top">
+                                              
                                             <p className="plm">
+                                             <p>{`#${item?.quoteNumber}`}</p>
                                               {item?.categoryName}
                                               <img
                                                 src="images/home/up-right-arrow.svg"
