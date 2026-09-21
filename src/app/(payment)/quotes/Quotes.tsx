@@ -45,57 +45,136 @@ export default function Quotes() {
   }, [status]);
 
 
-  useEffect(() => {
-    const fetchQuotes = async () => {
-      setLoading(true);
-      try {
-        const endPoint = `quotes/get-quote?${booking_id ? `bookingId=${booking_id}` : `quoteId=${quote_id}`}`;
-        const response = await globalServerRequest({
-          endpoint: endPoint,
-          // `quotes/get-quote?bookingId=${booking_id}`,
-          method: "POST",
-          payload: { type: activeTab, pageNo, limit },
-        });
-        if (response.success) {
-          const data = response?.data?.data?.quotes || response?.data?.data || response?.data || [];
-          const pagination = response?.data?.data?.pagination;
-          const newQuotes = Array.isArray(data) ? data : [];
-          if (booking_id) {
-            setActiveTab(response?.data?.data?.quotes?.status);
-          }
-          if (pageNo === 1) {
-            setQuotes(newQuotes);
-          } else {
-            setQuotes(prev => [...prev, ...newQuotes]);
-          }
-          if (pagination) {
-            setHasMore(pagination.has_next_page);
-          } else {
-            setHasMore(newQuotes.length === limit);
-          }
-        } else {
-          if (pageNo === 1) setQuotes([]);
-          setHasMore(false);
-        }
+  // useEffect(() => {
+  //   const fetchQuotes = async () => {
+  //     setLoading(true);
+  //     try {
+  //       const endPoint = `quotes/get-quote?${booking_id ? `bookingId=${booking_id}` : `quoteId=${quote_id}`}`;
+  //       const response = await globalServerRequest({
+  //         endpoint: endPoint,
+  //         // `quotes/get-quote?bookingId=${booking_id}`,
+  //         method: "POST",
+  //         payload: { type: activeTab, pageNo, limit },
+  //       });
+  //       if (response.success) {
+  //         const data = response?.data?.data?.quotes || response?.data?.data || response?.data || [];
+  //         const pagination = response?.data?.data?.pagination;
+  //         const newQuotes = Array.isArray(data) ? data : [];
+  //         if (booking_id) {
+  //           setActiveTab(response?.data?.data?.quotes?.status);
+  //         }
+  //         if (pageNo === 1) {
+  //           setQuotes(newQuotes);
+  //         } else {
+  //           setQuotes(prev => [...prev, ...newQuotes]);
+  //         }
+  //         if (pagination) {
+  //           setHasMore(pagination.has_next_page);
+  //         } else {
+  //           setHasMore(newQuotes.length === limit);
+  //         }
+  //       } else {
+  //         if (pageNo === 1) setQuotes([]);
+  //         setHasMore(false);
+  //       }
 
-      } catch (error) {
-        console.error("Failed to fetch quotes:", error);
-        if (pageNo === 1) setQuotes([]);
-        setHasMore(false);
-      } finally {
-        setLoading(false);
+  //     } catch (error) {
+  //       console.error("Failed to fetch quotes:", error);
+  //       if (pageNo === 1) setQuotes([]);
+  //       setHasMore(false);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+  //   fetchQuotes();
+  //   const handleQuoteUpdate = () => {
+  //     fetchQuotes();
+  //   }
+  //   window.addEventListener("quoteUpdated", handleQuoteUpdate);
+  //   return () => {
+  //     window.removeEventListener("quoteUpdated", handleQuoteUpdate);
+  //   };
+
+  // }, [activeTab, pageNo, limit, is_requested]);
+
+
+   const fetchQuotes = async () => {
+  setLoading(true);
+
+  try {
+    const endPoint = `quotes/get-quote?${
+      booking_id ? `bookingId=${booking_id}` : `quoteId=${quote_id}`
+    }`;
+
+    const response = await globalServerRequest({
+      endpoint: endPoint,
+      method: "POST",
+      payload: {
+        type: activeTab,
+        pageNo,
+        limit,
+      },
+    });
+
+    if (response.success) {
+      const data =
+        response?.data?.data?.quotes ||
+        response?.data?.data ||
+        response?.data ||
+        [];
+
+      const pagination = response?.data?.data?.pagination;
+      const newQuotes = Array.isArray(data) ? data : [];
+
+      if (booking_id) {
+        setActiveTab(response?.data?.data?.quotes?.status);
       }
-    };
-    fetchQuotes();
-    const handleQuoteUpdate = () => {
-      fetchQuotes();
-    }
-    window.addEventListener("quoteUpdated", handleQuoteUpdate);
-    return () => {
-      window.removeEventListener("quoteUpdated", handleQuoteUpdate);
-    };
 
-  }, [activeTab, pageNo, limit, is_requested]);
+      if (pageNo === 1) {
+        setQuotes(newQuotes);
+      } else {
+        setQuotes((prev) => [...prev, ...newQuotes]);
+      }
+
+      if (pagination) {
+        setHasMore(pagination.has_next_page);
+      } else {
+        setHasMore(newQuotes.length === limit);
+      }
+    } else {
+      if (pageNo === 1) {
+        setQuotes([]);
+      }
+      setHasMore(false);
+    }
+  } catch (error) {
+    console.error("Failed to fetch quotes:", error);
+
+    if (pageNo === 1) {
+      setQuotes([]);
+    }
+
+    setHasMore(false);
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+useEffect(() => {
+  fetchQuotes();
+
+  const handleQuoteUpdate = () => {
+    fetchQuotes();
+  };
+
+  window.addEventListener("quoteUpdated", handleQuoteUpdate);
+
+  return () => {
+    window.removeEventListener("quoteUpdated", handleQuoteUpdate);
+  };
+}, [activeTab, pageNo, limit, is_requested]);
+
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -198,6 +277,7 @@ export default function Quotes() {
       if (response?.success) {
         toast.success("Booking cancelled successfully!");
         setShowCancle(false);
+       await fetchQuotes();
       }
     } catch (error) {
       console.error("Error cancelling booking:", error);
