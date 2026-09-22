@@ -37,7 +37,7 @@ const CheckOutContent = ({ bookingData }: CheckOutProps) => {
 
   const [checkoutData, setCheckoutData] = useState<any>();
   console.log(checkoutData, "check out data*******");
-  const [paymentMethod, setPaymentMethod] = useState<any>('1');
+  const [paymentMethod, setPaymentMethod] = useState<any>('4');
 
   const isFirstPayment =
     checkoutData?.first_payment_status === true ||
@@ -396,6 +396,22 @@ const CheckOutContent = ({ bookingData }: CheckOutProps) => {
                   <div className="select-pay-met">
                     <h4>Select Payment Method</h4>
                     <ul style={{ display: "flex", flexDirection: "column", gap: "15px", alignItems: "flex-start", justifyContent: "flex-start", width: "100%", textAlign: "left" }}>
+                      
+                       <li style={{ width: "100%", justifyContent: "flex-start", alignItems: "center", display: "flex" }}>
+                        <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", width: "100%", justifyContent: "flex-start" }}>
+                          <input
+                            type="radio"
+                            value="4"
+                            name="payment-method"
+                            // defaultChecked
+                            checked={paymentMethod === "4"}
+                            onChange={(e) => setPaymentMethod(e.target.value)}
+                          />{" "}
+                            Pay by card(Debit/Credit)
+                        </label>
+                      </li>
+                      
+                      
                       <li style={{ width: "100%", justifyContent: "flex-start", alignItems: "center", display: "flex" }}>
                         <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", width: "100%", justifyContent: "flex-start" }}>
                           <input
@@ -421,9 +437,8 @@ const CheckOutContent = ({ bookingData }: CheckOutProps) => {
                           Venmo
                         </label>
                       </li>
-                      {!isFirstPayment && (
-                        <li style={{ width: "100%", flexDirection: "column", alignItems: "flex-start", justifyContent: "flex-start", display: "flex" }}>
-                          <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", width: "100%", justifyContent: "flex-start" }}>
+                      <li style={{ width: "100%", flexDirection: "column", alignItems: "flex-start", justifyContent: "flex-start", display: "flex" }}>
+                        <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", width: "100%", justifyContent: "flex-start" }}>
                             <input
                               type="radio"
                               value="2"
@@ -454,7 +469,7 @@ const CheckOutContent = ({ bookingData }: CheckOutProps) => {
                                   </button>
                                 </div>
                               )}
-                              {checkoutData?.zelle_email && (
+                              {/* {checkoutData?.zelle_email && (
                                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px", fontSize: "14px", fontWeight: "400" }}>
                                   <span>Send amount to: <b>{checkoutData.zelle_email}</b></span>
                                   <button
@@ -472,11 +487,10 @@ const CheckOutContent = ({ bookingData }: CheckOutProps) => {
                                     </svg>
                                   </button>
                                 </div>
-                              )}
+                              )} */}
                             </div>
                           )}
-                        </li>
-                      )}
+                      </li>
                     </ul>
                   </div>
                 </div>
@@ -503,7 +517,7 @@ const CheckOutContent = ({ bookingData }: CheckOutProps) => {
                     >
                       {venmoLoading ? "Loading Venmo..." : isTokenizing ? "Opening..." : "Pay Now"}
                     </a>
-                  ) : (
+                  ) : paymentMethod === "2" ? (
                     <Link
                       href={{
                         pathname: `/zelle-payment`,
@@ -522,7 +536,30 @@ const CheckOutContent = ({ bookingData }: CheckOutProps) => {
                     >
                       Confirm Payment
                     </Link>
-                  )}
+                  ) :  paymentMethod === "4" ? (
+                   
+                    <Link
+                          href={{
+                            pathname: checkoutData?.hasCard
+                              ? "/payment-method"
+                              : "/add-new-card",
+                            query: {
+                              booking_id: bookingId || bookingData?.bookingId,
+                              initialpayment: initialPayment,
+                              remaingPayment: remainingPayment,
+                              paymenttype: paymenttype,
+                              quoteId:
+                                checkoutData?.quote_id || bookingData?.quoteId || "",
+                            },
+                          }}
+                          className="primary-cta"
+                          style={{
+                            cursor: "pointer",
+                          }}
+                        >
+                          Pay Now
+                        </Link>
+                  ): null}
                 </div>
               </div>
             </div>

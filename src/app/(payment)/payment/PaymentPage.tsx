@@ -16,7 +16,7 @@ interface CheckOutProps {
 const PaymentPage = ({ bookingData }: CheckOutProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [selectedMethod, setSelectedMethod] = useState("paypal");
+  const [selectedMethod, setSelectedMethod] = useState("card");
   const urlBookingId =
     searchParams.get("booking_id") || searchParams.get("bookingId");
   const bDataStr = searchParams.get("bData");
@@ -111,7 +111,7 @@ const PaymentPage = ({ bookingData }: CheckOutProps) => {
   };
 
   const handleProceed = () => {
-    if (selectedMethod === "paypal") {
+    if (selectedMethod === "card") {
       const targetPath = checkoutData?.hasCard
         ? "/payment-method"
         : "/add-new-card";
@@ -412,6 +412,23 @@ const PaymentPage = ({ bookingData }: CheckOutProps) => {
                       <h4>Select Payment Method</h4>
 
                       <ul style={{ display: "flex", flexDirection: "column", gap: "15px", alignItems: "flex-start", justifyContent: "flex-start", width: "100%", textAlign: "left" }}>
+                       
+                         <li style={{ width: "100%", justifyContent: "flex-start", alignItems: "center", display: "flex" }}>
+                          <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", width: "100%", justifyContent: "flex-start" }}>
+                            <input
+                              type="radio"
+                              value="card"
+                              name="payment"
+                              checked={selectedMethod === "card"}
+                              onChange={(e) =>
+                                setSelectedMethod(e.target.value)
+                              }
+                            />{" "}
+                            Pay by card(Debit/Credit)
+                          </label>
+                        </li>
+                       
+                       
                         <li style={{ width: "100%", justifyContent: "flex-start", alignItems: "center", display: "flex" }}>
                           <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", width: "100%", justifyContent: "flex-start" }}>
                             <input
@@ -442,9 +459,8 @@ const PaymentPage = ({ bookingData }: CheckOutProps) => {
                           </label>
                         </li>
 
-                        {!isFirstPayment && (
-                          <li style={{ width: "100%", flexDirection: "column", alignItems: "flex-start", justifyContent: "flex-start", display: "flex" }}>
-                            <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", width: "100%", justifyContent: "flex-start" }}>
+                        <li style={{ width: "100%", flexDirection: "column", alignItems: "flex-start", justifyContent: "flex-start", display: "flex" }}>
+                          <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", width: "100%", justifyContent: "flex-start" }}>
                               <input
                                 type="radio"
                                 value="zelle"
@@ -477,7 +493,8 @@ const PaymentPage = ({ bookingData }: CheckOutProps) => {
                                     </button>
                                   </div>
                                 )}
-                                {checkoutData?.zelle_email && (
+
+                                {/* {checkoutData?.zelle_email && (
                                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px", fontSize: "14px", fontWeight: "400" }}>
                                     <span>Send amount to: <b>{checkoutData.zelle_email}</b></span>
                                     <button
@@ -495,11 +512,10 @@ const PaymentPage = ({ bookingData }: CheckOutProps) => {
                                       </svg>
                                     </button>
                                   </div>
-                                )}
+                                )} */}
                               </div>
                             )}
                           </li>
-                        )}
                       </ul>
 
                       <h4>Have a Coupon?</h4>
@@ -550,8 +566,17 @@ const PaymentPage = ({ bookingData }: CheckOutProps) => {
                         >
                           {venmoLoading ? "Loading Venmo..." : isTokenizing ? "Opening..." : "Pay Now"}
                         </a>
-                      ) : (
+                      ) : selectedMethod === "zelle" ? (
                         <button
+                          type="button"
+                          onClick={handleProceed}
+                          className="primary-cta"
+                          style={{ cursor: "pointer", border: "none" }}
+                        >
+                          Confirm Payment
+                        </button>
+                      ) : selectedMethod === "card"?(
+                           <button
                           type="button"
                           onClick={handleProceed}
                           className="primary-cta"
@@ -559,7 +584,8 @@ const PaymentPage = ({ bookingData }: CheckOutProps) => {
                         >
                           Pay Now
                         </button>
-                      )}
+                      ):
+                      null}
                     </div>
                   </div>
                 </div>

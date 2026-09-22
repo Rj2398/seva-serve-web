@@ -215,7 +215,7 @@ const ViewBookingDetail = ({ bookingtrackingData }: BookingUpdateProps) => {
                                         {mainImg && <img src={mainImg} alt="" />}
                                         {isChecked && <img src="images/service-status/check.svg" className="check-image" alt="" />}
                                         <h5>STEP {step?.stepNumber}</h5>
-                                        <p>{step?.label}</p>
+                                        <p>{step?.label==="Provider Not Assigned"?"Technician Not Assigned":step?.label}</p>
                                       </div>
                                       {index < bookingData?.serviceStatus?.steps?.length - 1 && (
                                         <div className={`progress-line ${isLineFilled ? 'step-fill' : ''}`}></div>
