@@ -52,6 +52,7 @@ const SidebarMenu = () => {
           <li><Link href="/services">Services</Link></li>
           <li><Link href="/booking">My Bookings</Link></li>
           <li><Link href="/quotes">My Quotes</Link></li>
+          <li><Link href="/payment-method">Payment Methods</Link></li>
           <li><Link href="/my-payment">My Payments</Link></li>
           <li><Link href="/choose-plan">Subscription</Link></li>
           <li><Link href="/saved-address">Saved Address</Link></li>

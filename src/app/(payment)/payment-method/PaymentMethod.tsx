@@ -346,7 +346,25 @@ function PaymentMethodContent({ initialCardsData }: CardProps) {
                     >
                       Help & Support
                     </button>
-                    <button
+
+                  {!planId && !planType ?
+                  
+                    (<button
+                      type="button"
+                      className="primary-cta"
+                      disabled={!planId && !planType}
+                      // onClick={() =>
+                      //   (bookingId || quoteId) ? handlePayment() : handleSubscription()
+                      // }
+                    >
+                      
+                        <span style={{ fontWeight: 500 }}>
+                          Pay Now 
+                        </span>
+                 
+                    </button>):(
+
+                   <button
                       type="button"
                       className="primary-cta"
                       disabled={cards.length === 0 || isPaying}
@@ -358,7 +376,7 @@ function PaymentMethodContent({ initialCardsData }: CardProps) {
                         "Processing..."
                       ) : (
                         <span style={{ fontWeight: 500 }}>
-                          Pay Now $
+                          Pay Now  $
                           {paymenttype === "full"
                             ? remainingPaymentNum.toFixed(2)
                             : paymenttype === "initial"
@@ -367,6 +385,10 @@ function PaymentMethodContent({ initialCardsData }: CardProps) {
                         </span>
                       )}
                     </button>
+                    )
+                }
+                   
+                    
                   </div>
                 </div>
               </div>
