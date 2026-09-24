@@ -82,7 +82,6 @@ const AddCardModal: React.FC<AddCardModalProps> = ({ isOpen, setIsOpen, onClose 
                   href="/add-new-card"
                   onClick={() => {
                     setIsOpen(false);
-                    if (onClose) onClose();
                   }}
                   className="primary-cta"
                 >

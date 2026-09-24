@@ -1730,11 +1730,11 @@ const ClientComponent = ({ data, isLogin = false }: homeprops) => {
           }
         }}
       />
-      <AddCardModal
+      {/* <AddCardModal
         isOpen={showAddCardModal}
         setIsOpen={setShowAddCardModal}
         onClose={() => localStorage.setItem("hasSeenAddCardModal", "true")}
-      />
+      /> */}
       <DatePopup
         isOpen={showDatePicker}
         setIsOpen={setShowDatePicker}

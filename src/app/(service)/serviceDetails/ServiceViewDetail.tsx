@@ -8,6 +8,7 @@ import { useSelector } from "react-redux";
 import { incrementCartCount } from "@/store/slices/cartSlice";
 import { RootState } from "@/store";
 import { useDispatch } from "react-redux";
+import AddCardModal from "@/components/modals/AddCardModal";
 
 const normalizeData = (data: any) => {
   if (!data || Object.keys(data).length === 0) return null;
@@ -96,6 +97,8 @@ export default function ServiceViewDetail({
   const [uploadedFiles, setUploadedFiles] = useState<Record<string, File[]>>(
     {}
   );
+
+  const [showAddCardModal, setShowAddCardModal] = useState<boolean>(false);
   const [searchSubCategory, setSearchSubCategory] = useState<string>("");
   const [loadedData, setLoadedData] = useState<{
     subCategoryId: number | null;
@@ -121,6 +124,9 @@ export default function ServiceViewDetail({
       }
     } else {
       setSelectSubCategories(subCategories?.[0]?.id);
+      if (initialData?.hasCard === false || initialData?.hasCard === "false") {
+        setShowAddCardModal(true)
+      }
     }
   }, [searchSubCategory, subCategories]);
 
@@ -1137,6 +1143,13 @@ export default function ServiceViewDetail({
           </div>
         </div>
       </main>
+
+
+      <AddCardModal
+        isOpen={showAddCardModal}
+        setIsOpen={setShowAddCardModal}
+        onClose={() => router.back()}
+      />
     </>
   );
 }
