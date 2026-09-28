@@ -163,7 +163,7 @@ const Header = () => {
                   alt="location"
                   className="loca"
                 />
-                <span>{Address ? Address : address}</span>
+                <span>{Address ? Address : address|| "Address not available"}</span>
                 <img
                   src="/images/header/down-icon.svg"
                   alt="down-icon"

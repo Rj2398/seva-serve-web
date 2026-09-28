@@ -190,7 +190,7 @@ const RateContractorPopup = ({ bookingId, callBooking }: BookingProps) => {
     const finalPayload = {
       booking_id: bookingId,
       feedback: feedback,
-      avgRating: avgRating,
+      // avgRating: avgRating,
       ratings: validRatings.map((r) => ({
         question_id: r.questionId,
         rating: r.rating,

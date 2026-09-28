@@ -161,103 +161,223 @@ const LocationModal = () => {
     }
   };
 
-  const handleGetCurrentLocation = () => {
-    if (!navigator.geolocation) {
-      setCurrentLocationText("Geolocation is not supported by your browser");
-      return;
-    }
+  // const handleGetCurrentLocation = () => {
+  //   if (!navigator.geolocation) {
+  //     setCurrentLocationText("Geolocation is not supported by your browser");
+  //     return;
+  //   }
 
-    setCurrentLocationText("Fetching location...");
+  //   setCurrentLocationText("Fetching location...");
 
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const { latitude, longitude } = position.coords;
-        console.log("Actual Lat/Lng Captured:", latitude, longitude);
+  //   navigator.geolocation.getCurrentPosition(
+  //     async (position) => {
+  //       const { latitude, longitude } = position.coords;
+  //       console.log("Actual Lat/Lng Captured:", latitude, longitude);
 
-        try {
-          const apiKey =
-            process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ||
-            "AIzaSyALi3glNPQSOD1n4mnjK0RmfGCws8-4nIg";
-          const res = await fetch(
-            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${apiKey}`
-          );
-          const data = await res.json();
+  //       try {
+  //         const apiKey =
+  //           process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ||
+  //           "AIzaSyALi3glNPQSOD1n4mnjK0RmfGCws8-4nIg";
+  //         const res = await fetch(
+  //           `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${apiKey}`
+  //         );
+  //         const data = await res.json();
 
-          if (data.status === "OK" && data.results && data.results.length > 0) {
-            const place = data.results[0];
-            const fullAddr = place.formatted_address;
+  //         if (data.status === "OK" && data.results && data.results.length > 0) {
+  //           const place = data.results[0];
+  //           const fullAddr = place.formatted_address;
 
-            let area = "";
-            for (const result of data.results) {
-              result.address_components.forEach((component: any) => {
-                const types = component.types;
-                if (
-                  !area &&
-                  (types.includes("sublocality") ||
-                    types.includes("neighborhood") ||
-                    types.includes("locality"))
-                ) {
-                  area = component.long_name;
-                }
-              });
-            }
-            if (!area) area = "Detected Location";
+  //           let area = "";
+  //           for (const result of data.results) {
+  //             result.address_components.forEach((component: any) => {
+  //               const types = component.types;
+  //               if (
+  //                 !area &&
+  //                 (types.includes("sublocality") ||
+  //                   types.includes("neighborhood") ||
+  //                   types.includes("locality"))
+  //               ) {
+  //                 area = component.long_name;
+  //               }
+  //             });
+  //           }
+  //           if (!area) area = "Detected Location";
 
-            setCurrentLocationText(`Detected: ${area}`);
-            setSearchTerm(fullAddr);
+  //           setCurrentLocationText(`Detected: ${area}`);
+  //           setSearchTerm(fullAddr);
 
-            // Set in header by default
-            if (typeof window !== "undefined") {
-              localStorage.setItem("homeUserData", fullAddr);
-              window.dispatchEvent(new Event("loginStatusChanged"));
-            }
+       
+  //           if (typeof window !== "undefined") {
+  //             localStorage.setItem("homeUserData", fullAddr);
+  //             window.dispatchEvent(new Event("loginStatusChanged"));
+  //           }
 
-            toast.success("Location set as default!");
+  //           toast.success("Location set as default!");
 
-            // Hide Modal
-            const currentModal = document.getElementById("your-location-popup");
-            if (currentModal) {
-              const bootstrapModal = (
-                window as any
-              ).bootstrap?.Modal.getInstance(currentModal);
-              bootstrapModal?.hide();
-            }
-          }
-        } catch (err) {
-          console.error("Error fetching address details", err);
-          setCurrentLocationText(
-            `Detected (Lat: ${latitude.toFixed(2)}, Lng: ${longitude.toFixed(
-              2
-            )})`
-          );
+    
+  //           const currentModal = document.getElementById("your-location-popup");
+  //           if (currentModal) {
+  //             const bootstrapModal = (
+  //               window as any
+  //             ).bootstrap?.Modal.getInstance(currentModal);
+  //             bootstrapModal?.hide();
+  //           }
+  //         }
+  //       } catch (err) {
+  //         console.error("Error fetching address details", err);
+  //         setCurrentLocationText(
+  //           `Detected (Lat: ${latitude.toFixed(2)}, Lng: ${longitude.toFixed(
+  //             2
+  //           )})`
+  //         );
 
-          // Fallback if fetch fails
-          if (typeof window !== "undefined") {
-            localStorage.setItem(
-              "homeUserData",
-              `Lat ${latitude.toFixed(2)}, Lng ${longitude.toFixed(2)}`
-            );
-            window.dispatchEvent(new Event("loginStatusChanged"));
-          }
-          const currentModal = document.getElementById("your-location-popup");
-          if (currentModal) {
-            const bootstrapModal = (window as any).bootstrap?.Modal.getInstance(
-              currentModal
-            );
-            bootstrapModal?.hide();
-          }
-        }
-      },
-      (error) => {
-        console.error(error);
-        setCurrentLocationText(
-          "Location access denied. Please enable permissions."
-        );
-      }
-    );
-  };
+          
+  //         if (typeof window !== "undefined") {
+  //           localStorage.setItem(
+  //             "homeUserData",
+  //             `Lat ${latitude.toFixed(2)}, Lng ${longitude.toFixed(2)}`
+  //           );
+  //           window.dispatchEvent(new Event("loginStatusChanged"));
+  //         }
+  //         const currentModal = document.getElementById("your-location-popup");
+  //         if (currentModal) {
+  //           const bootstrapModal = (window as any).bootstrap?.Modal.getInstance(
+  //             currentModal
+  //           );
+  //           bootstrapModal?.hide();
+  //         }
+  //       }
+  //     },
+  //     (error) => {
+  //       console.error(error);
+  //       setCurrentLocationText(
+  //         "Location access denied. Please enable permissions."
+  //       );
+  //     }
+  //   );
+  // };
 
   // --- Logic: Reverse Geocoding & Fetch ---
+ 
+const handleGetCurrentLocation = () => {
+  if (!navigator.geolocation) {
+    setCurrentLocationText(
+      "Geolocation is not supported by your browser"
+    );
+    return;
+  }
+
+  setCurrentLocationText("Fetching location...");
+
+  navigator.geolocation.getCurrentPosition(
+    async (position) => {
+      const { latitude, longitude } = position.coords;
+
+      console.log("Actual Lat/Lng:", latitude, longitude);
+
+      try {
+        const apiKey =
+          process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ||
+          "AIzaSyALi3glNPQSOD1n4mnjK0RmfGCws8-4nIg";
+
+        const res = await fetch(
+          `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${apiKey}`
+        );
+
+        const data = await res.json();
+
+        if (
+          data.status === "OK" &&
+          data.results &&
+          data.results.length > 0
+        ) {
+          const fullAddr = data.results[0].formatted_address;
+
+          // Save user's current location
+          localStorage.setItem("homeUserData", fullAddr);
+
+          // Mark location as enabled
+          localStorage.setItem("autoLocation", "true");
+
+          // Update state immediately
+          setIsAutoEnabled(true);
+
+          // Notify header
+          window.dispatchEvent(
+            new Event("loginStatusChanged")
+          );
+
+          toast.success("Location enabled successfully!");
+
+          // Don't show user's actual location in this section
+          setCurrentLocationText(
+            "Enable your current location for better services"
+          );
+
+          // Close location modal
+          const currentModal = document.getElementById(
+            "your-location-popup"
+          );
+
+          if (currentModal) {
+            const bootstrapModal = (
+              window as any
+            ).bootstrap?.Modal.getInstance(currentModal);
+
+            bootstrapModal?.hide();
+          }
+        } else {
+          toast.error("Unable to detect your location.");
+
+          setCurrentLocationText(
+            "Unable to detect your location."
+          );
+        }
+      } catch (error) {
+        console.error(
+          "Error fetching address details:",
+          error
+        );
+
+        toast.error("Unable to detect your location.");
+
+        setCurrentLocationText(
+          "Enable your current location for better services"
+        );
+      }
+    },
+
+    (error) => {
+      console.error("Location permission error:", error);
+
+      if (error.code === error.PERMISSION_DENIED) {
+        setCurrentLocationText(
+          "Location permission denied. Please allow location access."
+        );
+
+        toast.error(
+          "Location permission denied. Please allow it from browser settings."
+        );
+      } else if (error.code === error.POSITION_UNAVAILABLE) {
+        setCurrentLocationText(
+          "Location is currently unavailable."
+        );
+      } else if (error.code === error.TIMEOUT) {
+        setCurrentLocationText(
+          "Location request timed out. Please try again."
+        );
+      }
+    },
+
+    {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 0,
+    }
+  );
+};
+ 
+ 
   const fetchAddress = async () => {
     if (!navigator.geolocation) return;
 
@@ -320,6 +440,8 @@ const LocationModal = () => {
       fetchAddress();
     }
   }, [isAutoEnabled]);
+
+
 
   return (
     <>
@@ -399,7 +521,7 @@ const LocationModal = () => {
                     )}
 
                     <div className="your-location-top-in">
-                      <div className="use-location">
+                     {!isAutoEnabled &&  (<div className="use-location">
                         <img src="images/saved-addresses/location.svg" alt="" />
                         <div className="use-location-data">
                           <h5>Use My Current Location</h5>
@@ -412,7 +534,7 @@ const LocationModal = () => {
                         >
                           Enable
                         </button>
-                      </div>
+                      </div>)}
                       <hr />
                       <button
                         type="button"

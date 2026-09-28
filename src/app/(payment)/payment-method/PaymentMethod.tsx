@@ -55,6 +55,16 @@ function PaymentMethodContent({ initialCardsData }: CardProps) {
 
   console.log("quoteId", quoteId)
 
+  console.log("PAYMENT PARAMS:", {
+  planId,
+  planType,
+  planAmount,
+  bookingId,
+  quoteId,
+  paymenttype,
+  url: window.location.href,
+});
+
   const router = useRouter();
   const [cards, setCards] = useState<Card[]>(initialCardsData?.cards || []);
 
@@ -347,7 +357,7 @@ function PaymentMethodContent({ initialCardsData }: CardProps) {
                       Help & Support
                     </button>
 
-                  {!planId && !planType ?
+                  {/* {planId===null && planType===null && planAmount === null?
                   
                     (<button
                       type="button"
@@ -386,7 +396,78 @@ function PaymentMethodContent({ initialCardsData }: CardProps) {
                       )}
                     </button>
                     )
-                }
+                } */}
+
+                {/* {planId && planType && planAmount ? (
+  // Subscription payment
+  <button
+    type="button"
+    className="primary-cta"
+    disabled={cards.length === 0 || isPaying}
+    onClick={handleSubscription}
+  >
+    {isPaying ? (
+      "Processing..."
+    ) : (
+      <span style={{ fontWeight: 500 }}>
+        Pay Now ${Number(planAmount).toFixed(2)}
+      </span>
+    )}
+  </button>
+) : (
+  // Booking / Quote payment
+  <button
+    type="button"
+    className="primary-cta"
+    disabled={cards.length === 0 || isPaying}
+    onClick={handlePayment}
+  >
+    {isPaying ? (
+      "Processing..."
+    ) : (
+      <span style={{ fontWeight: 500 }}>
+        Pay Now $
+        {paymenttype === "full"
+          ? remainingPaymentNum.toFixed(2)
+          : initialPaymentNum.toFixed(2)}
+      </span>
+    )}
+  </button>
+)} */}
+
+<button
+  type="button"
+  className="primary-cta"
+  disabled={
+    cards.length === 0 ||
+    isPaying ||
+    (paymenttype === "full" && !remainingPayment) ||
+    (paymenttype === "initial" && !initialpayment) ||
+    (!paymenttype && !planAmount)
+  }
+  onClick={() =>
+    (bookingId || quoteId) ? handlePayment() : handleSubscription()
+  }
+>
+  {isPaying ? (
+    "Processing..."
+  ) : (
+    <span style={{ fontWeight: 500 }}>
+      Pay Now
+      {paymenttype === "full"
+        ? remainingPayment
+          ? ` $${remainingPaymentNum.toFixed(2)}`
+          : ""
+        : paymenttype === "initial"
+          ? initialpayment
+            ? ` $${initialPaymentNum.toFixed(2)}`
+            : ""
+          : planAmount
+            ? ` $${planAmount}`
+            : ""}
+    </span>
+  )}
+</button>
                    
                     
                   </div>
