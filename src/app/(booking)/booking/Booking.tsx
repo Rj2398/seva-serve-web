@@ -820,7 +820,7 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                                   </div>
                                                 </div>
                                               )}
-                                          {isCancelled && (
+                                          {isCancelled && activeTab !=="Cancelled" &&  (
                                             <div className="service-quotes my-booking">
                                               <div className="home-quotes-cta">
                                                 <button

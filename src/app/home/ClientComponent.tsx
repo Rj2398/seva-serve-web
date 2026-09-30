@@ -1040,7 +1040,7 @@ useEffect(() => {
                                       setisReschedule(true);
                                     // setShowDatePicker(true), setBookingId(item?.bookingId)
                                   }}
-                                 disabled={!canReschedule(item) || item?.is_previous_rescheduled}
+                                 disabled={!canReschedule(item?.scheduledAt) || item?.is_previous_rescheduled}
                                   // data-bs-target="#select-date-time-popup"
                                   // data-bs-toggle="modal"
                                 >
@@ -1992,7 +1992,7 @@ useEffect(() => {
         rescheduleKey={isReschedule}
       />
       <RescheduleRequestSubmit />
-      <ServiceRejected />
+      <ServiceRejected  serviceId={serviceId} />
       <NewServiceRejectionModal
         serviceId={serviceId}
         onConfirm={handleReject}

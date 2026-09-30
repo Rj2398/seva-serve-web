@@ -37,7 +37,7 @@ const CheckOutContent = ({ bookingData }: CheckOutProps) => {
 
   const [checkoutData, setCheckoutData] = useState<any>();
   console.log(checkoutData, "check out data*******");
-  const [paymentMethod, setPaymentMethod] = useState<any>('4');
+  const [paymentMethod, setPaymentMethod] = useState<any>("4");
 
   const isFirstPayment =
     checkoutData?.first_payment_status === true ||
@@ -46,7 +46,7 @@ const CheckOutContent = ({ bookingData }: CheckOutProps) => {
 
   useEffect(() => {
     if (isFirstPayment) {
-      setPaymentMethod("1");
+      setPaymentMethod("4");
     }
   }, [isFirstPayment]);
 

@@ -1,7 +1,5 @@
 import { getMessaging, onMessage, isSupported } from "firebase/messaging";
 import app from "@/config/firebase";
-import toast from "react-hot-toast";
-import React from "react";
 
 export const initializeFirebaseNotifications = async () => {
   const supported = await isSupported();
@@ -10,48 +8,77 @@ export const initializeFirebaseNotifications = async () => {
 
   const messaging = getMessaging(app);
 
-  onMessage(messaging, (payload) => {
+  onMessage(messaging, async (payload) => {
     console.log("Foreground Notification:", payload);
 
     const title =
-      payload.data?.title || payload.notification?.title || "New Notification";
-    const body = payload.data?.body || payload.notification?.body || "";
+      payload.data?.title ||
+      payload.notification?.title ||
+      "New Notification";
+
+    const body =
+      payload.data?.body ||
+      payload.notification?.body ||
+      "";
+
     const icon =
       payload.data?.icon ||
       payload.notification?.icon ||
       "/images/header/logo.svg";
 
-    // Trigger System Push Notification even in foreground
-    if (Notification.permission === "granted") {
-      // const handleNavigation = (screenType: any, targetId: any) => {
-      //   let url = null;
-      //   if (screenType && targetId) {
-      //     switch (screenType.toLowerCase()) {
-      //       case "quote":
-      //         url = "/quotes?quoteId=" + targetId;
-      //         break;
-      //       case "booking":
-      //         url = "/booking";
-      //         break;
-      //       case "job_tracking":
-      //         url = "/view-booking-detail?bookingId=" + targetId;
-      //         break;
-      //       case "payment":
-      //         url = "/my-payment";
-      //         break;
-      //     }
-      //   }
-      //   if (url) window.location.href = url;
-      // };
+    if (Notification.permission !== "granted") {
+      console.log(
+        "Push blocked: Notification permission is",
+        Notification.permission
+      );
 
-      const handleNavigation = (data: any) => {
+      window.dispatchEvent(new Event("newNotification"));
+      return;
+    }
+
+    try {
+      const registration =
+        await navigator.serviceWorker.getRegistration();
+
+      if (registration) {
+        await registration.showNotification(title, {
+          body,
+          icon,
+          data: payload.data || {},
+        });
+      } else {
+        const notification = new Notification(title, {
+          body,
+          icon,
+        });
+
+        notification.onclick = () => {
+          window.focus();
+
+          handleNotificationNavigation(payload.data);
+          notification.close();
+        };
+      }
+    } catch (error) {
+      console.error(
+        "Foreground notification failed:",
+        error
+      );
+    }
+
+    // Notification dropdown refresh
+    window.dispatchEvent(new Event("newNotification"));
+  });
+};
+
+const handleNotificationNavigation = (data: any) => {
   const screenType = data?.screen_type?.toLowerCase();
 
   const targetId = data?.target_id;
   const quoteId = data?.quote_id;
   const bookingId = data?.booking_id;
 
-  let url = null;
+  let url = "/";
 
   switch (screenType) {
     case "quote": {
@@ -60,6 +87,7 @@ export const initializeFirebaseNotifications = async () => {
       if (id) {
         url = `/quotes?status=Received&quoteId=${id}`;
       }
+
       break;
     }
 
@@ -69,6 +97,7 @@ export const initializeFirebaseNotifications = async () => {
       if (id) {
         url = `/view-booking-detail?bookingId=${id}`;
       }
+
       break;
     }
 
@@ -78,6 +107,7 @@ export const initializeFirebaseNotifications = async () => {
       if (id) {
         url = `/my-payment?bookingId=${id}`;
       }
+
       break;
     }
 
@@ -87,6 +117,7 @@ export const initializeFirebaseNotifications = async () => {
       if (id) {
         url = `/booking?bookingId=${id}`;
       }
+
       break;
     }
 
@@ -99,10 +130,14 @@ export const initializeFirebaseNotifications = async () => {
       break;
 
     case "general":
+      url = "/";
       break;
 
     default:
-      console.warn("Unknown screen_type:", screenType);
+      console.warn(
+        "Unknown screen_type:",
+        screenType
+      );
   }
 
   if (url) {
@@ -110,47 +145,13 @@ export const initializeFirebaseNotifications = async () => {
   }
 };
 
-      try {
-        navigator.serviceWorker.getRegistration().then((registration) => {
-          if (registration) {
-            registration.showNotification(title, {
-              body,
-              icon,
-              data: payload.data,
-            });
-          } else {
-            // Fallback if no SW is found for current scope
-            const notif = new Notification(title, { body, icon });
-            notif.onclick = (e) => {
-              e.preventDefault();
-              window.focus();
-              handleNavigation(
-                payload.data?.screen_type,
-                payload.data?.target_id
-              );
-            };
-          }
-        });
-      } catch (e) {
-        console.error("System notification failed:", e);
-      }
-    } else {
-      console.log(
-        "Push blocked: Notification permission is",
-        Notification.permission
-      );
-    }
 
-    // 👇 Notify the notification dropdown to refresh
-    window.dispatchEvent(new Event("newNotification"));
-  });
-};
 
-// utils/firebaseNotification.ts
 
 // import { getMessaging, onMessage, isSupported } from "firebase/messaging";
 // import app from "@/config/firebase";
 // import toast from "react-hot-toast";
+// import React from "react";
 
 // export const initializeFirebaseNotifications = async () => {
 //   const supported = await isSupported();
@@ -162,6 +163,135 @@ export const initializeFirebaseNotifications = async () => {
 //   onMessage(messaging, (payload) => {
 //     console.log("Foreground Notification:", payload);
 
-//     toast.success(payload.notification?.title || "New Notification");
+//     const title =
+//       payload.data?.title || payload.notification?.title || "New Notification";
+//     const body = payload.data?.body || payload.notification?.body || "";
+//     const icon =
+//       payload.data?.icon ||
+//       payload.notification?.icon ||
+//       "/images/header/logo.svg";
+
+//     // Trigger System Push Notification even in foreground
+//     if (Notification.permission === "granted") {
+//       // const handleNavigation = (screenType: any, targetId: any) => {
+//       //   let url = null;
+//       //   if (screenType && targetId) {
+//       //     switch (screenType.toLowerCase()) {
+//       //       case "quote":
+//       //         url = "/quotes?quoteId=" + targetId;
+//       //         break;
+//       //       case "booking":
+//       //         url = "/booking";
+//       //         break;
+//       //       case "job_tracking":
+//       //         url = "/view-booking-detail?bookingId=" + targetId;
+//       //         break;
+//       //       case "payment":
+//       //         url = "/my-payment";
+//       //         break;
+//       //     }
+//       //   }
+//       //   if (url) window.location.href = url;
+//       // };
+
+//   const handleNavigation = (data: any) => {
+//   const screenType = data?.screen_type?.toLowerCase();
+
+//   const targetId = data?.target_id;
+//   const quoteId = data?.quote_id;
+//   const bookingId = data?.booking_id;
+
+//   let url = null;
+
+//   switch (screenType) {
+//     case "quote": {
+//       const id = quoteId || targetId;
+
+//       if (id) {
+//         url = `/quotes?status=Received&quoteId=${id}`;
+//       }
+//       break;
+//     }
+
+//     case "job_tracking": {
+//       const id = bookingId || targetId;
+
+//       if (id) {
+//         url = `/view-booking-detail?bookingId=${id}`;
+//       }
+//       break;
+//     }
+
+//     case "payment": {
+//       const id = bookingId || targetId;
+
+//       if (id) {
+//         url = `/my-payment?bookingId=${id}`;
+//       }
+//       break;
+//     }
+
+//     case "booking": {
+//       const id = bookingId || targetId;
+
+//       if (id) {
+//         url = `/booking?bookingId=${id}`;
+//       }
+//       break;
+//     }
+
+//     case "referral_earned":
+//       url = "/referral";
+//       break;
+
+//     case "profile":
+//       url = "/profile";
+//       break;
+
+//     case "general":
+//       break;
+
+//     default:
+//       console.warn("Unknown screen_type:", screenType);
+//   }
+
+//   if (url) {
+//     window.location.href = url;
+//   }
+// };
+
+//       try {
+//         navigator.serviceWorker.getRegistration().then((registration) => {
+//           if (registration) {
+//             registration.showNotification(title, {
+//               body,
+//               icon,
+//               data: payload.data,
+//             });
+//           } else {
+//             // Fallback if no SW is found for current scope
+//             const notif = new Notification(title, { body, icon });
+//             notif.onclick = (e) => {
+//               e.preventDefault();
+//               window.focus();
+//               handleNavigation(
+//                 payload.data
+//               );
+//             };
+//           }
+//         });
+//       } catch (e) {
+//         console.error("System notification failed:", e);
+//       }
+//     } else {
+//       console.log(
+//         "Push blocked: Notification permission is",
+//         Notification.permission
+//       );
+//     }
+
+//     // 👇 Notify the notification dropdown to refresh
+//     window.dispatchEvent(new Event("newNotification"));
 //   });
 // };
+

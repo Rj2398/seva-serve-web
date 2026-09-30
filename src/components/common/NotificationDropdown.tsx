@@ -472,6 +472,7 @@ const NotificationDropdown = () => {
               <div
                 className="notification-item"
                 key={notif.notificationId}
+                style={{cursor:"pointer"}}
                 onClick={() => handleRedirection(notif)}
               >
                 <div className="notification-data">

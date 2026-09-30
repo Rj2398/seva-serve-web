@@ -19,109 +19,151 @@ const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage((payload) => {
   console.log(
-    "[firebase-messaging-sw.js] Received background message ",
+    "[firebase-messaging-sw.js] Background message:",
     JSON.stringify(payload)
   );
 
   const title =
-    payload.data?.title || payload.notification?.title || "New Notification";
-  const body = payload.data?.body || payload.notification?.body || "";
+    payload.data?.title ||
+    payload.notification?.title ||
+    "New Notification";
+
+  const body =
+    payload.data?.body ||
+    payload.notification?.body ||
+    "";
+
   const icon =
     payload.data?.icon ||
     payload.notification?.icon ||
     "/images/header/logo.svg";
 
-  console.log(body, "body");
-
-  try {
-    const notificationPromise = self.registration.showNotification(title, {
-      body: body,
-      icon: icon,
-      data: payload.data, // pass data to the click handler
-    });
-    return notificationPromise;
-  } catch (err) {
-    console.error(
-      "[firebase-messaging-sw.js] Failed to show notification:",
-      err
-    );
-    // Fallback without icon just in case
-    return self.registration.showNotification(title, {
-      body: body,
-      data: payload.data,
-    });
-  }
+  return self.registration.showNotification(title, {
+    body,
+    icon,
+    data: payload.data || {},
+  });
 });
 
-// Optional: Handle notification clicks (e.g. to open a specific screen)
 self.addEventListener("notificationclick", (event) => {
-  console.log(
-    "[firebase-messaging-sw.js] Notification click received.",
-    event.notification
-  );
   event.notification.close();
 
   const data = event.notification.data || {};
+
   console.log(
-    "[firebase-messaging-sw.js] Background Notification Click Payload Data:",
+    "[firebase-messaging-sw.js] Notification click:",
     JSON.stringify(data)
   );
-  const screenType = data.screen_type ? data.screen_type.toLowerCase() : null;
-  const targetId = data.target_id;
 
-  // Default URL is the homepage so it ALWAYS opens/focuses the app
+  const screenType = data?.screen_type?.toLowerCase();
+
+  const targetId = data?.target_id;
+  const quoteId = data?.quote_id;
+  const bookingId = data?.booking_id;
+
   let url = "/";
-  if (screenType && targetId) {
-    switch (screenType) {
-      case "quote":
-        url = "/quotes?quoteId=" + targetId;
-        break;
-      case "booking":
-        url = "/booking";
-        break;
-      case "job_tracking":
-        url = "/view-booking-detail?bookingId=" + targetId;
-        break;
-      case "payment":
-        url = "/my-payment";
-        break;
+
+  switch (screenType) {
+    case "quote": {
+      const id = quoteId || targetId;
+
+      if (id) {
+        url = `/quotes?status=Received&quoteId=${id}`;
+      }
+
+      break;
     }
+
+    case "job_tracking": {
+      const id = bookingId || targetId;
+
+      if (id) {
+        url = `/view-booking-detail?bookingId=${id}`;
+      }
+
+      break;
+    }
+
+    case "payment": {
+      const id = bookingId || targetId;
+
+      if (id) {
+        url = `/my-payment?bookingId=${id}`;
+      }
+
+      break;
+    }
+
+    case "booking": {
+      const id = bookingId || targetId;
+
+      if (id) {
+        url = `/booking?bookingId=${id}`;
+      }
+
+      break;
+    }
+
+    case "referral_earned":
+      url = "/referral";
+      break;
+
+    case "profile":
+      url = "/profile";
+      break;
+
+    case "general":
+      url = "/";
+      break;
+
+    default:
+      console.warn(
+        "[firebase-messaging-sw.js] Unknown screen_type:",
+        screenType
+      );
   }
 
-  // Always fully qualify the URL
-  const fullUrl = new URL(url, self.location.origin).href;
-  console.log("[firebase-messaging-sw.js] Navigating to:", fullUrl);
+  const fullUrl = new URL(
+    url,
+    self.location.origin
+  ).href;
 
   event.waitUntil(
     clients
-      .matchAll({ type: "window", includeUncontrolled: true })
+      .matchAll({
+        type: "window",
+        includeUncontrolled: true,
+      })
       .then((windowClients) => {
-        // Find an open tab
-        for (let i = 0; i < windowClients.length; i++) {
-          let client = windowClients[i];
+        for (const client of windowClients) {
           if (
-            client.url &&
-            client.url.startsWith(self.location.origin) &&
+            client.url?.startsWith(self.location.origin) &&
             "focus" in client
           ) {
-            client.focus();
-            // Navigate to the target screen (or just stay where they are if url is just "/")
+            if ("focus" in client) {
+              client.focus();
+            }
+
             if (url !== "/") {
               return client.navigate(fullUrl);
             }
+
             return;
           }
         }
-        // If no open tab, open a new window
+
         if (clients.openWindow) {
           return clients.openWindow(fullUrl);
         }
       })
   );
 });
-//
-//
-//date-01-09-2026
+
+
+
+
+
+
 
 // importScripts(
 //   "https://www.gstatic.com/firebasejs/11.9.1/firebase-app-compat.js"
@@ -187,6 +229,10 @@ self.addEventListener("notificationclick", (event) => {
 //   event.notification.close();
 
 //   const data = event.notification.data || {};
+//   console.log(
+//     "[firebase-messaging-sw.js] Background Notification Click Payload Data:",
+//     JSON.stringify(data)
+//   );
 //   const screenType = data.screen_type ? data.screen_type.toLowerCase() : null;
 //   const targetId = data.target_id;
 
@@ -195,18 +241,23 @@ self.addEventListener("notificationclick", (event) => {
 //   if (screenType && targetId) {
 //     switch (screenType) {
 //       case "quote":
-//       case "alert":
 //         url = "/quotes?quoteId=" + targetId;
-//         // url = `/quotes?quoteId=${targetId}`;
 //         break;
 //       case "booking":
+//         url = "/booking";
+//         break;
+//       case "job_tracking":
 //         url = "/view-booking-detail?bookingId=" + targetId;
+//         break;
+//       case "payment":
+//         url = "/my-payment";
 //         break;
 //     }
 //   }
 
 //   // Always fully qualify the URL
 //   const fullUrl = new URL(url, self.location.origin).href;
+//   console.log("[firebase-messaging-sw.js] Navigating to:", fullUrl);
 
 //   event.waitUntil(
 //     clients
@@ -235,3 +286,5 @@ self.addEventListener("notificationclick", (event) => {
 //       })
 //   );
 // });
+
+

@@ -22,10 +22,19 @@ interface ServiceItem {
   [key: string]: any; // Allows fallback for other service properties
 }
 
+interface BookingAddress {
+  flat_house_building?: string;
+  floor?: string;
+  area_sector_locality?: string;
+  nearby_landmark?: string;
+  zip?: string | number;
+}
+
 interface ContractorTimeRequest {
   preferredDateTime?: string;
   contractorSuggestedSlot?: string;
   requestId?: string | number;
+  booking_address?: BookingAddress;
 }
 
 interface BookingData {
