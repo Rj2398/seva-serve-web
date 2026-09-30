@@ -23,7 +23,8 @@ export default function RootLayout({
       <head>
         <link rel="stylesheet" href="/styles/bootstrap.min.css" />
         <link rel="stylesheet" href="/styles/all.min.css" />
-        <link rel="stylesheet" href="/styles/slick.css" />
+       <link rel="stylesheet" href="/styles/slick.css" />
+       <link rel="stylesheet" href="/styles/slick-theme.css" />
         <link rel="stylesheet" href="/styles/style.css" />
         <link rel="stylesheet" href="/styles/responsive.css" />
         <link

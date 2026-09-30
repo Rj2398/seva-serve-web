@@ -76,14 +76,27 @@ const QuoteDatePopup: React.FC<QuoteDatePopupProps> = ({
         setSavedAddresses(addressArray);
         if (addressArray.length > 0) {
           const firstAddr = addressArray[0];
-          const addrString = [
-            firstAddr.type ? `${firstAddr.type} -` : "",
-            firstAddr.flat_house_building,
-            firstAddr.area_sector_locality,
-            firstAddr.city,
-          ]
-            .filter(Boolean)
-            .join(" ");
+          // const addrString = [
+          //   firstAddr.type ? `${firstAddr.type} -` : "",
+          //   firstAddr.flat_house_building,
+          //   firstAddr.area_sector_locality,
+          //   firstAddr.city,
+          // ]
+          //   .filter(Boolean)
+          //   .join(" ");
+
+             const addrString = [
+              firstAddr.flat_house_building,
+              firstAddr.floor,
+              firstAddr.area_sector_locality,
+              firstAddr.nearby_landmark,
+              firstAddr.city,
+              firstAddr.state_name,
+              firstAddr.zip,
+            ]
+              .filter(Boolean)
+              .join(", ");
+
           setAddress(addrString);
           setSelectedAddressId(String(firstAddr.id));
           getAddressIdCallback?.(String(firstAddr.id));
@@ -486,15 +499,26 @@ const QuoteDatePopup: React.FC<QuoteDatePopupProps> = ({
                         }}
                       >
                         {savedAddresses.map((addr) => {
+                          // const addrString = [
+                          //   addr.type ? `${addr.type} -` : "",
+                          //   addr.flat_house_building,
+                          //   addr.area_sector_locality,
+                          //   addr.city,
+                          // ]
+                          //   .filter(Boolean)
+                          //   .join(" ");
+                            
                           const addrString = [
-                            addr.type ? `${addr.type} -` : "",
-                            addr.flat_house_building,
-                            addr.area_sector_locality,
-                            addr.city,
-                          ]
-                            .filter(Boolean)
-                            .join(" ");
-
+                          addr.flat_house_building,
+                          addr.floor,
+                          addr.area_sector_locality,
+                          addr.nearby_landmark,
+                          addr.city,
+                          addr.state_name,
+                          addr.zip,
+                        ]
+                          .filter(Boolean)
+                          .join(", ");
                           return (
                             <li key={addr.id}>
                               <a

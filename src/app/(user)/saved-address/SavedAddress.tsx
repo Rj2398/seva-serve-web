@@ -128,7 +128,7 @@ const SavedAddress = ({ addressData }: addressprops) => {
                     </div>
                     <div className="saved-addresses-wrp">
                       <h3>Your Saved Addresses</h3>
-                      {addresses.map((item: any) => {
+                      {/* {addresses.map((item: any) => {
                         const displayType = item.type || item.label || "Home";
                         const displayFlat = item.flat || item.flat_house_building || "";
                         const displayFloor = item.floor || "";
@@ -192,7 +192,105 @@ const SavedAddress = ({ addressData }: addressprops) => {
                             </div>
                           </div>
                         );
-                      })}
+                      })} */}
+       
+                      {addresses.map((item: any) => {
+  const displayType = item.type || item.label || "Home";
+
+  const displayAddress = [
+    item.flat || item.flat_house_building,
+    item.floor,
+    item.area || item.area_sector_locality,
+    item.landmark || item.nearby_landmark
+      ? `Near ${item.landmark || item.nearby_landmark}`
+      : "",
+    item.city,
+    item.state_name,
+    item.zip,
+  ]
+    .filter(Boolean)
+    .join(", ");
+
+  const displayIcon =
+    displayType?.toLowerCase() === "home" ? (
+      <img
+        src="/images/saved-addresses/1.svg"
+        alt="Home"
+        width={24}
+        height={24}
+      />
+    ) : displayType?.toLowerCase() === "office" ? (
+      <img
+        src="/images/saved-addresses/2.svg"
+        alt="Office"
+        width={24}
+        height={24}
+      />
+    ) : (
+      <MdOutlineShareLocation size={24} />
+    );
+
+  return (
+    <div className="saved-addresses-in" key={item.id}>
+      <div className="saved-addresses-icon">
+        {displayIcon}
+      </div>
+
+      <div className="saved-addresses-data">
+        <h4>{displayType}</h4>
+
+        <p style={{ lineHeight: "1.4" }}>
+          {displayAddress}
+        </p>
+      </div>
+
+      <div className="saved-addresses-cta">
+        {!item.is_default ? (
+          <a
+            type="button"
+            className="primary-cta"
+            onClick={() => makeDefaultAddress(item.id)}
+          >
+            <i></i> Set as default
+          </a>
+        ) : (
+          <a
+            type="button"
+            style={{
+              background: "#363636",
+              border: "1px solid #363636",
+              color: "#fff",
+              cursor: "not-allowed",
+              borderRadius: "20px",
+              width: "fit-content",
+              padding: "3px 15px",
+            }}
+          >
+            <i></i> Default
+          </a>
+        )}
+
+        <button
+          type="button"
+          data-bs-target="#add-address-popup"
+          data-bs-toggle="modal"
+          onClick={() => setSelectedAddress(item)}
+        >
+          <img src="images/saved-addresses/edit.svg" alt="Edit" />
+        </button>
+
+        <button
+          type="button"
+          data-bs-target="#delete-address-popup"
+          data-bs-toggle="modal"
+          onClick={() => setSelectedAddress(item)}
+        >
+          <img src="images/saved-addresses/delete.svg" alt="Delete" />
+        </button>
+      </div>
+    </div>
+  );
+})}
                       {addresses.length === 0 && <p className="text-center py-4">No saved addresses found.</p>}
                     </div>
                   </div>

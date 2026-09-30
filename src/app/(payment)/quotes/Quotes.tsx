@@ -781,7 +781,7 @@ useEffect(() => {
       <ConfirmCancelBooking />
 
       <ServiceAccepted serviceId={serviceId} isAddactional={isAddactional} additionalId={additionalId} />
-      <ServiceRejected />
+      <ServiceRejected serviceId={serviceId} />
       <NewServiceRejectionModal serviceId={serviceId} onConfirm={handleReject} isAddactional={isAddactional} />
     </>
   );

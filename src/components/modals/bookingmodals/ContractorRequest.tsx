@@ -180,12 +180,26 @@ const ContractorRequest = ({ booking, onConfirm }: ContractorRequestProps) => {
                   </h6>
                   <p>
                     Preferred :{" "}
-                    {booking?.contractorTimeRequest?.preferredDateTime}
-                    {/* {formatSlot(booking?.contractorTimeRequest?.preferredDateTime)} */}
+                    {/* {booking?.contractorTimeRequest?.preferredDateTime} */}
+                    {formatSlot(booking?.contractorTimeRequest?.preferredDateTime)}
                   </p>
-                  <p>
-                    <img src="images/modal/location-icon.svg" alt="" />
-                  </p>
+                 {/* <p>
+  <img src="images/modal/location-icon.svg" alt="" /> */}
+
+ <p>
+  <img src="images/modal/location-icon.svg" alt="" />
+
+  {[
+    booking?.contractorTimeRequest?.booking_address?.flat_house_building,
+    booking?.contractorTimeRequest?.booking_address?.floor,
+    booking?.contractorTimeRequest?.booking_address?.area_sector_locality,
+    booking?.contractorTimeRequest?.booking_address?.nearby_landmark,
+    booking?.contractorTimeRequest?.booking_address?.zip,
+  ]
+    .filter(Boolean)
+    .join(", ")}
+</p>
+{/* </p> */}
                 </div>
                 <div className="contractor-new">
                   <h6>Technician Suggested New Time</h6>

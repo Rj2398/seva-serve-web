@@ -875,7 +875,7 @@ export default function Booking({ initialBookingData }: BookingProps) {
                           ) : (
                             <p
                               className="no-data"
-                              style={{ textAlign: "center" }}
+                              style={{ textAlign: "center"}}
                             >
                               No Booking Data Available
                             </p>

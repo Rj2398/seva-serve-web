@@ -13,7 +13,7 @@ import * as braintree from "braintree-web";
 //   process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID ||
 //   "AcSjcn-dI9WSpKGaQ27OCtb_k3yuMpaNpEk_uc6EieJ-MIaVvWUu4mgCrdc5T7cEo3tOciK2e0cEN6ye";
 
-const braintreeTokenizationKey = "sandbox_bkv6vn9s_8gjjrj3w6gpngkmr"
+const braintreeTokenizationKey = "sandbox_cyn22ftf_dtr67sss7z3w64bx"
 
 interface CheckOutProps {
   bookingData?: any;

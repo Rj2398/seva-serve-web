@@ -9,19 +9,19 @@ import { useRouter } from "next/navigation";
 //     "Quote request submitted": { screenName: "Quote", status: "requested" },
 //     "Your Quotes Are Ready": { screenName: "Quote", status: "Received" },
 //     "Booking Request Submitted": { screenName: "Booking", status: "upcoming" },
-//     "Contractor Assigned": { screenName: "Tracking", status: null },
-//     "Contractor Suggested a New Time": { screenName: "Tracking", status: null },
-//     "Contractor Declined the Job": { screenName: "Booking", status: "Cancel" },
+//     "Technician Assigned": { screenName: "Tracking", status: null },
+//     "Technician Suggested a New Time": { screenName: "Tracking", status: null },
+//     "Technician Declined the Job": { screenName: "Booking", status: "Cancel" },
 //     "Upcoming Booking Reminder": { screenName: "Booking", status: "upcoming" },
-//     "Contractor Has Arrived": { screenName: "Tracking", status: null },
-//     "Contractor On The Way": { screenName: "Tracking", status: null },
+//     "Technician Has Arrived": { screenName: "Tracking", status: null },
+//     "Technician On The Way": { screenName: "Tracking", status: null },
 //     "Job started": { screenName: "Tracking", status: null },
 //     "Additional Task Requested": { screenName: "Quote", status: "received" },
 //     "Job Completed": { screenName: "Booking", status: "completed" },
 //     "Booking Rescheduled": { screenName: "Booking", status: "upcoming" },
 //     "payment pending / due": { screenName: "Payment", status: null },
 //     "Payment Confirmed": { screenName: "Payment", status: null },
-//     "Contractor Running Late": { screenName: "Tracking", status: null },
+//     "Technician Running Late": { screenName: "Tracking", status: null },
 //     "Booking Cancelled": { screenName: "Booking", status: "cancelled" },
 //     "Rate Your Service": { screenName: "Booking", status: "completed" },
 //     "Referral reward credited": { screenName: "referral", status: null }
@@ -65,25 +65,25 @@ function getNotificationDetails(title: string) {
     "quote request submitted": { screenName: "Quote", status: "Requested" },
     "your quotes are ready": { screenName: "Quote", status: "Received" },
     "booking request submitted": { screenName: "Booking", status: "upcoming" },
-    "contractor assigned": { screenName: "Tracking", status: null },
-    "contractor suggested a new time": { screenName: "Tracking", status: null },
-    "contractor declined the job": { screenName: "Booking", status: "Cancel" },
+    "Technician assigned": { screenName: "Tracking", status: null },
+    "Technician suggested a new time": { screenName: "Tracking", status: null },
+    "Technician declined the job": { screenName: "Booking", status: "Cancel" },
     "upcoming booking reminder": { screenName: "Booking", status: "upcoming" },
-    "contractor has arrived": {
+    "Technician has arrived": {
       screenName: "view-booking-detail",
       status: null,
     },
-    "contractor on the way": {
+    "Technician on the way": {
       screenName: "view-booking-detail",
       status: null,
     },
-    "job started": { screenName: "Tracking", status: null },
+    "job started": { screenName: "job_tracking", status: null },
     "additional task requested": { screenName: "Quote", status: "Received" },
     "job completed": { screenName: "Booking", status: "completed" },
     "booking rescheduled": { screenName: "Booking", status: "upcoming" },
     "payment pending / due": { screenName: "Payment", status: null },
     "payment confirmed": { screenName: "Payment", status: null },
-    "contractor running late": { screenName: "Tracking", status: null },
+    "Technician running late": { screenName: "job_tracking", status: null },
     "booking cancelled": { screenName: "Booking", status: "cancelled" },
     "rate your service": { screenName: "Booking", status: "completed" },
     "referral reward credited": { screenName: "referral", status: null },
@@ -161,7 +161,7 @@ const NotificationDropdown = () => {
   };
 
   console.log(getNotificationDetails("Quote request submitted"));
-  console.log(getNotificationDetails("Contractor assigned"));
+  console.log(getNotificationDetails("Technician assigned"));
   console.log(getNotificationDetails("Job completed — rate prompt"));
 
   const markNotificationAsRead = async () => {
@@ -253,84 +253,175 @@ const NotificationDropdown = () => {
   //   }
   // };
 
+  // const handleRedirection = (notif: any) => {
+  //   console.log("handleRedirection", notif);
+
+  //   if (!notif) return;
+
+  //   const { screenName, status } = getNotificationDetails(notif.title);
+
+  //   console.log("screenName", screenName, "  status", status);
+
+  //   let baseUrl = "";
+  //   const queryParams = new URLSearchParams();
+
+  //   if (status) {
+  //     queryParams.append("status", status);
+  //   }
+
+  //   const metaScreen = notif.meta?.screen;
+  //   const metaScreenType = notif.meta?.screen_type;
+
+  //   if (metaScreen === "booking_detail" || screenName === "Booking") {
+  //     baseUrl = "/view-booking-detail";
+
+  //     if (notif.meta?.booking_id) {
+  //       queryParams.append("bookingId", notif.meta.booking_id);
+  //     }
+  //   } else if (metaScreenType === "request-quote" || screenName === "Quote") {
+  //     baseUrl = "/quotes";
+  //     if (notif.meta?.quote_id) {
+  //       queryParams.append("quoteId", notif.meta.quote_id);
+  //     }
+  //   } else if (screenName === "Tracking") {
+  //     baseUrl = "/tracking";
+  //     if (notif.meta?.booking_id) {
+  //       queryParams.append("bookingId", notif.meta.booking_id);
+  //     }
+  //   } else if (screenName === "Payment") {
+  //     baseUrl = "/payment";
+  //     if (notif.meta?.booking_id) {
+  //       queryParams.append("bookingId", notif.meta.booking_id);
+  //     }
+  //   } else if (screenName === "referral") {
+  //     baseUrl = "/referral";
+  //   }
+  //   console.log("baseUrl", baseUrl);
+  //   if (!baseUrl && notif.title) {
+  //     const lowerTitle = notif.title.toLowerCase();
+  //     const quoteIndex = lowerTitle.indexOf("quote");
+  //     const bookingIndex = lowerTitle.indexOf("booking");
+  //     if (
+  //       quoteIndex !== -1 &&
+  //       (bookingIndex === -1 || quoteIndex < bookingIndex)
+  //     ) {
+  //       baseUrl = "/quotes";
+  //       if (notif.meta?.quote_id) {
+  //         queryParams.append("quoteId", notif.meta.quote_id);
+  //       }
+  //     } else if (
+  //       bookingIndex !== -1 &&
+  //       (quoteIndex === -1 || bookingIndex < quoteIndex)
+  //     ) {
+  //       baseUrl = "/view-booking-detail";
+  //       if (notif.meta?.booking_id) {
+  //         queryParams.append("bookingId", notif.meta.booking_id);
+  //       }
+  //     }
+  //   }
+
+  //   if (!baseUrl) {
+  //     console.warn("No matching route found for notification:", notif);
+  //     return;
+  //   }
+
+  //   const queryString = queryParams.toString();
+  //   const finalUrl = queryString ? `${baseUrl}?${queryString}` : baseUrl;
+
+  //   // console.log("finalUrl", finalUrl);
+  //   router.push(finalUrl);
+  // };
+
   const handleRedirection = (notif: any) => {
-    console.log("handleRedirection", notif);
+  if (!notif?.meta?.screen_type) {
+    console.warn("screen_type missing:", notif);
+    return;
+  }
 
-    if (!notif) return;
+  const {
+    screen_type,
+    target_id,
+    quote_id,
+    booking_id,
+  } = notif.meta;
 
-    const { screenName, status } = getNotificationDetails(notif.title);
+  switch (screen_type) {
+    case "quote": {
+      const quoteId = quote_id || target_id;
 
-    console.log("screenName", screenName, "  status", status);
+      if (!quoteId) {
+        console.warn("Quote ID missing:", notif);
+        return;
+      }
 
-    let baseUrl = "";
-    const queryParams = new URLSearchParams();
-
-    if (status) {
-      queryParams.append("status", status);
+      router.push(
+        `/quotes?status=Received&quoteId=${quoteId}`
+      );
+      break;
     }
 
-    const metaScreen = notif.meta?.screen;
-    const metaScreenType = notif.meta?.screen_type;
+    case "job_tracking": {
+      const bookingId = booking_id || target_id;
 
-    if (metaScreen === "booking_detail" || screenName === "Booking") {
-      baseUrl = "/view-booking-detail";
+      if (!bookingId) {
+        console.warn("Booking ID missing:", notif);
+        return;
+      }
 
-      if (notif.meta?.booking_id) {
-        queryParams.append("bookingId", notif.meta.booking_id);
-      }
-    } else if (metaScreenType === "request-quote" || screenName === "Quote") {
-      baseUrl = "/quotes";
-      if (notif.meta?.quote_id) {
-        queryParams.append("quoteId", notif.meta.quote_id);
-      }
-    } else if (screenName === "Tracking") {
-      baseUrl = "/tracking";
-      if (notif.meta?.booking_id) {
-        queryParams.append("bookingId", notif.meta.booking_id);
-      }
-    } else if (screenName === "Payment") {
-      baseUrl = "/payment";
-      if (notif.meta?.booking_id) {
-        queryParams.append("bookingId", notif.meta.booking_id);
-      }
-    } else if (screenName === "referral") {
-      baseUrl = "/referral";
-    }
-    console.log("baseUrl", baseUrl);
-    if (!baseUrl && notif.title) {
-      const lowerTitle = notif.title.toLowerCase();
-      const quoteIndex = lowerTitle.indexOf("quote");
-      const bookingIndex = lowerTitle.indexOf("booking");
-      if (
-        quoteIndex !== -1 &&
-        (bookingIndex === -1 || quoteIndex < bookingIndex)
-      ) {
-        baseUrl = "/quotes";
-        if (notif.meta?.quote_id) {
-          queryParams.append("quoteId", notif.meta.quote_id);
-        }
-      } else if (
-        bookingIndex !== -1 &&
-        (quoteIndex === -1 || bookingIndex < quoteIndex)
-      ) {
-        baseUrl = "/view-booking-detail";
-        if (notif.meta?.booking_id) {
-          queryParams.append("bookingId", notif.meta.booking_id);
-        }
-      }
+      router.push(
+        `/view-booking-detail?bookingId=${bookingId}`
+      );
+      break;
     }
 
-    if (!baseUrl) {
-      console.warn("No matching route found for notification:", notif);
-      return;
+    case "payment": {
+      const bookingId = booking_id || target_id;
+
+      if (!bookingId) {
+        console.warn("Booking ID missing:", notif);
+        return;
+      }
+
+      router.push(
+        `/my-payment?bookingId=${bookingId}`
+      );
+      break;
     }
 
-    const queryString = queryParams.toString();
-    const finalUrl = queryString ? `${baseUrl}?${queryString}` : baseUrl;
+    case "booking": {
+      const bookingId = booking_id || target_id;
 
-    // console.log("finalUrl", finalUrl);
-    router.push(finalUrl);
-  };
+      if (!bookingId) {
+        console.warn("Booking ID missing:", notif);
+        return;
+      }
+
+      router.push(
+        `/booking?bookingId=${bookingId}`
+      );
+      break;
+    }
+
+    case "referral_earned":
+      router.push("/referral");
+      break;
+
+    case "profile":
+      router.push("/profile");
+      break;
+
+    case "general":
+      console.log("General notification:", notif);
+      break;
+
+    default:
+      console.warn(
+        "Unknown screen_type:",
+        screen_type,
+        notif
+      );
+  }
+};
 
   return (
     <div className="icon bell-icon position-relative dropdown">

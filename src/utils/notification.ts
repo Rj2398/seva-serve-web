@@ -23,26 +23,92 @@ export const initializeFirebaseNotifications = async () => {
 
     // Trigger System Push Notification even in foreground
     if (Notification.permission === "granted") {
-      const handleNavigation = (screenType: any, targetId: any) => {
-        let url = null;
-        if (screenType && targetId) {
-          switch (screenType.toLowerCase()) {
-            case "quote":
-              url = "/quotes?quoteId=" + targetId;
-              break;
-            case "booking":
-              url = "/booking";
-              break;
-            case "job_tracking":
-              url = "/view-booking-detail?bookingId=" + targetId;
-              break;
-            case "payment":
-              url = "/my-payment";
-              break;
-          }
-        }
-        if (url) window.location.href = url;
-      };
+      // const handleNavigation = (screenType: any, targetId: any) => {
+      //   let url = null;
+      //   if (screenType && targetId) {
+      //     switch (screenType.toLowerCase()) {
+      //       case "quote":
+      //         url = "/quotes?quoteId=" + targetId;
+      //         break;
+      //       case "booking":
+      //         url = "/booking";
+      //         break;
+      //       case "job_tracking":
+      //         url = "/view-booking-detail?bookingId=" + targetId;
+      //         break;
+      //       case "payment":
+      //         url = "/my-payment";
+      //         break;
+      //     }
+      //   }
+      //   if (url) window.location.href = url;
+      // };
+
+      const handleNavigation = (data: any) => {
+  const screenType = data?.screen_type?.toLowerCase();
+
+  const targetId = data?.target_id;
+  const quoteId = data?.quote_id;
+  const bookingId = data?.booking_id;
+
+  let url = null;
+
+  switch (screenType) {
+    case "quote": {
+      const id = quoteId || targetId;
+
+      if (id) {
+        url = `/quotes?status=Received&quoteId=${id}`;
+      }
+      break;
+    }
+
+    case "job_tracking": {
+      const id = bookingId || targetId;
+
+      if (id) {
+        url = `/view-booking-detail?bookingId=${id}`;
+      }
+      break;
+    }
+
+    case "payment": {
+      const id = bookingId || targetId;
+
+      if (id) {
+        url = `/my-payment?bookingId=${id}`;
+      }
+      break;
+    }
+
+    case "booking": {
+      const id = bookingId || targetId;
+
+      if (id) {
+        url = `/booking?bookingId=${id}`;
+      }
+      break;
+    }
+
+    case "referral_earned":
+      url = "/referral";
+      break;
+
+    case "profile":
+      url = "/profile";
+      break;
+
+    case "general":
+      break;
+
+    default:
+      console.warn("Unknown screen_type:", screenType);
+  }
+
+  if (url) {
+    window.location.href = url;
+  }
+};
 
       try {
         navigator.serviceWorker.getRegistration().then((registration) => {

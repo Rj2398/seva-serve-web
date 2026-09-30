@@ -7,7 +7,7 @@ import toast from "react-hot-toast";
 // @ts-ignore
 import * as braintree from "braintree-web";
 
-const braintreeTokenizationKey = "sandbox_bkv6vn9s_8gjjrj3w6gpngkmr";
+const braintreeTokenizationKey = "sandbox_cyn22ftf_dtr67sss7z3w64bx";
 
 interface CheckOutProps {
   bookingData?: any;

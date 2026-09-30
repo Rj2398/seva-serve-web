@@ -32,6 +32,9 @@ const LocationModal = () => {
   });
   const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
 
+
+  console.log(savedAddresses,"my saved address")
+
   const isLoggedIn =
     typeof window !== "undefined" ? localStorage.getItem("isLoggedIn") : null;
 
@@ -549,108 +552,124 @@ const handleGetCurrentLocation = () => {
                     {savedAddresses.length > 0 && (
                       <>
                         <h5>Your Saved Addresses</h5>
-                        <div className="svd-add-wrp">
-                          {savedAddresses.map((item: any, idx: number) => {
-                            const displayType =
-                              item.type || item.label || "Home";
-                            const displayFlat =
-                              item.flat || item.flat_house_building || "";
-                            const displayFloor = item.floor || "";
-                            const displayArea =
-                              item.area || item.area_sector_locality || "";
-                            const displayLandmark =
-                              item.landmark || item.nearby_landmark || "";
-                            // const displayIcon = item.icon || (
-                            //   displayType?.toLowerCase() === 'home' ? 'images/saved-addresses/1.svg' :
-                            //     displayType?.toLowerCase() === 'office' ? 'images/saved-addresses/2.svg' :
-                            //       'images/saved-addresses/3.svg'
-                            // );
+                        {savedAddresses.map((item: any, idx: number) => {
+  const displayType =
+    item.type || item.label || "Home";
 
-                            const displayIcon =
-                              displayType?.toLowerCase() === "home" ? (
-                                <img
-                                  src="/images/saved-addresses/1.svg"
-                                  alt="Home"
-                                  width={24}
-                                  height={24}
-                                />
-                              ) : displayType?.toLowerCase() === "office" ? (
-                                <img
-                                  src="/images/saved-addresses/2.svg"
-                                  alt="Office"
-                                  width={24}
-                                  height={24}
-                                />
-                              ) : (
-                                <MdOutlineShareLocation size={24} />
-                              );
-                            const formattedAddress = `${displayFlat}${
-                              displayFloor ? ", " + displayFloor : ""
-                            }, ${displayArea}`;
+  const displayFlat =
+    item.flat || item.flat_house_building || "";
 
-                            return (
-                              <React.Fragment key={item.id || idx}>
-                                <input
-                                  type="radio"
-                                  id={`address-${item.id || idx}`}
-                                  value={item.id}
-                                  name="saved-addresses"
-                                  hidden
-                                  defaultChecked={item.is_default || idx === 0}
-                                />
-                                <label
-                                  htmlFor={`address-${item.id || idx}`}
-                                  className="saved-addresses-in"
-                                >
-                                  <div className="saved-addresses-icon">
-                                    {/* <img src={displayIcon} alt={displayType} /> */}
-                                    {displayIcon}
-                                  </div>
-                                  <div className="saved-addresses-data">
-                                    <h4>{displayType}</h4>
-                                    <p>{formattedAddress}</p>
-                                  </div>
-                                  <div className="last">
-                                    {!item.is_default ? (
-                                      <a
-                                        type="button"
-                                        className="primary-cta"
-                                        style={{
-                                          fontSize: "12px",
-                                          padding: "3px 15px",
-                                        }}
-                                        onClick={() =>
-                                          handleSelectDefault(
-                                            item,
-                                            formattedAddress
-                                          )
-                                        }
-                                      >
-                                        <i></i> Set as default
-                                      </a>
-                                    ) : (
-                                      <a
-                                        type="button"
-                                        style={{
-                                          background: "#363636",
-                                          border: "1px solid    #363636",
-                                          color: "#fff",
-                                          cursor: "not-allowed",
-                                          borderRadius: "20px",
-                                          width: "fit-content",
-                                          padding: "3px 15px",
-                                          fontSize: "12px",
-                                        }}
-                                      >
-                                        <i></i> Default
-                                      </a>
-                                    )}
-                                  </div>
-                                </label>
-                              </React.Fragment>
-                            );
-                          })}
-                        </div>
+  const displayFloor =
+    item.floor || "";
+
+  const displayArea =
+    item.area || item.area_sector_locality || "";
+
+  const displayLandmark =
+    item.landmark || item.nearby_landmark || "";
+
+  const displayState =
+    item.state_name || "";
+
+  const displayZip =
+    item.zip || "";
+
+  const displayIcon =
+    displayType?.toLowerCase() === "home" ? (
+      <img
+        src="/images/saved-addresses/1.svg"
+        alt="Home"
+        width={24}
+        height={24}
+      />
+    ) : displayType?.toLowerCase() === "office" ? (
+      <img
+        src="/images/saved-addresses/2.svg"
+        alt="Office"
+        width={24}
+        height={24}
+      />
+    ) : (
+      <MdOutlineShareLocation size={24} />
+    );
+
+  const formattedAddress = [
+    displayFlat,
+    displayFloor,
+    displayArea,
+    displayLandmark,
+    displayState,
+    displayZip,
+  ]
+    .filter(Boolean)
+    .join(", ");
+
+  return (
+    <React.Fragment key={item.id || idx}>
+      <input
+        type="radio"
+        id={`address-${item.id || idx}`}
+        value={item.id}
+        name="saved-addresses"
+        hidden
+        defaultChecked={
+          item.is_default || idx === 0
+        }
+      />
+
+      <label
+        htmlFor={`address-${item.id || idx}`}
+        className="saved-addresses-in"
+      >
+        <div className="saved-addresses-icon">
+          {displayIcon}
+        </div>
+
+        <div className="saved-addresses-data">
+          <h4>{displayType}</h4>
+          <p>{formattedAddress}</p>
+        </div>
+
+        <div className="last">
+          {!item.is_default ? (
+            <a
+              type="button"
+              className="primary-cta"
+              style={{
+                fontSize: "12px",
+                padding: "3px 15px",
+              }}
+              onClick={() =>
+                handleSelectDefault(
+                  item,
+                  formattedAddress
+                )
+              }
+            >
+              <i></i> Set as default
+            </a>
+          ) : (
+            <a
+              type="button"
+              style={{
+                background: "#363636",
+                border: "1px solid #363636",
+                color: "#fff",
+                cursor: "not-allowed",
+                borderRadius: "20px",
+                width: "fit-content",
+                padding: "3px 15px",
+                fontSize: "12px",
+              }}
+            >
+              <i></i> Default
+            </a>
+          )}
+        </div>
+      </label>
+    </React.Fragment>
+  );
+})}
                       </>
                     )}
                   </div>

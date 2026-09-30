@@ -29,6 +29,23 @@ interface homeprops {
   isLogin?: boolean;
 }
 
+const canReschedule = (
+  bookingDateTime: string | Date | null | undefined
+): boolean => {
+  if (!bookingDateTime) return false;
+
+  const bookingDate = new Date(bookingDateTime);
+
+  if (isNaN(bookingDate.getTime())) {
+    return false;
+  }
+  const now = Date.now();
+  const remainingTime = bookingDate.getTime() - now;
+  return remainingTime >= 24 * 60 * 60 * 1000;
+};
+
+
+
 const ClientComponent = ({ data, isLogin = false }: homeprops) => {
   const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
   const [showWelcomeModal, setShowWelcomeModal] = useState<boolean>(false);
@@ -155,119 +172,351 @@ const ClientComponent = ({ data, isLogin = false }: homeprops) => {
     };
   }, []);
 
-  useEffect(() => {
-    let frameId: number;
+  // useEffect(() => {
+  //   let frameId: number;
 
-    const initSliders = () => {
-      const $ = (window as any).$;
+  //   const initSliders = () => {
+  //     const $ = (window as any).$;
 
-      // CRITICAL FIX: Ensure BOTH jQuery and its .slick extension are fully initialized
-      if (!$ || typeof $.fn.slick !== "function") {
-        frameId = requestAnimationFrame(initSliders);
-        return;
-      }
+  //     // CRITICAL FIX: Ensure BOTH jQuery and its .slick extension are fully initialized
+  //     if (!$ || typeof $.fn.slick !== "function") {
+  //       frameId = requestAnimationFrame(initSliders);
+  //       return;
+  //     }
 
-      // 1. Safe layout checking for Hero Slider
-      const $hero = $(".hero-slider");
+  //     // 1. Safe layout checking for Hero Slider
+  //     const $hero = $(".hero-slider");
+  //     if (
+  //       $hero.length &&
+  //       $hero.children().length > 0 &&
+  //       !$hero.hasClass("slick-initialized")
+  //     ) {
+  //       $hero.slick({
+  //         infinite: true,
+  //         slidesToShow: 2,
+  //         slidesToScroll: 2,
+  //         arrows: false,
+  //         dots: true,
+  //         autoplay: true,
+  //         responsive: [
+  //           {
+  //             breakpoint: 767,
+  //             settings: { slidesToShow: 1, slidesToScroll: 1 },
+  //           },
+  //         ],
+  //       });
+  //     }
+
+  //     // 2. Safe layout checking for Upcoming & Popular Slider configurations
+  //     const $upcoming = $(".upcoming-slider");
+  //     if (
+  //       $upcoming.length &&
+  //       $upcoming.children().length > 0 &&
+  //       !$upcoming.hasClass("slick-initialized")
+  //     ) {
+  //       $upcoming.slick({
+  //         dots: false,
+  //         infinite: false,
+  //         speed: 300,
+  //         slidesToShow: 1,
+  //         autoplay: $upcoming.children().length > 3,
+  //         autoplaySpeed: 3000,
+  //         arrows: false,
+  //         variableWidth: true,
+  //         swipeToSlide: true,
+  //         touchMove: true,
+  //       });
+  //     }
+  //   };
+
+  //   frameId = requestAnimationFrame(initSliders);
+  //   const checkBindings = () => {
+  //     const $ = (window as any).$;
+  //     if ($) {
+  //       const $body = $("body");
+
+  //       $body
+  //         .off("click", ".service-list-type .more-service")
+  //         .on("click", ".service-list-type .more-service", function (e: any) {
+  //           let parent = $(e.currentTarget).closest(".service-list-type");
+  //           parent.find(".service-data").show();
+  //           $(e.currentTarget).hide();
+  //           parent.find(".less-service").css("display", "list-item");
+  //         });
+
+  //       $body
+  //         .off("click", ".service-list-type .less-service")
+  //         .on("click", ".service-list-type .less-service", function (e: any) {
+  //           let parent = $(e.currentTarget).closest(".service-list-type");
+  //           parent.find(".service-data").hide();
+  //           parent.find(".more-service").css("display", "list-item");
+  //           $(e.currentTarget).hide();
+  //         });
+
+  //       $body
+  //         .off("click", ".additional-text")
+  //         .on("click", ".additional-text", function (this: any) {
+  //           $(this).next(".service-list").slideToggle(300);
+  //           $(this).find("img").toggleClass("rotate");
+  //         });
+  //     } else {
+  //       setTimeout(checkBindings, 50);
+  //     }
+  //   };
+
+  //   checkBindings();
+
+  //   return () => {
+  //     cancelAnimationFrame(frameId);
+  //     const _$ = (window as any).$;
+  //     if (_$ && typeof _$.fn?.slick === "function") {
+  //       try {
+  //         if (_$(".hero-slider").hasClass("slick-initialized"))
+  //           _$(".hero-slider").slick("unslick");
+  //       } catch (e) {
+  //         console.warn("Failed to unslick hero-slider", e);
+  //       }
+  //       try {
+  //         if (_$(".upcoming-slider").hasClass("slick-initialized"))
+  //           _$(".upcoming-slider").slick("unslick");
+  //       } catch (e) {
+  //         console.warn("Failed to unslick upcoming-slider", e);
+  //       }
+  //     }
+  //   };
+  // }, [data]);
+
+
+useEffect(() => {
+  let retryTimer: ReturnType<typeof setInterval> | null = null;
+
+  const initSliders = () => {
+    const $ = (window as any).$;
+
+    // jQuery ya Slick abhi load nahi hua
+    if (!$ || !$.fn || typeof $.fn.slick !== "function") {
+      return false;
+    }
+
+    let hasSlider = false;
+    let allInitialized = true;
+
+    // ==================================================
+    // HERO SLIDER
+    // ==================================================
+    const $hero = $(".hero-slider");
+
+    if ($hero.length) {
+      hasSlider = true;
+
       if (
-        $hero.length &&
         $hero.children().length > 0 &&
         !$hero.hasClass("slick-initialized")
       ) {
-        $hero.slick({
-          infinite: true,
-          slidesToShow: 2,
-          slidesToScroll: 2,
-          arrows: false,
-          dots: true,
-          autoplay: true,
-          responsive: [
-            {
-              breakpoint: 767,
-              settings: { slidesToShow: 1, slidesToScroll: 1 },
-            },
-          ],
-        });
+        try {
+          $hero.slick({
+            infinite: true,
+            slidesToShow: 2,
+            slidesToScroll: 2,
+            arrows: false,
+            dots: true,
+            autoplay: true,
+            autoplaySpeed: 3000,
+
+            responsive: [
+              {
+                breakpoint: 767,
+                settings: {
+                  slidesToShow: 1,
+                  slidesToScroll: 1,
+                },
+              },
+            ],
+          });
+
+          console.log("Hero slider initialized");
+        } catch (error) {
+          console.error("Hero slider initialization failed:", error);
+          allInitialized = false;
+        }
       }
 
-      // 2. Safe layout checking for Upcoming & Popular Slider configurations
-      const $upcoming = $(".upcoming-slider");
+      if (!$hero.hasClass("slick-initialized")) {
+        allInitialized = false;
+      }
+    }
+
+    // ==================================================
+    // UPCOMING SLIDER
+    // ==================================================
+    const $upcoming = $(".upcoming-slider");
+
+    if ($upcoming.length) {
+      hasSlider = true;
+
       if (
-        $upcoming.length &&
         $upcoming.children().length > 0 &&
         !$upcoming.hasClass("slick-initialized")
       ) {
-        $upcoming.slick({
-          dots: false,
-          infinite: false,
-          speed: 300,
-          slidesToShow: 1,
-          autoplay: $upcoming.children().length > 3,
-          autoplaySpeed: 3000,
-          arrows: false,
-          variableWidth: true,
-          swipeToSlide: true,
-          touchMove: true,
-        });
-      }
-    };
-
-    frameId = requestAnimationFrame(initSliders);
-    const checkBindings = () => {
-      const $ = (window as any).$;
-      if ($) {
-        const $body = $("body");
-
-        $body
-          .off("click", ".service-list-type .more-service")
-          .on("click", ".service-list-type .more-service", function (e: any) {
-            let parent = $(e.currentTarget).closest(".service-list-type");
-            parent.find(".service-data").show();
-            $(e.currentTarget).hide();
-            parent.find(".less-service").css("display", "list-item");
-          });
-
-        $body
-          .off("click", ".service-list-type .less-service")
-          .on("click", ".service-list-type .less-service", function (e: any) {
-            let parent = $(e.currentTarget).closest(".service-list-type");
-            parent.find(".service-data").hide();
-            parent.find(".more-service").css("display", "list-item");
-            $(e.currentTarget).hide();
-          });
-
-        $body
-          .off("click", ".additional-text")
-          .on("click", ".additional-text", function (this: any) {
-            $(this).next(".service-list").slideToggle(300);
-            $(this).find("img").toggleClass("rotate");
-          });
-      } else {
-        setTimeout(checkBindings, 50);
-      }
-    };
-
-    checkBindings();
-
-    return () => {
-      cancelAnimationFrame(frameId);
-      const _$ = (window as any).$;
-      if (_$ && typeof _$.fn?.slick === "function") {
         try {
-          if (_$(".hero-slider").hasClass("slick-initialized"))
-            _$(".hero-slider").slick("unslick");
-        } catch (e) {
-          console.warn("Failed to unslick hero-slider", e);
-        }
-        try {
-          if (_$(".upcoming-slider").hasClass("slick-initialized"))
-            _$(".upcoming-slider").slick("unslick");
-        } catch (e) {
-          console.warn("Failed to unslick upcoming-slider", e);
+          $upcoming.slick({
+            dots: false,
+            infinite: false,
+            speed: 300,
+            slidesToShow: 1,
+            arrows: false,
+
+            // Sirf multiple items hone par autoplay
+            autoplay: $upcoming.children().length > 1,
+            autoplaySpeed: 3000,
+
+            variableWidth: true,
+            swipeToSlide: true,
+            touchMove: true,
+
+            responsive: [
+              {
+                breakpoint: 767,
+                settings: {
+                  variableWidth: true,
+                  slidesToShow: 1,
+                },
+              },
+            ],
+          });
+
+          console.log("Upcoming slider initialized");
+        } catch (error) {
+          console.error(
+            "Upcoming slider initialization failed:",
+            error
+          );
+          allInitialized = false;
         }
       }
-    };
-  }, [data]);
+
+      if (!$upcoming.hasClass("slick-initialized")) {
+        allInitialized = false;
+      }
+    }
+
+    // ==================================================
+    // POPULAR SERVICES SLIDER
+    // ==================================================
+    const $popular = $(".popular-slider");
+
+    if ($popular.length) {
+      hasSlider = true;
+
+      if (
+        $popular.children().length > 0 &&
+        !$popular.hasClass("slick-initialized")
+      ) {
+        try {
+          $popular.slick({
+            dots: false,
+            infinite: false,
+            speed: 300,
+            slidesToShow: 1,
+            arrows: false,
+
+            autoplay: $popular.children().length > 1,
+            autoplaySpeed: 3000,
+
+            variableWidth: true,
+            swipeToSlide: true,
+            touchMove: true,
+
+            responsive: [
+              {
+                breakpoint: 767,
+                settings: {
+                  variableWidth: true,
+                  slidesToShow: 1,
+                },
+              },
+            ],
+          });
+
+          console.log("Popular slider initialized");
+        } catch (error) {
+          console.error(
+            "Popular slider initialization failed:",
+            error
+          );
+          allInitialized = false;
+        }
+      }
+
+      if (!$popular.hasClass("slick-initialized")) {
+        allInitialized = false;
+      }
+    }
+
+    // Agar page par slider hi nahi hai
+    if (!hasSlider) {
+      return true;
+    }
+
+    // Saare available sliders initialize ho gaye
+    return allInitialized;
+  };
+
+  // ==================================================
+  // INITIAL ATTEMPT
+  // ==================================================
+  const initialized = initSliders();
+
+  if (!initialized) {
+    retryTimer = setInterval(() => {
+      const done = initSliders();
+
+      if (done) {
+        if (retryTimer) {
+          clearInterval(retryTimer);
+          retryTimer = null;
+        }
+      }
+    }, 100);
+  }
+
+  // ==================================================
+  // CLEANUP
+  // ==================================================
+  return () => {
+    if (retryTimer) {
+      clearInterval(retryTimer);
+      retryTimer = null;
+    }
+
+    const $ = (window as any).$;
+
+    if (!$ || !$.fn || typeof $.fn.slick !== "function") {
+      return;
+    }
+
+    // Hero cleanup
+    try {
+      $(".hero-slider.slick-initialized").slick("unslick");
+    } catch (error) {
+      console.warn("Hero slider cleanup failed:", error);
+    }
+
+    // Upcoming cleanup
+    try {
+      $(".upcoming-slider.slick-initialized").slick("unslick");
+    } catch (error) {
+      console.warn("Upcoming slider cleanup failed:", error);
+    }
+
+    // Popular cleanup
+    try {
+      $(".popular-slider.slick-initialized").slick("unslick");
+    } catch (error) {
+      console.warn("Popular slider cleanup failed:", error);
+    }
+  };
+}, [data]);
 
   const formatTimeDifference = (isoString: string): string => {
     if (!isoString) return "Started recently";
@@ -784,14 +1033,14 @@ const ClientComponent = ({ data, isLogin = false }: homeprops) => {
                                   "Nov 15, 2025 • 10:00 AM"}
                               </p>
                               <div className="upcm-slider-btn">
-                                <button
+                             <button
                                   className="primary-cta upcm-btn"
                                   onClick={() => {
                                     handleLoadRescheduleRequest(item),
                                       setisReschedule(true);
                                     // setShowDatePicker(true), setBookingId(item?.bookingId)
                                   }}
-                                  disabled={item?.is_previous_rescheduled}
+                                 disabled={!canReschedule(item) || item?.is_previous_rescheduled}
                                   // data-bs-target="#select-date-time-popup"
                                   // data-bs-toggle="modal"
                                 >
@@ -1638,7 +1887,7 @@ const ClientComponent = ({ data, isLogin = false }: homeprops) => {
                         </p>
                       </div>
                       <div
-                        className="upcoming-slider"
+                        className="popular-slider"
                         onClick={(e) => {
                           const target = e.target as HTMLElement;
                           const slide = target.closest("[data-route]");

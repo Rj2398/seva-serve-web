@@ -16,6 +16,8 @@ const PaymentRemainingPopup = ({
   const [checkoutData, setCheckoutData] = useState<any>();
   console.log(checkoutData, "checkout data***");
 
+  const totalAmount = bookingPaymentInfo?.originalAmount-bookingPaymentInfo?.initial_amount
+
   console.log(quote_id, "quote_id")
 
   useEffect(() => {
@@ -25,10 +27,10 @@ const PaymentRemainingPopup = ({
       try {
         // 1. Change 'body' to 'data' (the standard key for Axios/Fetch wrappers)
         const response = await globalServerRequest({
-          endpoint: "quotes/checkout",
+          endpoint: "quotes/final-checkout",
           method: "POST",
           payload: {
-            quote_id: Number(quote_id),
+            booking_id: bookingId || checkoutData?.bookingId,
           },
         } as any); // Keeping 'as any' temporarily until we match the correct key name
 
@@ -45,6 +47,9 @@ const PaymentRemainingPopup = ({
 
     fetchCheckoutDetails();
   }, [quote_id]);
+
+
+
 
   return (
     <>
@@ -82,7 +87,7 @@ const PaymentRemainingPopup = ({
                       </li>
                       <li>
                         Advance Paid{" "}
-                        <span>-${bookingPaymentInfo?.discountAmount}</span>
+                        <span>-${bookingPaymentInfo?.initial_amount}</span>
                       </li>
                     </ul>
                   </div>
@@ -90,7 +95,7 @@ const PaymentRemainingPopup = ({
                     <ul>
                       <li>
                         Total Due{" "}
-                        <span>${bookingPaymentInfo?.totalAmount}</span>
+                        <span>${totalAmount}</span>
                       </li>
                     </ul>
                     <div className="home-quotes-cta">

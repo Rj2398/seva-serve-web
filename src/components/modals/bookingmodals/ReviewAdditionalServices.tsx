@@ -6,10 +6,8 @@ interface AdditionalServicesProps {
   bookingId?: any;
 }
 
-
 const ReviewAdditionalServices = ({ bookingId }: AdditionalServicesProps) => {
   const router = useRouter()
-
 
   
   return (
@@ -26,8 +24,8 @@ const ReviewAdditionalServices = ({ bookingId }: AdditionalServicesProps) => {
                 <h4>Review Additional Services</h4>
                 <p>The Technician has requested additional services for this job.</p>
                 <p> Please review the details and quotation carefully before making a decision.</p>
-                <Link
-                  href="/quotes"
+                {/* <Link
+                  href=`quotes?status=Received&quoteId=${bookingId}`
                   className="primary-cta requ-suc same"
                   onClick={(e) => {
                     // 1. Prevent normal link navigation so we can clear the modal backdrop first
@@ -48,11 +46,51 @@ const ReviewAdditionalServices = ({ bookingId }: AdditionalServicesProps) => {
                     }
 
                     // 4. Fire the Next.js router redirection immediately after closing
-                    router.push(`/quotes?bookingId=${bookingId}`);
+                    router.push(`quotes?status=Received&quoteId=${bookingId}`);
                   }}
                 >
                   Go to My Quotes
-                </Link>
+                </Link> */}
+
+                <Link
+  href={`quotes?status=Received&quoteId=${bookingId}`}
+  className="primary-cta requ-suc same"
+  onClick={(e) => {
+    e.preventDefault();
+
+    const modalElement = document.querySelector(".modal.show") as HTMLElement | null;
+
+    if (modalElement) {
+      const bootstrap = (window as any).bootstrap;
+
+      if (bootstrap?.Modal) {
+        const modalInstance =
+          bootstrap.Modal.getInstance(modalElement) ||
+          new bootstrap.Modal(modalElement);
+
+        modalInstance.hide();
+
+        // Bootstrap modal animation/backdrop cleanup ke baad navigate
+        modalElement.addEventListener(
+          "hidden.bs.modal",
+          () => {
+            router.push(
+              `quotes?status=Received&quoteId=${bookingId}`
+            );
+          },
+          { once: true }
+        );
+
+        return;
+      }
+    }
+
+    // Agar modal nahi mila to direct navigate
+    // router.push(`quotes?status=Received&quoteId=${bookingId}`);
+  }}
+>
+  Go to My Quotes
+</Link>
               </div>
             </div>
 

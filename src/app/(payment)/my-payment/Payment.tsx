@@ -3,6 +3,7 @@ import { useRouter } from 'next/navigation'
 import React, { useState, useEffect, useRef } from 'react'
 import { globalServerRequest } from '@/actions/globalApi'
 import LogoLoader from '@/components/common/LogoLoader'
+import { MdSubscriptions } from 'react-icons/md'
 
 const Payment = () => {
     const router = useRouter()
@@ -155,7 +156,20 @@ const Payment = () => {
                                                                 <div className="my-payments-body" key={item.transaction_id || item.id}>
                                                                     <div className="left-payments-body">
                                                                         <div className="plumbing-icon">
-                                                                            <img src={item?.booking_image || ""} alt={title} />
+                                                                            {/* <img src={item?.booking_image || <MdSubscriptions/>} alt={title} /> */}
+                                                                            
+
+                                                                                <div className="booking-image">
+                                                                                {item?.booking_image ? (
+                                                                                    <img src={item.booking_image} alt={title} />
+                                                                                ) : (
+                                                                                    <MdSubscriptions size={122} />
+                                                                                )}
+                                                                                </div>
+
+
+
+
                                                                         </div>
                                                                         <div className={`paid ${isPending ? 'pending' : ''}`}>
                                                                             <h5>

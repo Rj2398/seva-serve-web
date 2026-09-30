@@ -1,8 +1,11 @@
 import Link from 'next/link'
 import React from 'react'
 
-const ServiceRejected = () => {
+interface serviceRejectedProps{
+     serviceId: string;
+}
 
+const ServiceRejected = ({serviceId}:serviceRejectedProps) => {
 
   return (
     <>
@@ -18,7 +21,12 @@ const ServiceRejected = () => {
                 <h4>Services Rejected</h4>
                 <p>You’ve rejected the additional services.</p>
                 <p>The job will continue based on the original scope and pricing.</p>
-                <a href="#" className="primary-cta requ-suc same">Back to Booking</a>
+              <Link
+                  href={`/view-booking-detail/?bookingId=${serviceId}`}
+                  className="primary-cta requ-suc"
+                >
+                  Back to Booking
+                </Link>
               </div>
             </div>
 

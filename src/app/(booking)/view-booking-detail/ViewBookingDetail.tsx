@@ -23,7 +23,12 @@ const ViewBookingDetail = ({ bookingtrackingData }: BookingUpdateProps) => {
     {}
   );
 
+
+  console.log(bookingData?.is_pop_up,"shivamkjjkdksfdjasf")
+
   const bookingId = bookingData?.bookingId || bookingData?.id;
+
+  console.log(bookingId,"nndsnf")
 
   const fetchTrackingDetails = async (): Promise<boolean> => {
     try {
@@ -102,6 +107,17 @@ const ViewBookingDetail = ({ bookingtrackingData }: BookingUpdateProps) => {
       console.error("❌ Error initializing Firestore listener:", err);
     }
   }, [bookingId]);
+  
+useEffect(() => {
+  if (bookingData?.is_pop_up) {
+    const modalElement = document.getElementById("reviewAdditional");
+
+    if (modalElement && window.bootstrap) {
+      const modal = window.bootstrap.Modal.getOrCreateInstance(modalElement);
+      modal.show();
+    }
+  }
+}, [bookingData]);
 
 
   useEffect(() => {
