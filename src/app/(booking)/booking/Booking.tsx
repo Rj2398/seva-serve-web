@@ -809,18 +809,37 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                                         Add Feedback
                                                       </button>
                                                     )}
-                                                    <button className="primary-cta rgt">
-                                                      <img
-                                                        src="images/inner-page/download-icon.svg"
-                                                        className="img-left"
-                                                        alt=""
-                                                      />
-                                                      Download Invoice
-                                                    </button>
+                                              <button
+  className="primary-cta rgt"
+  onClick={() => {
+
+
+    if (item?.payment?.invoiceUrl) {
+      const link = document.createElement("a");
+      link.href = item.payment.invoiceUrl;
+      link.download = `invoice-${item?.payment?.
+invoiceUrl}.pdf`;
+      link.target = "_blank";
+
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      toast.error("Invoice not available.");
+    }
+  }}
+>
+  <img
+    src="images/inner-page/download-icon.svg"
+    className="img-left"
+    alt=""
+  />
+  Download Invoice
+</button>
                                                   </div>
                                                 </div>
                                               )}
-                                          {isCancelled && activeTab !=="Cancelled" &&  (
+                                          {isCancelled && activeTab !=="Cancelled" && activeTab !=="Previous"  &&  (
                                             <div className="service-quotes my-booking">
                                               <div className="home-quotes-cta">
                                                 <button

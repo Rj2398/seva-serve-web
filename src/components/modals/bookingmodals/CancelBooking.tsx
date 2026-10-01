@@ -119,7 +119,7 @@ const CancelBooking = ({
                     </>
                   )
                 }
-                <div className="reject-text-area">
+                {/* <div className="reject-text-area">
                   {!isQuote && <>
                     <label htmlFor="">Reason for Cancel</label>
                     <textarea
@@ -129,7 +129,7 @@ const CancelBooking = ({
                     ></textarea>
                   </>
                   }
-                </div>
+                </div> */}
                 <div className="cnl-cta">
 
                   {
@@ -142,12 +142,12 @@ const CancelBooking = ({
                       Yes
                     </button>
                   }
-                  <button
+                  {/* <button
                     className="secondary-cta"
                     onClick={!isQuote ? handleClose : () => setIsOpen(false)}
                   >
                     Cancel
-                  </button>
+                  </button> */}
                 </div>
 
                 <p className="contact">

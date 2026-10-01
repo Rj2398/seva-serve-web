@@ -215,12 +215,21 @@ useEffect(() => {
                               <div className="service-status-inner">
                                 {bookingData.serviceStatus.steps.map((step: any, index: number) => {
                                   const isChecked = step.state === "completed" || step.state === "active";
+
+                                    const isWorkInProgress =
+                                        step.stepKey === "work_in_progress" &&
+                                        step.state === "active";
+
                                   const getStepImage = (stepKey: string) => {
                                     switch (stepKey) {
                                       case 'on_the_way': return "images/service-status/on-way.svg";
                                       case 'work_in_progress': return "images/service-status/start-job.svg";
+                                        //                                     case "work_in_progress":
+                                        // return step?.state === "completed"||  step?.state === "active"
+                                        //   ? "images/service-status/start-job.svg"
+                                        //   : "images/service-status/work-in-progress.svg";
                                       case 'completed': return "images/service-status/completed.svg";
-                                      default: return null;
+                                      default: return "images/service-status/not-started.svg";
                                     }
                                   };
                                   const mainImg = getStepImage(step.stepKey);
@@ -229,7 +238,24 @@ useEffect(() => {
                                     <React.Fragment key={step?.stepNumber}>
                                       <div className={`service-status-item step-${step?.stepNumber} ${isChecked ? 'check' : ''}`}>
                                         {mainImg && <img src={mainImg} alt="" />}
-                                        {isChecked && <img src="images/service-status/check.svg" className="check-image" alt="" />}
+                                        {/* {isChecked && <img src="images/service-status/check.svg" className="check-image" alt="" />} */}
+
+                                            {isWorkInProgress ? (
+                                                <img
+                                                  src="images/service-status/work-in-progress.svg"
+                                                  className="check-image"
+                                                  alt="Work in progress"
+                                                />
+                                              ) : (
+                                                /* Completed/other active → existing check */
+                                                isChecked && (
+                                                  <img
+                                                    src="images/service-status/check.svg"
+                                                    className="check-image"
+                                                    alt="Completed"
+                                                  />
+                                                )
+                                              )}
                                         <h5>STEP {step?.stepNumber}</h5>
                                         <p>{step?.label==="Provider Not Assigned"?"Technician Not Assigned":step?.label}</p>
                                       </div>
@@ -493,11 +519,11 @@ useEffect(() => {
                           <div className="cost-details-in">No booking data available.</div>
                         </div>
                       )}
-                    {
+                    {/* {
                       (bookingData?.serviceStatus?.currentStep === 4 && bookingData?.is_paid === false) && <div className="progress-btn-rgt">
                         <button type="button" className="primary-cta" data-bs-target="#serviceCompleted" data-bs-toggle="modal">Pay Now <span>${bookingData?.bookingCostDetails?.totalCost}</span></button>
                       </div>
-                    }
+                    } */}
                   </div>
                 </div>
               </div>

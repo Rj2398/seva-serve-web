@@ -64,15 +64,26 @@ self.addEventListener("notificationclick", (event) => {
   let url = "/";
 
   switch (screenType) {
-    case "quote": {
-      const id = quoteId || targetId;
+ case "quote": {
+    const id = quoteId || targetId;
 
-      if (id) {
+    if (id) {
+      const normalizedTitle = (data?.title || "")
+        .trim()
+        .toLowerCase()
+        .replace(/\.$/, "");
+
+      if (normalizedTitle === "quote request submitted") {
+        url = `/quotes?status=Requested&quoteId=${id}`;
+      } else if (normalizedTitle === "your quotes are ready") {
+        url = `/quotes?status=Received&quoteId=${id}`;
+      } else {
         url = `/quotes?status=Received&quoteId=${id}`;
       }
-
-      break;
     }
+
+    break;
+  }
 
     case "job_tracking": {
       const id = bookingId || targetId;

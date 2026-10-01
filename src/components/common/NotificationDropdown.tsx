@@ -347,18 +347,32 @@ const NotificationDropdown = () => {
 
   switch (screen_type) {
     case "quote": {
-      const quoteId = quote_id || target_id;
+  const quoteId = quote_id || target_id;
 
-      if (!quoteId) {
-        console.warn("Quote ID missing:", notif);
-        return;
-      }
+  if (!quoteId) {
+    console.warn("Quote ID missing:", notif);
+    return;
+  }
 
-      router.push(
-        `/quotes?status=Received&quoteId=${quoteId}`
-      );
-      break;
-    }
+  const title = notif?.title?.trim();
+
+  if (title === "Quote Request Submitted.") {
+    router.push(
+      `/quotes?status=Requested&quoteId=${quoteId}`
+    );
+  } else if (title === "Your Quotes Are Ready") {
+    router.push(
+      `/quotes?status=Received&quoteId=${quoteId}`
+    );
+  } else {
+    // fallback agar future me koi aur quote notification aaye
+    router.push(
+      `/quotes?status=Received&quoteId=${quoteId}`
+    );
+  }
+
+  break;
+}
 
     case "job_tracking": {
       const bookingId = booking_id || target_id;
