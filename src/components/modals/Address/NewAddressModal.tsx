@@ -198,7 +198,54 @@ interface NewAddressModalProps {
 const NewAddressModal: React.FC<NewAddressModalProps> = ({ selectedAddress, onSave, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [locationLoading, setLocationLoading] = useState(false);
-  const [isAutoEnabled, setIsAutoEnabled] = useState(false);
+  const [isAutoEnabled, setIsAutoEnabled] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("autoLocation") === "true";
+    }
+    return false;
+  });
+
+  // Sync isAutoEnabled with localStorage, modal open, and loginStatusChanged events
+  useEffect(() => {
+    const modal = document.getElementById("add-address-popup");
+
+    const handleModalOpen = () => {
+      setIsAutoEnabled(localStorage.getItem("autoLocation") === "true");
+    };
+
+    const handleStatusChange = () => {
+      setIsAutoEnabled(localStorage.getItem("autoLocation") === "true");
+    };
+
+    modal?.addEventListener("show.bs.modal", handleModalOpen);
+    window.addEventListener("loginStatusChanged", handleStatusChange);
+
+    if (typeof window !== "undefined" && navigator?.permissions?.query) {
+      navigator.permissions
+        .query({ name: "geolocation" as PermissionName })
+        .then((permissionStatus) => {
+          if (permissionStatus.state === "granted") {
+            setIsAutoEnabled(true);
+            localStorage.setItem("autoLocation", "true");
+          } else if (permissionStatus.state === "denied") {
+            setIsAutoEnabled(false);
+            localStorage.setItem("autoLocation", "false");
+          }
+          permissionStatus.onchange = () => {
+            const granted = permissionStatus.state === "granted";
+            setIsAutoEnabled(granted);
+            localStorage.setItem("autoLocation", granted ? "true" : "false");
+            window.dispatchEvent(new Event("loginStatusChanged"));
+          };
+        })
+        .catch(() => {});
+    }
+
+    return () => {
+      modal?.removeEventListener("show.bs.modal", handleModalOpen);
+      window.removeEventListener("loginStatusChanged", handleStatusChange);
+    };
+  }, []);
 
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -638,9 +685,6 @@ const NewAddressModal: React.FC<NewAddressModalProps> = ({ selectedAddress, onSa
     } else {
       formik.resetForm();
     }
-
-    setIsAutoEnabled(false);
-
   }, [selectedAddress]);
 
 
@@ -660,6 +704,11 @@ const NewAddressModal: React.FC<NewAddressModalProps> = ({ selectedAddress, onSa
       (position) => {
 
         const { latitude, longitude } = position.coords;
+
+        // Immediately mark location enabled so the section disappears instantly
+        localStorage.setItem("autoLocation", "true");
+        setIsAutoEnabled(true);
+        window.dispatchEvent(new Event("loginStatusChanged"));
 
         let currentGeocoder = geocoder.current;
 
@@ -822,6 +871,11 @@ const NewAddressModal: React.FC<NewAddressModalProps> = ({ selectedAddress, onSa
                   );
                 }
 
+                // Enable autoLocation, update state, and notify other components
+                localStorage.setItem("autoLocation", "true");
+                setIsAutoEnabled(true);
+                window.dispatchEvent(new Event("loginStatusChanged"));
+
                 toast.success(
                   "Location detected successfully!"
                 );
@@ -854,6 +908,7 @@ const NewAddressModal: React.FC<NewAddressModalProps> = ({ selectedAddress, onSa
         setLocationLoading(false);
 
         setIsAutoEnabled(false);
+        localStorage.setItem("autoLocation", "false");
 
         if (
           error.code ===
@@ -877,11 +932,6 @@ const NewAddressModal: React.FC<NewAddressModalProps> = ({ selectedAddress, onSa
     );
 
   };
-
-
-  useEffect(() => {
-    if (isAutoEnabled) fetchCurrentLocation();
-  }, [isAutoEnabled]);
 
 
   const handleModalClose = (): void => {
@@ -992,62 +1042,30 @@ const NewAddressModal: React.FC<NewAddressModalProps> = ({ selectedAddress, onSa
 
                 <form onSubmit={formik.handleSubmit}>
 
-                  <div className="your-location-top">
-
-                    <div className="your-location-top-in">
-
-                      <div className="use-location">
-
-                        <img
-                          src="images/saved-addresses/location.svg"
-                          alt=""
-                        />
-
-                        <div className="use-location-data">
-
-                          {/* <h5>Use My Current Location</h5>
-                          <p>Enable your current location for better services</p> */}
-
-                          <h5>
-                            Use My Current Location
-                          </h5>
-
-                          <p>
-                            {isAutoEnabled
-                              ? "Auto-detection is ON"
-                              : "Enable for automatic location fetch"}
-                          </p>
-
+                  {!isAutoEnabled && (
+                    <div className="your-location-top">
+                      <div className="your-location-top-in">
+                        <div className="use-location">
+                          <img
+                            src="images/saved-addresses/location.svg"
+                            alt=""
+                          />
+                          <div className="use-location-data">
+                            <h5>Use My Current Location</h5>
+                            <p>Enable your current location for better services</p>
+                          </div>
+                          <button
+                            type="button"
+                            className="reject-btn"
+                            onClick={fetchCurrentLocation}
+                            disabled={locationLoading}
+                          >
+                            {locationLoading ? "Detecting..." : "Enable"}
+                          </button>
                         </div>
-
-                        {/* <button type="button" className="reject-btn">Enable</button> */}
-
-                        <button
-                          type="button"
-                          className={`reject-btn ${isAutoEnabled ? "active-mode" : ""}`}
-                          onClick={() =>
-                            setIsAutoEnabled(!isAutoEnabled)
-                          }
-                          style={{
-                            backgroundColor: isAutoEnabled
-                              ? "#ff4d4d"
-                              : "#4CAF50",
-                            color: "white",
-                          }}
-                          disabled={locationLoading}
-                        >
-                          {locationLoading
-                            ? "Detecting..."
-                            : isAutoEnabled
-                              ? "Disable"
-                              : "Enable"}
-                        </button>
-
                       </div>
-
                     </div>
-
-                  </div>
+                  )}
 
 
                   <div className="edit-add">

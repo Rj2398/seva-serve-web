@@ -7,7 +7,32 @@ import * as Yup from "yup";
 const AddAddressModal = () => {
   const [selectedType, setSelectedType] = useState("Home");
   const [loading, setLoading] = useState(false);
-  const [isAutoEnabled, setIsAutoEnabled] = useState(false);
+  const [isAutoEnabled, setIsAutoEnabled] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("autoLocation") === "true";
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    const modal = document.getElementById("add-address-popup");
+
+    const handleModalOpen = () => {
+      setIsAutoEnabled(localStorage.getItem("autoLocation") === "true");
+    };
+
+    const handleStatusChange = () => {
+      setIsAutoEnabled(localStorage.getItem("autoLocation") === "true");
+    };
+
+    modal?.addEventListener("show.bs.modal", handleModalOpen);
+    window.addEventListener("loginStatusChanged", handleStatusChange);
+
+    return () => {
+      modal?.removeEventListener("show.bs.modal", handleModalOpen);
+      window.removeEventListener("loginStatusChanged", handleStatusChange);
+    };
+  }, []);
 
   const validationSchema = Yup.object({
     house: Yup.string()
@@ -107,6 +132,11 @@ const AddAddressModal = () => {
             formik.setFieldValue("house", houseInfo);
             formik.setFieldValue("area", areaName);
             formik.setFieldValue("landmark", `Near${landmarkInfo}`);
+
+            // Mark location enabled and sync
+            localStorage.setItem("autoLocation", "true");
+            setIsAutoEnabled(true);
+            window.dispatchEvent(new Event("loginStatusChanged"));
           }
         } catch (err) {
           console.error("Fetch Error:", err);
@@ -114,16 +144,13 @@ const AddAddressModal = () => {
           setLoading(false);
         }
       },
-      () => setLoading(false)
+      () => {
+        setLoading(false);
+        setIsAutoEnabled(false);
+        localStorage.setItem("autoLocation", "false");
+      }
     );
   };
-
-
-  useEffect(() => {
-    if (isAutoEnabled) {
-      fetchCurrentLocation();
-    }
-  }, [isAutoEnabled]);
 
 
 
@@ -155,37 +182,30 @@ const AddAddressModal = () => {
 
               <form onSubmit={formik.handleSubmit}>
 
-                <div className="your-location-top">
-
-                  <div className="your-location-top-in">
-
-                    <div className="use-location">
-
-                      <img
-                        src="images/saved-addresses/location.svg"
-                        alt=""
-                      />
-                      <div className="use-location-data">
-                        <h5>Use My Current Location</h5>
-                        <p>{isAutoEnabled ? "Auto-detection is ON" : "Enable for automatic location fetch"}</p>
+                {!isAutoEnabled && (
+                  <div className="your-location-top">
+                    <div className="your-location-top-in">
+                      <div className="use-location">
+                        <img
+                          src="images/saved-addresses/location.svg"
+                          alt=""
+                        />
+                        <div className="use-location-data">
+                          <h5>Use My Current Location</h5>
+                          <p>Enable your current location for better services</p>
+                        </div>
+                        <button
+                          type="button"
+                          className="reject-btn"
+                          onClick={fetchCurrentLocation}
+                          disabled={loading}
+                        >
+                          {loading ? "..." : "Enable"}
+                        </button>
                       </div>
-                      <button
-                        type="button"
-                        className={isAutoEnabled ? "reject-btn active-mode" : "reject-btn"}
-                        onClick={() => setIsAutoEnabled(!isAutoEnabled)}
-                        style={{
-                          backgroundColor: isAutoEnabled ? "#ff4d4d" : "#4CAF50", 
-                          color: "white"
-                        }}
-                      >
-                        {loading ? "..." : (isAutoEnabled ? "Disable" : "Enable")}
-                      </button>
-
                     </div>
-
                   </div>
-
-                </div>
+                )}
 
                 <div className="edit-add">
 

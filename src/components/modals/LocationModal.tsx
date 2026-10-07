@@ -50,7 +50,7 @@ const LocationModal = () => {
     }
   };
 
-  // Fetch saved addresses from API on mount (if logged in)
+  // Fetch saved addresses from API on mount (if logged in) and sync location status
   useEffect(() => {
     const modal = document.getElementById("your-location-popup");
 
@@ -60,12 +60,41 @@ const LocationModal = () => {
       if (isLoggedIn === "true") {
         fetchAddresses();
       }
+      setIsAutoEnabled(localStorage.getItem("autoLocation") === "true");
+    };
+
+    const handleStatusChange = () => {
+      setIsAutoEnabled(localStorage.getItem("autoLocation") === "true");
     };
 
     modal?.addEventListener("show.bs.modal", handleModalOpen);
+    window.addEventListener("loginStatusChanged", handleStatusChange);
+
+    // Sync with browser geolocation permission state if supported
+    if (typeof window !== "undefined" && navigator?.permissions?.query) {
+      navigator.permissions
+        .query({ name: "geolocation" as PermissionName })
+        .then((permissionStatus) => {
+          if (permissionStatus.state === "granted") {
+            setIsAutoEnabled(true);
+            localStorage.setItem("autoLocation", "true");
+          } else if (permissionStatus.state === "denied") {
+            setIsAutoEnabled(false);
+            localStorage.setItem("autoLocation", "false");
+          }
+          permissionStatus.onchange = () => {
+            const granted = permissionStatus.state === "granted";
+            setIsAutoEnabled(granted);
+            localStorage.setItem("autoLocation", granted ? "true" : "false");
+            window.dispatchEvent(new Event("loginStatusChanged"));
+          };
+        })
+        .catch(() => {});
+    }
 
     return () => {
       modal?.removeEventListener("show.bs.modal", handleModalOpen);
+      window.removeEventListener("loginStatusChanged", handleStatusChange);
     };
   }, []);
 
@@ -270,6 +299,7 @@ const handleGetCurrentLocation = () => {
     return;
   }
 
+  setLoading(true);
   setCurrentLocationText("Fetching location...");
 
   navigator.geolocation.getCurrentPosition(
@@ -278,82 +308,92 @@ const handleGetCurrentLocation = () => {
 
       console.log("Actual Lat/Lng:", latitude, longitude);
 
+      // 1. Immediately mark location enabled so the section disappears instantly without needing refresh
+      localStorage.setItem("autoLocation", "true");
+      setIsAutoEnabled(true);
+      window.dispatchEvent(new Event("loginStatusChanged"));
+
       try {
-        const apiKey =
-          process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ||
-          "AIzaSyCinDdjJJjl5Fl1LqrNUOjBQAW3_Uzy4YU";
+        let fullAddr = "";
 
-        const res = await fetch(
-          `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${apiKey}`
-        );
-
-        const data = await res.json();
-
-        if (
-          data.status === "OK" &&
-          data.results &&
-          data.results.length > 0
-        ) {
-          const fullAddr = data.results[0].formatted_address;
-
-          // Save user's current location
-          localStorage.setItem("homeUserData", fullAddr);
-
-          // Mark location as enabled
-          localStorage.setItem("autoLocation", "true");
-
-          // Update state immediately
-          setIsAutoEnabled(true);
-
-          // Notify header
-          window.dispatchEvent(
-            new Event("loginStatusChanged")
-          );
-
-          toast.success("Location enabled successfully!");
-
-          // Don't show user's actual location in this section
-          setCurrentLocationText(
-            "Enable your current location for better services"
-          );
-
-          // Close location modal
-          const currentModal = document.getElementById(
-            "your-location-popup"
-          );
-
-          if (currentModal) {
-            const bootstrapModal = (
-              window as any
-            ).bootstrap?.Modal.getInstance(currentModal);
-
-            bootstrapModal?.hide();
-          }
-        } else {
-          toast.error("Unable to detect your location.");
-
-          setCurrentLocationText(
-            "Unable to detect your location."
-          );
+        // Try Google Maps Geocoder first (Client JS SDK - no CORS issue)
+        const google = (window as any).google;
+        if (google?.maps?.Geocoder) {
+          const geocoder = new google.maps.Geocoder();
+          fullAddr = await new Promise<string>((resolve) => {
+            geocoder.geocode(
+              { location: { lat: latitude, lng: longitude } },
+              (results: any, status: any) => {
+                if (status === "OK" && results?.[0]?.formatted_address) {
+                  resolve(results[0].formatted_address);
+                } else {
+                  resolve("");
+                }
+              }
+            );
+          });
         }
-      } catch (error) {
-        console.error(
-          "Error fetching address details:",
-          error
-        );
 
-        toast.error("Unable to detect your location.");
+        // Fallback: OpenStreetMap Nominatim (supports CORS in browser)
+        if (!fullAddr) {
+          try {
+            const res = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`
+            );
+            const data = await res.json();
+            if (data?.display_name) {
+              fullAddr = data.display_name;
+            }
+          } catch (nominatimErr) {
+            console.warn("Nominatim fallback error:", nominatimErr);
+          }
+        }
 
+        // Final fallback to formatted coordinates if geocoding service is unavailable
+        if (!fullAddr) {
+          fullAddr = `Lat: ${latitude.toFixed(4)}, Lng: ${longitude.toFixed(4)}`;
+        }
+
+        // Save user's current location in localStorage
+        localStorage.setItem("homeUserData", fullAddr);
+
+        // Notify header & other listeners
+        window.dispatchEvent(new Event("loginStatusChanged"));
+
+        toast.success("Location enabled successfully!");
+
+        // Reset prompt text
         setCurrentLocationText(
           "Enable your current location for better services"
         );
+
+        // Close location modal
+        const currentModal = document.getElementById(
+          "your-location-popup"
+        );
+
+        if (currentModal) {
+          const bootstrap = (window as any).bootstrap;
+          const bootstrapModal =
+            bootstrap?.Modal.getInstance(currentModal) ||
+            bootstrap?.Modal.getOrCreateInstance?.(currentModal);
+
+          bootstrapModal?.hide();
+        }
+      } catch (error) {
+        console.error("Error setting location address:", error);
+      } finally {
+        setLoading(false);
       }
     },
 
     (error) => {
+      setLoading(false);
       console.error("Location permission error:", error);
 
       if (error.code === error.PERMISSION_DENIED) {
+        setIsAutoEnabled(false);
+        localStorage.setItem("autoLocation", "false");
         setCurrentLocationText(
           "Location permission denied. Please allow location access."
         );
@@ -436,12 +476,9 @@ const handleGetCurrentLocation = () => {
     );
   };
 
-  // --- Logic: Auto-trigger on Load or Toggle ---
+  // --- Logic: Sync localStorage on isAutoEnabled changes ---
   useEffect(() => {
     localStorage.setItem("autoLocation", isAutoEnabled.toString());
-    if (isAutoEnabled) {
-      fetchAddress();
-    }
   }, [isAutoEnabled]);
 
 
@@ -524,21 +561,26 @@ const handleGetCurrentLocation = () => {
                     )}
 
                     <div className="your-location-top-in">
-                     {!isAutoEnabled &&  (<div className="use-location">
-                        <img src="images/saved-addresses/location.svg" alt="" />
-                        <div className="use-location-data">
-                          <h5>Use My Current Location</h5>
-                          <p>{currentLocationText}</p>
-                        </div>
-                        <button
-                          type="button"
-                          className="reject-btn"
-                          onClick={handleGetCurrentLocation}
-                        >
-                          Enable
-                        </button>
-                      </div>)}
-                      <hr />
+                      {!isAutoEnabled && (
+                        <>
+                          <div className="use-location">
+                            <img src="images/saved-addresses/location.svg" alt="" />
+                            <div className="use-location-data">
+                              <h5>Use My Current Location</h5>
+                              <p>{currentLocationText}</p>
+                            </div>
+                            <button
+                              type="button"
+                              className="reject-btn"
+                              onClick={handleGetCurrentLocation}
+                              disabled={loading}
+                            >
+                              {loading ? "Fetching..." : "Enable"}
+                            </button>
+                          </div>
+                          <hr />
+                        </>
+                      )}
                       <button
                         type="button"
                         data-bs-target="#add-address-popup"
