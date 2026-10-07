@@ -6,6 +6,7 @@ import { globalServerRequest } from "@/actions/globalApi";
 import toast from "react-hot-toast";
 // @ts-ignore
 import * as braintree from "braintree-web";
+import PaymentInvoiceModal from "@/components/modals/PaymentInvoiceModal";
 
 const braintreeTokenizationKey = "sandbox_cyn22ftf_dtr67sss7z3w64bx";
 
@@ -30,7 +31,7 @@ const PaymentPage = ({ bookingData }: CheckOutProps) => {
 
   const bookingId =
     urlBookingId || currentBookingData?.bookingId || currentBookingData?.id;
-  const paymentType = searchParams.get("paymenttype") || "initial";
+  const paymentType = searchParams.get("paymenttype") || "full";
   const [checkoutData, setCheckoutData] = useState<any>();
   const [couponCode, setCouponCode] = useState<string>("");
 
@@ -41,6 +42,8 @@ const PaymentPage = ({ bookingData }: CheckOutProps) => {
   const [venmoLoading, setVenmoLoading] = useState(true);
 
   const [isTokenizing, setIsTokenizing] = useState(false);
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+  const [invoiceUrl, setInvoiceUrl] = useState<string>("");
 
   const isFirstPayment =
     checkoutData?.first_payment_status === true ||
@@ -224,7 +227,29 @@ const PaymentPage = ({ bookingData }: CheckOutProps) => {
           }
         );
 
-        router.push("/booking");
+        const invUrl =
+          response?.data?.data?.invoiceUrl ||
+          response?.data?.data?.invoice_url ||
+          response?.data?.data?.invoice ||
+          response?.data?.data?.pdf_url ||
+          response?.data?.data?.download_url ||
+          response?.data?.invoiceUrl ||
+          response?.data?.invoice_url ||
+          response?.data?.invoice ||
+          response?.data?.pdf_url ||
+          response?.data?.download_url ||
+          checkoutData?.invoiceUrl ||
+          checkoutData?.invoice_url ||
+          checkoutData?.payment?.invoiceUrl ||
+          checkoutData?.job_summary?.invoiceUrl ||
+          checkoutData?.job_summary?.invoice_url ||
+          "";
+
+        if (invUrl) {
+          setInvoiceUrl(invUrl);
+        }
+
+        setShowInvoiceModal(true);
       } else {
         toast.error(
           response?.error ||
@@ -594,6 +619,12 @@ const PaymentPage = ({ bookingData }: CheckOutProps) => {
           </div>
         </section>
       </div>
+      <PaymentInvoiceModal
+        isOpen={showInvoiceModal}
+        setIsOpen={setShowInvoiceModal}
+        isDownloadInvoice={true}
+        invoiceUrl={invoiceUrl}
+      />
     </main>
   );
 };

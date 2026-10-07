@@ -407,12 +407,13 @@ function Cart() {
                                       <div className="d-flex align-items-center justify-content-between w-100">
                                         <span>{sub.name}</span>
 
-                                        <button
-                                          type="button"
-                                          className="btn-close my-cross m-0 p-0"
-                                          style={{
-                                            border: "none",
-                                            background: "none",
+                                       { visibleSubCategories.length > 1 && (
+                                         <button
+                                           type="button"
+                                           className="btn-close my-cross m-0 p-0"
+                                           style={{
+                                             border: "none",
+                                             background: "none",
                                           }}
                                           onClick={() =>
                                             handleSubCategoryRemoveCart(
@@ -425,7 +426,7 @@ function Cart() {
                                             src="/images/off-canvas/cross-icon-off-canvas.svg"
                                             alt="Close"
                                           />
-                                        </button>
+                                        </button>)}
                                       </div>
 
                                       {sub.issues &&

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { globalServerRequest } from "@/actions/globalApi";
 import toast from "react-hot-toast";
+import PaymentInvoiceModal from "@/components/modals/PaymentInvoiceModal";
 
 interface Card {
   id: string | number;
@@ -75,6 +76,8 @@ function PaymentMethodContent({ initialCardsData }: CardProps) {
   );
 
   const [isPaying, setIsPaying] = useState(false);
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+  const [invoiceUrl, setInvoiceUrl] = useState<string>("");
 
   const handlePayment = async () => {
     if (!selectedCard) {
@@ -104,8 +107,26 @@ function PaymentMethodContent({ initialCardsData }: CardProps) {
       });
 
       if (response.success) {
-        toast.success("Payment completed successfully!", { id: toastId });
-        router.push("/booking");
+        toast.success(response?.data?.message || "Payment completed successfully!", { id: toastId });
+
+        const invUrl =
+          response?.data?.data?.invoiceUrl ||
+          response?.data?.data?.invoice_url ||
+          response?.data?.data?.invoice ||
+          response?.data?.data?.pdf_url ||
+          response?.data?.data?.download_url ||
+          response?.data?.invoiceUrl ||
+          response?.data?.invoice_url ||
+          response?.data?.invoice ||
+          response?.data?.pdf_url ||
+          response?.data?.download_url ||
+          "";
+
+        if (invUrl) {
+          setInvoiceUrl(invUrl);
+        }
+
+        setShowInvoiceModal(true);
       } else {
         toast.error(response.error || "Failed to process payment.", {
           id: toastId,
@@ -588,6 +609,12 @@ function PaymentMethodContent({ initialCardsData }: CardProps) {
           font-family: monospace;
         }
       `}</style>
+      <PaymentInvoiceModal
+        isOpen={showInvoiceModal}
+        setIsOpen={setShowInvoiceModal}
+        isDownloadInvoice={paymenttype === "full"}
+        invoiceUrl={invoiceUrl}
+      />
     </div>
   );
 }

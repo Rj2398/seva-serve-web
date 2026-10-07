@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 
 // @ts-ignore
 import * as braintree from "braintree-web";
+import PaymentInvoiceModal from "@/components/modals/PaymentInvoiceModal";
 
 // const PAYPAL_CLIENT_ID =
 //   process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID ||
@@ -34,6 +35,8 @@ const CheckOutContent = ({ bookingData }: CheckOutProps) => {
   const [venmoLoading, setVenmoLoading] = useState(true);
 
   const [isTokenizing, setIsTokenizing] = useState(false);
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+  const [invoiceUrl, setInvoiceUrl] = useState<string>("");
 
   const [checkoutData, setCheckoutData] = useState<any>();
   console.log(checkoutData, "check out data*******");
@@ -237,7 +240,25 @@ const CheckOutContent = ({ bookingData }: CheckOutProps) => {
           }
         );
 
-        router.push("/booking");
+        const invUrl =
+          response?.data?.data?.invoiceUrl ||
+          response?.data?.data?.invoice_url ||
+          response?.data?.data?.invoice ||
+          response?.data?.data?.pdf_url ||
+          response?.data?.data?.download_url ||
+          response?.data?.invoiceUrl ||
+          response?.data?.invoice_url ||
+          response?.data?.invoice ||
+          response?.data?.pdf_url ||
+          response?.data?.download_url ||
+          checkoutData?.job_summary?.invoice_url ||
+          "";
+
+        if (invUrl) {
+          setInvoiceUrl(invUrl);
+        }
+
+        setShowInvoiceModal(true);
       } else {
         toast.error(
           response?.error ||
@@ -566,6 +587,12 @@ const CheckOutContent = ({ bookingData }: CheckOutProps) => {
           </div>
         </section>
       </div>
+      <PaymentInvoiceModal
+        isOpen={showInvoiceModal}
+        setIsOpen={setShowInvoiceModal}
+        isDownloadInvoice={paymenttype === "full"}
+        invoiceUrl={invoiceUrl}
+      />
     </main>
   );
 };
