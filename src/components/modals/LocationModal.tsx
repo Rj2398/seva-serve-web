@@ -393,7 +393,7 @@ const handleGetCurrentLocation = () => {
           const { latitude, longitude } = position.coords;
           const apiKey =
             process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ||
-            "AIzaSyALi3glNPQSOD1n4mnjK0RmfGCws8-4nIg";
+            "AIzaSyCinDdjJJjl5Fl1LqrNUOjBQAW3_Uzy4YU";
           const res = await fetch(
             `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${apiKey}`
           );
