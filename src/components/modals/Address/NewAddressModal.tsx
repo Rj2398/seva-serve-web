@@ -217,7 +217,7 @@ const NewAddressModal: React.FC<NewAddressModalProps> = ({ selectedAddress, onSa
         // @ts-ignore
         geocoder.current = new window.google.maps.Geocoder();
       } else {
-        const apiKey = "AIzaSyALi3glNPQSOD1n4mnjK0RmfGCws8-4nIg";
+        const apiKey = "AIzaSyCinDdjJJjl5Fl1LqrNUOjBQAW3_Uzy4YU";
         if (apiKey) {
           const existingScript = document.getElementById("google-maps-script");
 
