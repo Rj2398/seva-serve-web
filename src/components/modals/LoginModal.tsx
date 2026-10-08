@@ -15,7 +15,8 @@ const LoginModal = () => {
   const [loading, setLoading] = useState(false);
   const [referCode, setReferCode] = useState("");
 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   // const phoneRegex =
   //   /^(?:\+1\s?)?(?:\([2-9]\d{2}\)|[2-9]\d{2})[-.\s]?[2-9]\d{2}[-.\s]?\d{4}$/;
    const phoneRegex = /^[0-9]{10}$/;
@@ -26,20 +27,18 @@ const LoginModal = () => {
 
   const handleContinue = async () => {
     // 1. FRONTEND VALIDATION
-    if (isEmailLogin) {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+   if (isEmailLogin) {
+  if (!inputValue.trim()) {
+    setError("Email is required");
+    return;
+  }
 
-      if (!inputValue) {
-        setError("Email is required");
-        return;
-      }
-
-      if (!emailRegex.test(inputValue)) {
-        setError("Please enter valid email");
-        return;
-      }
-    } else {
-      const phoneRegex = /^[0-9]{10}$/;
+  if (!emailRegex.test(inputValue.trim())) {
+    setError("Please enter valid email");
+    return;
+  }
+  }  else {
+      // const phoneRegex = /^[0-9]{10}$/;
 
       if (!inputValue) {
         setError("Phone number is required");

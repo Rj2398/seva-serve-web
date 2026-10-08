@@ -174,12 +174,12 @@ const RateContractorPopup = ({ bookingId, callBooking }: BookingProps) => {
     const avgRating =
       questionsArray.length > 0
         ? Math.round(
-            validRatings.reduce((acc, curr) => acc + curr.rating, 0) /
-              questionsArray.length
-          )
+          validRatings.reduce((acc, curr) => acc + curr.rating, 0) /
+          questionsArray.length
+        )
         : validRatings.length > 0
-        ? validRatings[0].rating
-        : 0;
+          ? validRatings[0].rating
+          : 0;
 
     if (avgRating === 0) {
       toast.error("Please provide a rating.");
@@ -362,7 +362,11 @@ const RateContractorPopup = ({ bookingId, callBooking }: BookingProps) => {
           </div>
         </div>
       </div>
-      <RateSevaServe feedback={feedback} reviewPayload={reviewPayload} />
+      <RateSevaServe
+        feedback={feedback}
+        reviewPayload={reviewPayload}
+        callBooking={callBooking}
+      />
     </>
   );
 };

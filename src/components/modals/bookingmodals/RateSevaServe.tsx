@@ -5,9 +5,14 @@ import toast from "react-hot-toast";
 interface RateSevaServeProps {
   feedback: string;
   reviewPayload: any;
+  callBooking?: (page?: number, currentTab?: string) => void | Promise<void>;
 }
 
-const RateSevaServe = ({ feedback, reviewPayload }: RateSevaServeProps) => {
+const RateSevaServe = ({
+  feedback,
+  reviewPayload,
+  callBooking,
+}: RateSevaServeProps) => {
   console.log(reviewPayload, "Review payload of the 5 star");
 
   const handleCopy = async (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -34,6 +39,12 @@ const RateSevaServe = ({ feedback, reviewPayload }: RateSevaServeProps) => {
       console.log("API RESPONSE:", res);
 
       if (res?.success) {
+        toast.success(res?.data?.message || "Feedback submitted successfully!");
+
+        if (callBooking) {
+          await callBooking(1);
+        }
+
         const googleReviewUrl =
           "https://www.google.com/search?sca_esv=5cd892c2b13a5520&sxsrf=APpeQnsHlhuRJia8VWVwMT2I-AMl1dPkyg:1785913523815&kgmid=/g/11fy4yrlzj&q=SevaServe+LLC&shem=dlvs1,ltae,rimspwouoe&shndl=30&source=sh/x/loc/uni/m1/1&kgs=ec3df1c0708037d5&utm_source=dlvs1,ltae,rimspwouoe,sh/x/loc/uni/m1/1#lrd=0x89c3b7c01a642313:0xc0c61501b622167b,3";
 
@@ -44,7 +55,10 @@ const RateSevaServe = ({ feedback, reviewPayload }: RateSevaServeProps) => {
         const modalElement = document.getElementById("rateSevaServe");
 
         if (modalElement) {
-          const modal = window.bootstrap?.Modal.getInstance(modalElement);
+          const bootstrap = (window as any).bootstrap;
+          const modal =
+            bootstrap?.Modal.getInstance(modalElement) ||
+            (bootstrap ? new bootstrap.Modal(modalElement) : null);
 
           modal?.hide();
         }

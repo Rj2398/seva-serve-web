@@ -148,20 +148,25 @@ export default function ServiceViewDetail({
             );
             console.log("matchedSubCategory", matchedSubCategory);
             if (matchedSubCategory) {
-              const firstService = matchedSubCategory.services?.[0];
-              const savedIssueId = firstService?.id
-                ? String(firstService.id)
+              const queryIssueId = searchParams.get("issueId");
+              const targetService = queryIssueId
+                ? matchedSubCategory.services?.find(
+                  (s: any) => String(s.id) == String(queryIssueId)
+                ) || matchedSubCategory.services?.[0]
+                : matchedSubCategory.services?.[0];
+              const savedIssueId = targetService?.id
+                ? String(targetService.id)
                 : null;
               const savedSpecificIssueIds = Array.isArray(
-                firstService?.specificIssues
+                targetService?.specificIssues
               )
-                ? firstService.specificIssues.map((spec: any) =>
+                ? targetService.specificIssues.map((spec: any) =>
                   Number(spec.id)
                 )
                 : [];
               setLoadedData({
                 subCategoryId: matchedSubCategory.id || null,
-                issueId: firstService?.id || null,
+                issueId: targetService?.id || null,
                 specificIssueId: savedSpecificIssueIds,
                 description: matchedSubCategory.problemDescription || "",
                 mediaUrls: Array.isArray(matchedSubCategory.media)
@@ -495,7 +500,8 @@ export default function ServiceViewDetail({
     if (actionType === "cancel") {
       toast.success("Redirecting to summary...");
       router.push(
-        `/summary-estimate?requestedId=${requestedId}&is_quote_edit=${is_quote_edit}`
+        `/summary-estimate?requestedId=${requestedId}${is_quote_edit === "1" ? "&is_quote_edit=1" : ""
+        }`
       );
       return;
     }
@@ -522,11 +528,13 @@ export default function ServiceViewDetail({
         );
         if (actionType === "cancel") {
           router.push(
-            `/summary-estimate?requestedId=${requestedId}&is_quote_edit=${is_quote_edit}`
+            `/summary-estimate?requestedId=${requestedId}${is_quote_edit === "1" ? "&is_quote_edit=1" : ""
+            }`
           );
         } else {
           router.push(
-            `/summary-estimate?requestedId=${requestedId}&is_quote_edit=${is_quote_edit}`
+            `/summary-estimate?requestedId=${requestedId}${is_quote_edit === "1" ? "&is_quote_edit=1" : ""
+            }`
           );
         }
         return;
@@ -539,11 +547,11 @@ export default function ServiceViewDetail({
         }
 
         console.log("selectSubCategories", selectSubCategories);
-        if (!(selectSubCategories == subCategoryId)) {
-          toast.error(
-            "You can't update subcategory you can only update there data"
-          );
-        }
+        // if (!(selectSubCategories == subCategoryId)) {
+        //   toast.error(
+        //     "You can't update subcategory you can only update there data"
+        //   );
+        // }
         if (selectSubCategories) {
           formData.append("subCategoryId", String(selectSubCategories));
         }
@@ -600,11 +608,13 @@ export default function ServiceViewDetail({
 
         if (actionType === "cancel")
           router.push(
-            `/summary-estimate?requestedId=${requestedId}&is_quote_edit=${is_quote_edit}`
+            `/summary-estimate?requestedId=${requestedId}${is_quote_edit === "1" ? "&is_quote_edit=1" : ""
+            }`
           );
         if (actionType === "updateQuote")
           router.push(
-            `/summary-estimate?requestedId=${requestedId}&is_quote_edit=${is_quote_edit}`
+            `/summary-estimate?requestedId=${requestedId}${is_quote_edit === "1" ? "&is_quote_edit=1" : ""
+            }`
           );
 
         setAddedCategory(false);
@@ -657,8 +667,7 @@ export default function ServiceViewDetail({
                             e.preventDefault();
                             if (
                               activeIssueId &&
-                              addedCategory &&
-                              is_quote_edit !== "1"
+                              addedCategory
                             ) {
                               setPendingAction({ type: "back" });
                               if (
@@ -735,8 +744,7 @@ export default function ServiceViewDetail({
                                 String(selectSubCategories) !==
                                 String(item?.id) &&
                                 activeIssueId &&
-                                addedCategory &&
-                                is_quote_edit !== "1"
+                                addedCategory
                               ) {
                                 setPendingAction({
                                   type: "subcategory",
@@ -766,6 +774,10 @@ export default function ServiceViewDetail({
                                 setSelectSubCategories(item?.id);
                                 setActiveIssueId(null);
                                 setAddedCategory(false);
+                                setSelectedSpecificIssueId({});
+                                setProblemDesc({});
+                                setUploadedImage({});
+                                setUploadedFiles({});
                               }
                             }}
                             className={
@@ -774,10 +786,6 @@ export default function ServiceViewDetail({
                                 : ""
                             }
                             key={item?.id}
-                            disabled={
-                              is_quote_edit === "1" &&
-                              String(subCategoryId) !== String(item?.id)
-                            }
                           >
                             {item?.name}
                           </button>
@@ -803,9 +811,26 @@ export default function ServiceViewDetail({
                                   if (!isOpen) {
                                     setActiveIssueId(issueIdStr);
                                     setAddedCategory(true);
+                                    // Single-select service: clear other service data in this subcategory
+                                    setSelectedSpecificIssueId((prev) => ({
+                                      [issueIdStr]: prev[issueIdStr] || [],
+                                    }));
+                                    setProblemDesc((prev) => ({
+                                      [issueIdStr]: prev[issueIdStr] || "",
+                                    }));
+                                    setUploadedImage((prev) => ({
+                                      [issueIdStr]: prev[issueIdStr] || [],
+                                    }));
+                                    setUploadedFiles((prev) => ({
+                                      [issueIdStr]: prev[issueIdStr] || [],
+                                    }));
                                   } else {
                                     setActiveIssueId(null);
                                     setAddedCategory(false);
+                                    setSelectedSpecificIssueId({});
+                                    setProblemDesc({});
+                                    setUploadedImage({});
+                                    setUploadedFiles({});
                                   }
                                 }}
                               >
@@ -984,26 +1009,7 @@ export default function ServiceViewDetail({
                       )}
                     </div>
 
-                    {is_quote_edit === "1" ? (
-                      <>
-                        <Link
-                          href=""
-                          onClick={(e) => handleUpdateQuote("updateQuote", e)}
-                          className="primary-cta"
-                        >
-                          Update Quote
-                        </Link>
-                        <Link
-                          href=""
-                          onClick={(e) => handleUpdateQuote("cancel", e)}
-                          className="primary-cta"
-                          style={{ marginRight: "10px" }}
-                        >
-                          Cancel
-                        </Link>
-                      </>
-                    ) : (
-                      activeIssues &&
+                    {activeIssues &&
                       activeIssues.length > 0 && (
                         <>
                           <Link
@@ -1027,7 +1033,7 @@ export default function ServiceViewDetail({
                             href=""
                             onClick={(e) => {
                               if (!isAdding) {
-                                if (quote_update == "1") {
+                                if (quote_update == "1" || is_quote_edit == "1") {
                                   handleUpdateQuote("updateQuote", e);
                                 } else {
                                   handleServiceCart("checkout_cart", e);
@@ -1043,13 +1049,14 @@ export default function ServiceViewDetail({
                           >
                             {isAdding
                               ? "Processing..."
-                              : quote_update == "1"
-                                ? "Save Changes"
-                                : "Checkout"}
+                              : is_quote_edit == "1"
+                                ? "Update Quote"
+                                : quote_update == "1"
+                                  ? "Save Changes"
+                                  : "Checkout"}
                           </Link>
                         </>
-                      )
-                    )}
+                      )}
                   </div>
                 </div>
               </div>
@@ -1113,6 +1120,10 @@ export default function ServiceViewDetail({
                         setSelectSubCategories(pendingAction.subCategoryId);
                         setActiveIssueId(null);
                         setAddedCategory(false);
+                        setSelectedSpecificIssueId({});
+                        setProblemDesc({});
+                        setUploadedImage({});
+                        setUploadedFiles({});
                       } else if (pendingAction?.type === "back") {
                         router.back();
                       }

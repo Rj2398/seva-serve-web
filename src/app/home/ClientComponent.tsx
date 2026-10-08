@@ -840,7 +840,7 @@ useEffect(() => {
                                 <button
                                   onClick={() => {
                                     if (isLogin) {
-                                      router.push("/category");
+                                      router.push(`/serviceDetails?categoryId=${item?.categoryId}`);
                                     }
                                   }}
                                   data-bs-toggle={

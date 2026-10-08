@@ -32,8 +32,24 @@ const LocationModal = () => {
   });
   const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
 
+  console.log(savedAddresses, "my saved address");
 
-  console.log(savedAddresses,"my saved address")
+  const filteredSavedAddresses = savedAddresses.filter((item: any) => {
+    if (!searchTerm.trim()) return true;
+    const term = searchTerm.toLowerCase().trim();
+
+    const displayType = (item.type || item.label || "Home").toLowerCase();
+    const displayFlat = (item.flat || item.flat_house_building || "").toLowerCase();
+    const displayFloor = (item.floor || "").toLowerCase();
+    const displayArea = (item.area || item.area_sector_locality || "").toLowerCase();
+    const displayLandmark = (item.landmark || item.nearby_landmark || "").toLowerCase();
+    const displayState = (item.state_name || "").toLowerCase();
+    const displayZip = (item.zip || "").toString().toLowerCase();
+
+    const fullString = `${displayType} ${displayFlat} ${displayFloor} ${displayArea} ${displayLandmark} ${displayState} ${displayZip}`;
+
+    return fullString.includes(term);
+  });
 
   const isLoggedIn =
     typeof window !== "undefined" ? localStorage.getItem("isLoggedIn") : null;
@@ -61,6 +77,7 @@ const LocationModal = () => {
         fetchAddresses();
       }
       setIsAutoEnabled(localStorage.getItem("autoLocation") === "true");
+      setSearchTerm("");
     };
 
     const handleStatusChange = () => {
@@ -514,51 +531,11 @@ const handleGetCurrentLocation = () => {
                     {/* Search Input Field */}
                     <input
                       type="text"
-                      placeholder="Search a new address"
+                      placeholder="Search address"
                       className="top-srch"
-                      // value={searchTerm}
-
-                      // onChange={(e) => {
-                      //   setSearchTerm(e.target.value);
-                      //   setShowDropdown(true);
-                      // }}
-                      // onFocus={() => setShowDropdown(true)}
-
-                      // type="button"
-                    
-                      data-bs-target="#add-address-popup"
-                      data-bs-toggle="modal"
-                      // className="add-address"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
                     />
-
-                    {/* CUSTOM DUMMY DROPDOWN (Bina CSS disturbance ke inline setup) */}
-                    {showDropdown && filteredPlaces.length > 0 && (
-                      <ul
-                        className="list-group"
-                        style={{
-                          position: "absolute",
-                          top: "10%",
-                          left: 0,
-                          right: 0,
-                          zIndex: 1050,
-                          maxHeight: "200px",
-                          overflowY: "auto",
-                          boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
-                        }}
-                      >
-                        {filteredPlaces.map((place, index) => (
-                          <li
-                            key={index}
-                            className="list-group-item list-group-item-action"
-                            style={{ cursor: "pointer", fontSize: "14px" }}
-                            onClick={() => handleSelectAddress(place)}
-                          >
-                            <i className="fa-solid fa-location-dot me-2 text-secondary"></i>
-                            {place}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
 
                     <div className="your-location-top-in">
                       {!isAutoEnabled && (
@@ -594,7 +571,8 @@ const handleGetCurrentLocation = () => {
                     {savedAddresses.length > 0 && (
                       <>
                         <h5>Your Saved Addresses</h5>
-                        {savedAddresses.map((item: any, idx: number) => {
+                        {filteredSavedAddresses.length > 0 ? (
+                          filteredSavedAddresses.map((item: any, idx: number) => {
   const displayType =
     item.type || item.label || "Home";
 
@@ -711,7 +689,12 @@ const handleGetCurrentLocation = () => {
       </label>
     </React.Fragment>
   );
-})}
+})
+                        ) : (
+                          <p style={{ color: "#888", fontSize: "14px", marginTop: "12px", paddingLeft: "5px" }}>
+                            No saved addresses match "{searchTerm}"
+                          </p>
+                        )}
                       </>
                     )}
                   </div>

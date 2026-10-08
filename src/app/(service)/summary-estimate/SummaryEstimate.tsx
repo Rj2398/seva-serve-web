@@ -166,45 +166,45 @@ const SummaryEstimate = () => {
 
 
 
- const deleteSubcategory = async (
-  subCategoryId: number,
-  issueId?: string
-) => {
-  if (!activeRequestId) {
-    toast.error("Request ID is missing.");
-    return;
-  }
-
-  try {
-    const payload: any = {
-      requestId: activeRequestId,
-      subCategoryId: subCategoryId,
-    };
-
-    // issueId available hai tabhi API payload me bhejo
-    if (issueId) {
-      payload.issueId = issueId;
+  const deleteSubcategory = async (
+    subCategoryId: number,
+    issueId?: string
+  ) => {
+    if (!activeRequestId) {
+      toast.error("Request ID is missing.");
+      return;
     }
 
-    const response = await globalServerRequest({
-      endpoint: "quotes/delete-cart-subcategory",
-      method: "POST",
-      payload,
-    });
+    try {
+      const payload: any = {
+        requestId: activeRequestId,
+        subCategoryId: subCategoryId,
+      };
 
-    if (response?.success && response?.data?.success) {
-      toast.success("Subcategory deleted successfully.");
-      fetchQuote();
-    } else {
-      toast.error(
-        response?.error || "Failed to delete subcategory."
-      );
+      // issueId available hai tabhi API payload me bhejo
+      if (issueId) {
+        payload.issueId = issueId;
+      }
+
+      const response = await globalServerRequest({
+        endpoint: "quotes/delete-cart-subcategory",
+        method: "POST",
+        payload,
+      });
+
+      if (response?.success && response?.data?.success) {
+        toast.success("Subcategory deleted successfully.");
+        fetchQuote();
+      } else {
+        toast.error(
+          response?.error || "Failed to delete subcategory."
+        );
+      }
+    } catch (error) {
+      console.error("Error deleting subcategory:", error);
+      toast.error("Failed to delete subcategory.");
     }
-  } catch (error) {
-    console.error("Error deleting subcategory:", error);
-    toast.error("Failed to delete subcategory.");
-  }
-};
+  };
   console.log("summary_estimate here is the data", summary_estimate);
 
   return (
@@ -246,12 +246,12 @@ const SummaryEstimate = () => {
                       className="issue-details-wrp d-flex flex-column gap-3"
                       style={{ padding: "10px" }}
                     >
-                     
-                    {(summary_estimate?.subCategories?.length ?? 0) > 0 && (
-                      <div className="category">
-                        <p>Selected Sub-category ({summary_estimate?.subCategories?.length || 0})</p>
-                      </div>
-                    )}
+
+                      {(summary_estimate?.subCategories?.length ?? 0) > 0 && (
+                        <div className="category">
+                          <p>Selected Sub-category ({summary_estimate?.subCategories?.length || 0})</p>
+                        </div>
+                      )}
 
                       {summary_estimate?.subCategories?.map(
                         (subCat: any, subCatIndex: any) => {
@@ -271,14 +271,14 @@ const SummaryEstimate = () => {
                                 onClick={() => toggleAccordion(subCatIndex)}
                               >
                                 <div className="d-flex flex-column align-items-start w-100">
-                                 {isExpanded && (
-                                  <p
-                                    className="text-muted small mb-1 fw-semibold"
-                                    style={{ fontSize: "13px" }}
-                                  >
-                                    Selected Subcategory
-                                  </p>
-                                 )}
+                                  {isExpanded && (
+                                    <p
+                                      className="text-muted small mb-1 fw-semibold"
+                                      style={{ fontSize: "13px" }}
+                                    >
+                                      Selected Subcategory
+                                    </p>
+                                  )}
                                   <h4
                                     className="m-0 fw-bold text-black"
                                     style={{ fontSize: "15px", color: "#000" }}
@@ -299,14 +299,14 @@ const SummaryEstimate = () => {
                                   >
                                     ▼
                                   </span>
-                                {(summary_estimate?.subCategories?.length ?? 0) > 1 &&   <Link
+                                  {(summary_estimate?.subCategories?.length ?? 0) > 1 && <Link
                                     href="#"
                                     // href={`/serviceDetails?categoryId=${summary_estimate?.category?.id || ""
                                     //   }&requestedId=${activeRequestId || ""
                                     //   }&subCategoryId=${subCat?.id || ""}${is_quote === "1" ? "&is_quote_edit=1" : ""
                                     //   }&is_quote_update=1`}
                                     className="ml-2"
-                                    onClick={(e) =>{ e.stopPropagation(),deleteSubcategory(subCat?.id || "", subCat?.issueId || "")}} // Header toggle event ko rokne ke liye
+                                    onClick={(e) => { e.stopPropagation(), deleteSubcategory(subCat?.id || "", subCat?.issueId || "") }} // Header toggle event ko rokne ke liye
                                   >
                                     <img
                                       src="images/inner-page/delete-icon.svg"
@@ -504,44 +504,44 @@ const SummaryEstimate = () => {
                               )} */}
 
 
-                             {isExpanded && (
-  <div className="d-flex flex-column gap-3 pl-2 transition-all">
-    {/* CARD 1: Service & Issue Section */}
-    <div
-      className="p-3 bg-white position-relative"
-      style={{
-        borderRadius: "24px",
-        border: "1px solid #99131833",
-      }}
-    >
-      <div className="d-flex justify-content-between align-items-start">
-        <div className="w-100">
-          <p
-            className="small mb-3 fw-semibold text-muted"
-            style={{ fontSize: "13px" }}
-          >
-            Service & Issue
-          </p>
+                              {isExpanded && (
+                                <div className="d-flex flex-column gap-3 pl-2 transition-all">
+                                  {/* CARD 1: Service & Issue Section */}
+                                  <div
+                                    className="p-3 bg-white position-relative"
+                                    style={{
+                                      borderRadius: "24px",
+                                      border: "1px solid #99131833",
+                                    }}
+                                  >
+                                    <div className="d-flex justify-content-between align-items-start">
+                                      <div className="w-100">
+                                        <p
+                                          className="small mb-3 fw-semibold text-muted"
+                                          style={{ fontSize: "13px" }}
+                                        >
+                                          Service & Issue
+                                        </p>
 
-          <ul
-            className="list-unstyled pl-4 m-0"
-            style={{
-              fontSize: "14px",
-              color: "#222",
-            }}
-          >
-            {subCat?.services?.map(
-              (item: any, index: any) => (
-                <li
-                  key={item?.id || index}
-                  className="text-black fw-bold mb-1"
-                  style={{
-                    fontSize: "15px",
-                    color: "#111",
-                  }}
-                >
-                  {/* Main Issue + Edit */}
-                  {/* <div
+                                        <ul
+                                          className="list-unstyled pl-4 m-0"
+                                          style={{
+                                            fontSize: "14px",
+                                            color: "#222",
+                                          }}
+                                        >
+                                          {subCat?.services?.map(
+                                            (item: any, index: any) => (
+                                              <li
+                                                key={item?.id || index}
+                                                className="text-black fw-bold mb-1"
+                                                style={{
+                                                  fontSize: "15px",
+                                                  color: "#111",
+                                                }}
+                                              >
+                                                {/* Main Issue + Edit */}
+                                                {/* <div
                     className="d-flex align-items-center justify-content-between"
                     style={{ width: "100%" }}
                   >
@@ -590,143 +590,138 @@ const SummaryEstimate = () => {
                     </Link>
                   </div> */}
 
-                  <div
-  className="d-flex align-items-center justify-content-between"
-  style={{ width: "100%" }}
->
-  <span>
-    •{" "}
-    {typeof item === "object"
-      ? item?.title
-      : item}
-  </span>
+                                                <div
+                                                  className="d-flex align-items-center justify-content-between"
+                                                  style={{ width: "100%" }}
+                                                >
+                                                  <span>
+                                                    •{" "}
+                                                    {typeof item === "object"
+                                                      ? item?.title
+                                                      : item}
+                                                  </span>
 
-  {/* Right side icons */}
-                <div
-                  className="d-flex align-items-center"
-                  style={{
-                    gap: "12px",
-                    marginLeft: "auto",
-                  }}
-                >
-                  {subCat?.services?.length > 1 && (
-                    <Link
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        deleteSubcategory(
-                          subCat?.id || "",
-                          item?.id || ""
-                        );
-                      }}
-                    >
-                      <img
-                        src="images/inner-page/delete-icon.svg"
-                        alt="Delete Issue"
-                        style={{
-                          width: "14px",
-                          display: "block",
-                        }}
-                      />
-                    </Link>
-                  )}
+                                                  {/* Right side icons */}
+                                                  <div
+                                                    className="d-flex align-items-center"
+                                                    style={{
+                                                      gap: "12px",
+                                                      marginLeft: "auto",
+                                                    }}
+                                                  >
+                                                    {subCat?.services?.length > 1 && (
+                                                      <Link
+                                                        href="#"
+                                                        onClick={(e) => {
+                                                          e.preventDefault();
+                                                          e.stopPropagation();
+                                                          deleteSubcategory(
+                                                            subCat?.id || "",
+                                                            item?.id || ""
+                                                          );
+                                                        }}
+                                                      >
+                                                        <img
+                                                          src="images/inner-page/delete-icon.svg"
+                                                          alt="Delete Issue"
+                                                          style={{
+                                                            width: "14px",
+                                                            display: "block",
+                                                          }}
+                                                        />
+                                                      </Link>
+                                                    )}
 
-                  <Link
-                    href={`/serviceDetails?categoryId=${
-                      summary_estimate?.category?.id || ""
-                    }&requestedId=${
-                      activeRequestId || ""
-                    }&subCategoryId=${
-                      subCat?.id || ""
-                    }&issueId=${
-                      item?.id || ""
-                    }${
-                      is_quote === "1"
-                        ? "&is_quote_edit=1"
-                        : ""
-                    }&is_quote_update=1`}
-                  >
-                    <img
-                      src="images/inner-page/edit-icon-c.svg"
-                      alt="Edit Issue"
-                      style={{
-                        width: "14px",
-                        display: "block",
-                      }}
-                    />
-                  </Link>
-                </div>
-              </div>
+                                                    <Link
+                                                      href={`/serviceDetails?categoryId=${summary_estimate?.category?.id || ""
+                                                        }&requestedId=${activeRequestId || ""
+                                                        }&subCategoryId=${subCat?.id || ""
+                                                        }&issueId=${item?.id || ""
+                                                        }${is_quote === "1"
+                                                          ? "&is_quote_edit=1"
+                                                          : ""
+                                                        }&is_quote_update=1`}
+                                                    >
+                                                      <img
+                                                        src="images/inner-page/edit-icon-c.svg"
+                                                        alt="Edit Issue"
+                                                        style={{
+                                                          width: "14px",
+                                                          display: "block",
+                                                        }}
+                                                      />
+                                                    </Link>
+                                                  </div>
+                                                </div>
 
-                  {/* Specific Sub Issues */}
-                  {item?.specificIssues &&
-                    item?.specificIssues?.length > 0 && (
-                      <ul
-                        className="list-unstyled pl-4 m-0"
-                        style={{
-                          fontSize: "14px",
-                          color: "#222",
-                        }}
-                      >
-                        {item.specificIssues.map(
-                          (issue: any, idx: any) => (
-                            <li
-                              key={issue?.id || idx}
-                              className="small mb-1 text-secondary"
-                              style={{
-                                fontSize: "14px",
-                                paddingLeft: "10px",
-                              }}
-                            >
-                              -{" "}
-                              {typeof issue === "object"
-                                ? issue?.name
-                                : issue}
-                            </li>
-                          )
-                        )}
-                      </ul>
-                    )}
-                </li>
-              )
-            )}
-          </ul>
-        </div>
-      </div>
-    </div>
+                                                {/* Specific Sub Issues */}
+                                                {item?.specificIssues &&
+                                                  item?.specificIssues?.length > 0 && (
+                                                    <ul
+                                                      className="list-unstyled pl-4 m-0"
+                                                      style={{
+                                                        fontSize: "14px",
+                                                        color: "#222",
+                                                      }}
+                                                    >
+                                                      {item.specificIssues.map(
+                                                        (issue: any, idx: any) => (
+                                                          <li
+                                                            key={issue?.id || idx}
+                                                            className="small mb-1 text-secondary"
+                                                            style={{
+                                                              fontSize: "14px",
+                                                              paddingLeft: "10px",
+                                                            }}
+                                                          >
+                                                            -{" "}
+                                                            {typeof issue === "object"
+                                                              ? issue?.name
+                                                              : issue}
+                                                          </li>
+                                                        )
+                                                      )}
+                                                    </ul>
+                                                  )}
+                                              </li>
+                                            )
+                                          )}
+                                        </ul>
+                                      </div>
+                                    </div>
+                                  </div>
 
-    {/* CARD 2: Problem Description */}
-    <div
-      className="p-3 bg-white position-relative"
-      style={{
-        borderRadius: "24px",
-        border: "1px solid #99131833",
-      }}
-    >
-      <div className="d-flex justify-content-between align-items-start">
-        <div className="w-100 pr-3">
-          <p
-            className="small mb-2 fw-semibold text-muted"
-            style={{ fontSize: "13px" }}
-          >
-            Problem Description
-          </p>
+                                  {/* CARD 2: Problem Description */}
+                                  <div
+                                    className="p-3 bg-white position-relative"
+                                    style={{
+                                      borderRadius: "24px",
+                                      border: "1px solid #99131833",
+                                    }}
+                                  >
+                                    <div className="d-flex justify-content-between align-items-start">
+                                      <div className="w-100 pr-3">
+                                        <p
+                                          className="small mb-2 fw-semibold text-muted"
+                                          style={{ fontSize: "13px" }}
+                                        >
+                                          Problem Description
+                                        </p>
 
-          <p
-            className="fw-bold text-dark m-0"
-            style={{
-              fontSize: "14px",
-              lineHeight: "1.5",
-              color: "#222",
-            }}
-          >
-            {subCat?.problemDescription ||
-              "No description provided"}
-          </p>
-        </div>
+                                        <p
+                                          className="fw-bold text-dark m-0"
+                                          style={{
+                                            fontSize: "14px",
+                                            lineHeight: "1.5",
+                                            color: "#222",
+                                          }}
+                                        >
+                                          {subCat?.problemDescription ||
+                                            "No description provided"}
+                                        </p>
+                                      </div>
 
-        {/* <Link
+                                      {/* <Link
           href={`/serviceDetails?categoryId=${
             summary_estimate?.category?.id || ""
           }&requestedId=${
@@ -745,63 +740,63 @@ const SummaryEstimate = () => {
             style={{ width: "14px" }}
           />
         </Link> */}
-      </div>
-    </div>
+                                    </div>
+                                  </div>
 
-    {/* CARD 3: Uploaded Image/Video */}
-    <div
-      className="p-3 bg-white"
-      style={{
-        borderRadius: "24px",
-        border: "1px solid #99131833",
-      }}
-    >
-      <p
-        className="small mb-3 fw-semibold text-muted"
-        style={{ fontSize: "13px" }}
-      >
-        Uploaded Image/Video
-      </p>
+                                  {/* CARD 3: Uploaded Image/Video */}
+                                  <div
+                                    className="p-3 bg-white"
+                                    style={{
+                                      borderRadius: "24px",
+                                      border: "1px solid #99131833",
+                                    }}
+                                  >
+                                    <p
+                                      className="small mb-3 fw-semibold text-muted"
+                                      style={{ fontSize: "13px" }}
+                                    >
+                                      Uploaded Image/Video
+                                    </p>
 
-      <div className="d-flex flex-wrap gap-3">
-        {subCat?.media?.map(
-          (url: any, index: any) => (
-            <img
-              key={index}
-              src={
-                typeof url === "object"
-                  ? url?.url
-                  : url ||
-                    "images/inner-page/issue-icon.svg"
-              }
-              alt={`Uploaded attachment ${index + 1}`}
-              style={{
-                width: "100px",
-                height: "100px",
-                objectFit: "cover",
-                borderRadius: "20px",
-                border: "1px solid #eee",
-              }}
-            />
-          )
-        )}
+                                    <div className="d-flex flex-wrap gap-3">
+                                      {subCat?.media?.map(
+                                        (url: any, index: any) => (
+                                          <img
+                                            key={index}
+                                            src={
+                                              typeof url === "object"
+                                                ? url?.url
+                                                : url ||
+                                                "images/inner-page/issue-icon.svg"
+                                            }
+                                            alt={`Uploaded attachment ${index + 1}`}
+                                            style={{
+                                              width: "100px",
+                                              height: "100px",
+                                              objectFit: "cover",
+                                              borderRadius: "20px",
+                                              border: "1px solid #eee",
+                                            }}
+                                          />
+                                        )
+                                      )}
 
-        {(!subCat?.media ||
-          subCat?.media?.length === 0) && (
-          <p className="text-muted small m-0">
-            No media uploaded
-          </p>
-        )}
-      </div>
-    </div>
-  </div>
-)}
+                                      {(!subCat?.media ||
+                                        subCat?.media?.length === 0) && (
+                                          <p className="text-muted small m-0">
+                                            No media uploaded
+                                          </p>
+                                        )}
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           );
                         }
                       )}
 
-                      {summary_estimate?.ai_summary && summary_estimate?.ai_summary.length > 0  && (
+                      {summary_estimate?.ai_summary && summary_estimate?.ai_summary.length > 0 && (
                         <div
                           className="p-3 position-relative d-flex flex-column justify-content-center"
                           style={{
@@ -822,10 +817,10 @@ const SummaryEstimate = () => {
                             style={{ fontSize: "13px", lineHeight: "1.5" }}
                           >
                             {
-                               summary_estimate?.ai_summary
-                            }  
+                              summary_estimate?.ai_summary
+                            }
 
-                            </p>
+                          </p>
                         </div>
                       )}
 

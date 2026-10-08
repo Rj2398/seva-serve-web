@@ -60,6 +60,32 @@ const QuoteDatePopup: React.FC<QuoteDatePopupProps> = ({
     selectedDateRef.current = selectedDate;
   }, [selectedDate]);
 
+  useEffect(() => {
+    const updateCalendarHighlights = () => {
+      const modal = modalRef.current;
+      if (!modal) return;
+      const slotDates = new Set(selectedSlots.map((s) => s.date));
+      const cells = modal.querySelectorAll("#quote-datepicker td[data-month]");
+      cells.forEach((cell) => {
+        const m = Number(cell.getAttribute("data-month")) + 1;
+        const y = cell.getAttribute("data-year");
+        const a = cell.querySelector("a");
+        if (!a) return;
+        const d = Number(a.textContent?.trim());
+        if (!d) return;
+        const dateStr = `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+        if (slotDates.has(dateStr)) {
+          cell.classList.add("slot-has-booking");
+        } else {
+          cell.classList.remove("slot-has-booking");
+        }
+      });
+    };
+
+    const timer = setTimeout(updateCalendarHighlights, 50);
+    return () => clearTimeout(timer);
+  }, [selectedSlots, selectedDate, isOpen]);
+
   const [timeSlots, setTimeSlots] = useState<ApiTimeSlot[]>([]);
   const [loadingSlots, setLoadingSlots] = useState<boolean>(false);
 
@@ -187,6 +213,37 @@ const QuoteDatePopup: React.FC<QuoteDatePopupProps> = ({
         const datepicker = ($("#quote-datepicker") as any).datepicker({
           minDate: 0,
           dateFormat: "yy-mm-dd",
+          dayNamesMin: ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"],
+          monthNames: [
+            "Jan",
+            "Feb",
+            "Mar",
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep",
+            "Oct",
+            "Nov",
+            "Dec",
+          ],
+          monthNamesShort: [
+            "Jan",
+            "Feb",
+            "Mar",
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep",
+            "Oct",
+            "Nov",
+            "Dec",
+          ],
+          prevText: "",
+          nextText: "",
           onSelect: (dateText: string) => {
             const currentSelectedSlots = selectedSlotsRef.current;
             const uniqueDates = Array.from(
@@ -210,6 +267,33 @@ const QuoteDatePopup: React.FC<QuoteDatePopupProps> = ({
         });
 
         datepicker.datepicker("setDate", new Date());
+
+        $("#quote-datepicker").on("click", () => {
+          setTimeout(() => {
+            const modal = modalRef.current;
+            if (!modal) return;
+            const slotDates = new Set(
+              selectedSlotsRef.current.map((s) => s.date)
+            );
+            const cells = modal.querySelectorAll(
+              "#quote-datepicker td[data-month]"
+            );
+            cells.forEach((cell) => {
+              const m = Number(cell.getAttribute("data-month")) + 1;
+              const y = cell.getAttribute("data-year");
+              const a = cell.querySelector("a");
+              if (!a) return;
+              const d = Number(a.textContent?.trim());
+              if (!d) return;
+              const dateStr = `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+              if (slotDates.has(dateStr)) {
+                cell.classList.add("slot-has-booking");
+              } else {
+                cell.classList.remove("slot-has-booking");
+              }
+            });
+          }, 50);
+        });
       }
     };
 
@@ -316,30 +400,6 @@ const QuoteDatePopup: React.FC<QuoteDatePopupProps> = ({
 
   return (
     <>
-      <style>{`
-        #quote-date-time-popup .modal-dialog {
-          max-width: 900px;
-          margin-top: 5rem;
-        }
-        #quote-date-time-popup .modal-content {
-          padding: 0;
-        }
-        #quote-date-time-popup .modal-dialog button.btn-close {
-          position: absolute;
-          top: -45px;
-          right: 0;
-          background-color: #ffffff;
-          opacity: 1;
-          width: 35px;
-          height: 35px;
-          border-radius: 50px;
-          padding: 0;
-          display: flex;
-          align-items: center;
-          background-size: 13px;
-          justify-content: center;
-        }
-      `}</style>
       <div
         ref={modalRef}
         className="modal fade"
@@ -348,7 +408,6 @@ const QuoteDatePopup: React.FC<QuoteDatePopupProps> = ({
         aria-hidden="true"
       >
         <div className="modal-dialog modal-lg">
-          {" "}
           <div className="modal-content">
             <button
               type="button"
@@ -369,55 +428,32 @@ const QuoteDatePopup: React.FC<QuoteDatePopupProps> = ({
 
                     <div className="select-time-in">
                       {selectedSlots.length > 0 && (
-                        <div
-                          className="saved-date-times"
-                          style={{
-                            maxHeight: "120px",
-                            overflowY: "auto",
-                            marginBottom: "15px",
-                          }}
-                        >
-                          <h3>Selected Slots ({selectedSlots.length})</h3>
+                        <div className="saved-date-times-wrp">
                           {selectedSlots.map((item, index) => (
-                            <div
-                              key={index}
-                              className="d-flex align-items-center justify-content-between mb-1 bg-light p-1 rounded"
-                            >
-                              <small style={{ fontSize: "12px" }}>
-                                <strong>{formatDateLabel(item.date)}</strong>:{" "}
+                            <div key={index} className="saved-date-times">
+                              <h3>Time Slot – {formatDateLabel(item.date)}</h3>
+                              <p>
                                 {item.label}
-                              </small>
-                              <button
-                                type="button"
-                                className="btn btn-sm text-danger p-0 ms-2"
-                                onClick={() =>
-                                  removeSpecificSlot(item.date, item.slotId)
-                                }
-                              >
-                                <i className="fa-solid fa-xmark"></i>
-                              </button>
+                                <button
+                                  type="button"
+                                  className="remove-btn"
+                                  onClick={() =>
+                                    removeSpecificSlot(item.date, item.slotId)
+                                  }
+                                >
+                                  <i className="fa-solid fa-xmark"></i>
+                                </button>
+                              </p>
                             </div>
                           ))}
                         </div>
                       )}
 
                       <h2>
-                        Available Time Slots
-                        {selectedDate &&
-                          ` for ${formatDateLabel(selectedDate)}`}
+                        Time Slot – {formatDateLabel(selectedDate)}
                       </h2>
 
-                      <div
-                        className="select-time-btn-grp"
-                        style={{
-                          maxHeight: "220px",
-                          overflowY: "auto",
-                          paddingRight: "5px",
-                          display: "grid",
-                          gridTemplateColumns: "1fr 1fr",
-                          gap: "10px",
-                        }}
-                      >
+                      <div className="select-time-btn-grp">
                         {loadingSlots ? (
                           <p>Loading available slots...</p>
                         ) : timeSlots.length === 0 ? (
@@ -441,20 +477,9 @@ const QuoteDatePopup: React.FC<QuoteDatePopupProps> = ({
                                     handleSlotToggle(slot.id, slot.label)
                                   }
                                 />
-                                <label
-                                  htmlFor={`quote-time-${slot.id}`}
-                                  style={{
-                                    width: "100%",
-                                    border: isChecked
-                                      ? "1px solid #b30000"
-                                      : "1px solid #ccc",
-                                    backgroundColor: isChecked
-                                      ? "#fff5f5"
-                                      : "transparent",
-                                  }}
-                                >
+                                <label htmlFor={`quote-time-${slot.id}`}>
                                   <i className="fa-regular fa-clock"></i>{" "}
-                                  {slot.label}
+                                  <span>{slot.label}</span>
                                 </label>
                               </React.Fragment>
                             );
@@ -469,7 +494,7 @@ const QuoteDatePopup: React.FC<QuoteDatePopupProps> = ({
                     {savedAddresses.length > 0 ? (
                       <input
                         type="text"
-                        placeholder="Enter full address"
+                        placeholder="123, Street, Anywhere, 11001"
                         value={address}
                         onChange={(e) => {
                           setAddress(e.target.value);
@@ -482,7 +507,7 @@ const QuoteDatePopup: React.FC<QuoteDatePopupProps> = ({
                     ) : (
                       <input
                         type="text"
-                        placeholder="Enter full address"
+                        placeholder="123, Street, Anywhere, 11001"
                         data-bs-target="#add-address-popup"
                         data-bs-toggle="modal"
                         className="dropdown-toggle"
@@ -507,18 +532,18 @@ const QuoteDatePopup: React.FC<QuoteDatePopupProps> = ({
                           // ]
                           //   .filter(Boolean)
                           //   .join(" ");
-                            
+
                           const addrString = [
-                          addr.flat_house_building,
-                          addr.floor,
-                          addr.area_sector_locality,
-                          addr.nearby_landmark,
-                          addr.city,
-                          addr.state_name,
-                          addr.zip,
-                        ]
-                          .filter(Boolean)
-                          .join(", ");
+                            addr.flat_house_building,
+                            addr.floor,
+                            addr.area_sector_locality,
+                            addr.nearby_landmark,
+                            addr.city,
+                            addr.state_name,
+                            addr.zip,
+                          ]
+                            .filter(Boolean)
+                            .join(", ");
                           return (
                             <li key={addr.id}>
                               <a
@@ -571,7 +596,7 @@ const QuoteDatePopup: React.FC<QuoteDatePopupProps> = ({
         onSave={() => {
           fetchAddresses();
         }}
-        onClose={() => { }}
+        onClose={() => {}}
       />
     </>
   );
