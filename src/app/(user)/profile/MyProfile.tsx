@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { globalServerRequest } from "@/actions/globalApi";
 import toast from "react-hot-toast";
 import VerifyProfile from "@/components/modals/verifyProfile";
@@ -10,6 +11,7 @@ interface MyProfileProps {
 }
 
 const MyProfile = ({ initialData }: MyProfileProps) => {
+  const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
 
   console.log("isEditing", isEditing);
@@ -18,9 +20,9 @@ const MyProfile = ({ initialData }: MyProfileProps) => {
   const [verifyMode, setVerifyMode] = useState<"email" | "phone">("phone");
 
   const [profileData, setProfileData] = useState({
-    name: initialData ? initialData.name ?? "" : "Rogar Walker",
-    phone: initialData ? initialData.phone ?? "" : "+1 555 232 254",
-    email: initialData ? initialData.email ?? "" : "roger@gmail.com",
+    name: initialData ? initialData.name ?? "" : "",
+    phone: initialData ? initialData.phone ?? "" : "",
+    email: initialData ? initialData.email ?? "" : "",
     profile_image:
       initialData?.profile_image || "/images/inner-page/user-profile.svg",
     created_at: initialData?.created_at || null,
@@ -28,22 +30,59 @@ const MyProfile = ({ initialData }: MyProfileProps) => {
 
   useEffect(() => {
     return () => {
-      if (profileData.profile_image.startsWith("blob:")) {
+      if (profileData.profile_image && profileData.profile_image.startsWith("blob:")) {
         URL.revokeObjectURL(profileData.profile_image);
       }
     };
   }, [profileData.profile_image]);
 
   useEffect(() => {
-    if (initialData) {
+    let localUserData: any = null;
+    if (typeof window !== "undefined") {
+      const rawUser = localStorage.getItem("user");
+      if (rawUser) {
+        try {
+          const parsed = JSON.parse(rawUser);
+          localUserData = parsed?.user ? parsed.user : parsed;
+        } catch (e) {
+          console.error("Failed to parse user from localStorage", e);
+        }
+      }
+    }
+
+    const currentData = initialData || localUserData;
+
+    if (currentData) {
+      const name = currentData.name ?? localUserData?.name ?? "";
+      const phone = currentData.phone ?? localUserData?.phone ?? "";
+      const email = currentData.email ?? localUserData?.email ?? "";
+      const profile_image =
+        currentData.profile_image ||
+        localUserData?.profile_image ||
+        "/images/inner-page/user-profile.svg";
+      const created_at =
+        currentData.created_at || localUserData?.created_at || null;
+
       setProfileData({
-        name: initialData.name ?? "",
-        phone: initialData.phone ?? "",
-        email: initialData.email ?? "",
-        profile_image:
-          initialData.profile_image || "/images/inner-page/user-profile.svg",
-        created_at: initialData.created_at || null,
+        name,
+        phone,
+        email,
+        profile_image,
+        created_at,
       });
+
+      const isProfileComplete =
+        Boolean(name && name.trim().length > 0) &&
+        Boolean(phone && phone.trim().length > 0) &&
+        Boolean(email && email.trim().length > 0) &&
+        currentData.isProfileCompleted !== false &&
+        currentData.isProfileCompleted !== "false" &&
+        localUserData?.isProfileCompleted !== false &&
+        localUserData?.isProfileCompleted !== "false";
+
+      if (!isProfileComplete) {
+        setIsEditing(true);
+      }
     }
   }, [initialData]);
 
@@ -59,7 +98,7 @@ const MyProfile = ({ initialData }: MyProfileProps) => {
 
     if (file) {
       setSelectedFile(file);
-      if (profileData.profile_image.startsWith("blob:")) {
+      if (profileData.profile_image && profileData.profile_image.startsWith("blob:")) {
         URL.revokeObjectURL(profileData.profile_image);
       }
 
@@ -105,12 +144,16 @@ const MyProfile = ({ initialData }: MyProfileProps) => {
       toast.error("Name is required");
       return;
     }
-    if (!profileData.phone.trim() && !isEditing)  {               
+    if (!profileData.phone.trim()) {               
       toast.error("Phone number is required");
       return;
     }
+    if (!profileData.email.trim()) {
+      toast.error("Email address is required");
+      return;
+    }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (profileData.email && !emailRegex.test(profileData.email)) {
+    if (!emailRegex.test(profileData.email.trim())) {
       toast.error("Please enter a valid email address");
       return;
     }
@@ -120,7 +163,7 @@ const MyProfile = ({ initialData }: MyProfileProps) => {
       const formData = new FormData();
       formData.append("name", profileData.name.trim());
       formData.append("phone", profileData.phone.trim());
-      formData.append("email", profileData.email?.trim() || "");
+      formData.append("email", profileData.email.trim());
       
       if (selectedFile) {
         formData.append("profileImg", selectedFile);
@@ -139,11 +182,12 @@ const MyProfile = ({ initialData }: MyProfileProps) => {
 
         if (updatedUser) {
           setProfileData({
-            name: updatedUser.name ?? "",
-            phone: updatedUser.phone ?? "",
-            email: updatedUser.email ?? "",
+            name: updatedUser.name ?? profileData.name,
+            phone: updatedUser.phone ?? profileData.phone,
+            email: updatedUser.email ?? profileData.email,
             profile_image:
               updatedUser.profile_image ||
+              profileData.profile_image ||
               "/images/inner-page/user-profile.svg",
             created_at: updatedUser.created_at || profileData.created_at,
           });
@@ -153,12 +197,16 @@ const MyProfile = ({ initialData }: MyProfileProps) => {
           if (rawUser) {
             try {
               const userObj = JSON.parse(rawUser);
-              const target = userObj.user ? userObj.user : userObj;
-
-              target.name = updatedUser.name;
-              target.phone = updatedUser.phone;
-              target.email = updatedUser.email;
-              target.profile_image = updatedUser.profile_image;
+              if (userObj.user) {
+                userObj.user = {
+                  ...userObj.user,
+                  ...updatedUser,
+                  isProfileCompleted: true,
+                };
+              } else {
+                Object.assign(userObj, updatedUser, { isProfileCompleted: true });
+              }
+              userObj.isProfileCompleted = true;
 
               localStorage.setItem("user", JSON.stringify(userObj));
               window.dispatchEvent(new Event("loginStatusChanged"));
@@ -169,6 +217,11 @@ const MyProfile = ({ initialData }: MyProfileProps) => {
         }
         setSelectedFile(null);
         setIsEditing(false);
+
+        // Redirect to Home page after profile completion
+        if (typeof window !== "undefined") {
+          window.location.href = "/";
+        }
       } else {
         toast.error(response.error || "Failed to update profile");
       }
@@ -248,6 +301,7 @@ const MyProfile = ({ initialData }: MyProfileProps) => {
                             <input
                               type="text"
                               name="name"
+                              placeholder="Name"
                               value={profileData.name}
                               onChange={handleChange}
                               disabled={!isEditing || loading}
@@ -264,11 +318,10 @@ const MyProfile = ({ initialData }: MyProfileProps) => {
                               <input
                                 type="text"
                                 name="phone"
+                                placeholder="Phone Number"
                                 value={profileData.phone}
                                 onChange={handleChange}
                                 disabled={!isEditing || loading}
-                                readOnly={isEditing}
-                                onClick={() => handleOpenVerifyModal("phone")}
                                 className={!isEditing ? "readonly-input" : ""}
                               />
                             </div>
@@ -281,11 +334,10 @@ const MyProfile = ({ initialData }: MyProfileProps) => {
                               <input
                                 type="email"
                                 name="email"
+                                placeholder="Email Address"
                                 value={profileData.email}
                                 onChange={handleChange}
                                 disabled={!isEditing || loading}
-                                readOnly={isEditing}
-                                onClick={() => handleOpenVerifyModal("email")}
                                 className={!isEditing ? "readonly-input" : ""}
                               />
                             </div>

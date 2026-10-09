@@ -181,20 +181,44 @@ const OtpModal = ({ emailLogin = false, loginValue = "" }: OtpModalProps) => {
         if (typeof window !== "undefined") {
           window.dispatchEvent(new Event("loginStatusChanged"));
         }
+
+        // Check if profile is complete (ALL fields name, phone, and email are strictly mandatory)
+        const userObj = verifyData?.user ? verifyData.user : verifyData;
+        const name = typeof userObj?.name === "string" ? userObj.name.trim() : "";
+        const phone = typeof userObj?.phone === "string" ? userObj.phone.trim() : "";
+        const email = typeof userObj?.email === "string" ? userObj.email.trim() : "";
+
+        const isProfileComplete =
+          Boolean(name.length > 0) &&
+          Boolean(phone.length > 0) &&
+          Boolean(email.length > 0) &&
+          userObj?.isProfileCompleted !== false &&
+          userObj?.isProfileCompleted !== "false" &&
+          verifyData?.isProfileCompleted !== false &&
+          verifyData?.isProfileCompleted !== "false";
+
         // ✅ SET COOKIE for server-side access
         const token =
           response?.data?.data?.access_token || response?.data?.data?.token;
         if (token) {
           document.cookie = `auth_token=${token}; path=/; max-age=86400; SameSite=Lax`;
-          router.replace("/");
-          router.refresh();
         }
 
         const currentModal = document.getElementById("login-screen-2");
-        if (currentModal) {
+        if (currentModal && typeof window !== "undefined" && (window as any).bootstrap) {
           const currentInstance =
-            window.bootstrap?.Modal.getInstance(currentModal);
+            (window as any).bootstrap.Modal.getInstance(currentModal);
           currentInstance?.hide();
+        }
+
+        if (typeof window !== "undefined") {
+          if (!isProfileComplete) {
+            sessionStorage.removeItem("showWelcomeModal");
+            sessionStorage.removeItem("showAddCardModal");
+            window.location.href = "/profile";
+          } else {
+            window.location.href = "/";
+          }
         }
       } else {
         setError(response.error || "Invalid OTP entered. Please try again.");

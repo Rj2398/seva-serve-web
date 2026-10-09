@@ -119,6 +119,26 @@ const ClientComponent = ({ data, isLogin = false }: homeprops) => {
         if (isLoggedIn && userStr) {
           try {
             const userData = JSON.parse(userStr);
+            const user = userData?.user ? userData.user : userData;
+
+            const name = typeof user?.name === "string" ? user.name.trim() : "";
+            const phone = typeof user?.phone === "string" ? user.phone.trim() : "";
+            const email = typeof user?.email === "string" ? user.email.trim() : "";
+
+            const isProfileComplete =
+              Boolean(name.length > 0) &&
+              Boolean(phone.length > 0) &&
+              Boolean(email.length > 0) &&
+              user?.isProfileCompleted !== false &&
+              user?.isProfileCompleted !== "false" &&
+              userData?.isProfileCompleted !== false &&
+              userData?.isProfileCompleted !== "false";
+
+            if (!isProfileComplete) {
+              window.location.href = "/profile";
+              return;
+            }
+
             const userIsNew =
               userData?.isNewUser === true ||
               userData?.isNewUser === "true" ||
@@ -135,10 +155,6 @@ const ClientComponent = ({ data, isLogin = false }: homeprops) => {
               shouldShowAddCard = false;
               localStorage.setItem("hasSeenAddCardModal", "true");
             }
-
-            const isProfileCompleted =
-              userData?.user?.isProfileCompleted ||
-              userData?.isProfileCompleted;
 
             if (userIsNew && !hasSeenWelcome) {
               shouldShowWelcome = true;
@@ -1024,13 +1040,15 @@ useEffect(() => {
                               />
                             </div>
                             <div className="upcoming-data">
+                              
                               <p className="up-text">
                                 {item?.serviceName ||
-                                  "Plumbing - Pipe Leakage Repair"}
+                                  ""}
                               </p>
+                              <p className="up-text">{item?.quoteId}</p>
                               <p className="up-date">
                                 {formatBookingDateTime(item?.scheduledAt) ||
-                                  "Nov 15, 2025 • 10:00 AM"}
+                                  ""}
                               </p>
                               <div className="upcm-slider-btn">
                              <button
@@ -1040,9 +1058,14 @@ useEffect(() => {
                                       setisReschedule(true);
                                     // setShowDatePicker(true), setBookingId(item?.bookingId)
                                   }}
-                                 disabled={!canReschedule(item?.scheduledAt) || item?.is_previous_rescheduled}
+                                //  disabled={(!canReschedule(item?.scheduledAt) || item?.is_previous_rescheduled) && item?.assign_status ==="false"}
                                   // data-bs-target="#select-date-time-popup"
                                   // data-bs-toggle="modal"
+                                    disabled={
+    item?.assign_status !== true ||
+    !canReschedule(item?.scheduledAt) ||
+    item?.is_previous_rescheduled
+  }
                                 >
                                   <img
                                     src="images/home/home-slider/re-sdl-btn.svg"

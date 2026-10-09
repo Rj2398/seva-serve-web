@@ -345,25 +345,16 @@ zQIDAQAB
       if (response.success) {
         console.log("Response from card add:", response);
         toast.success("Card added successfully!", { id: toastId });
-        if (quoteId) {
-          router.push(`/payment-method?quote_id=${bookingId}&initialpayment=${initialpayment}&remaingPayment=${remainingPayment}&paymenttype=${paymenttype}`)
-        }
-        if (bookingId) {
+        if (bookingId || quoteId) {
           router.push(
-            `/payment-method?booking_id=${bookingId || ""}&initialpayment=${initialpayment || ""
-            }&remaingPayment=${remainingPayment || ""}&paymenttype=${paymenttype || ""
-            }`
+            `/payment-method?booking_id=${bookingId || ""}&quote_id=${quoteId || ""}&initialpayment=${initialpayment || ""}&remaingPayment=${remainingPayment || ""}&paymenttype=${paymenttype || ""}`
+          );
+        } else if (planId && planId !== "null" && planAmount && planAmount !== "null") {
+          router.push(
+            `/payment-method?subscription_plan_id=${planId}&type=${planType || ""}&amount=${planAmount}`
           );
         } else {
-          if (!quoteId && !bookingId) {
-            router.push(
-              `/payment-method?subscription_plan_id=${planId}&type=${planType}&amount=${planAmount}`
-            );
-          } else {
-            router.push(
-              `/payment-method?quote_id=${quoteId}&initialpayment=${initialpayment}&remaingPayment=${remainingPayment}&paymenttype=${paymenttype}`
-            );
-          }
+          router.push("/payment-method");
         }
       } else {
         toast.error(response.error || "Failed to add card.", { id: toastId });

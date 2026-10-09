@@ -326,14 +326,14 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                   className="my-inner-boking-top"
                                   key={item?.bookingId || index}
                                   style={{
-                                    cursor: isCompletedOrPrevious ? "pointer" : "default",
+                                    cursor: "pointer" 
                                   }}
                                   onClick={() => {
-                                    if (isCompletedOrPrevious && item?.bookingId) {
+                                    // if (isCompletedOrPrevious && item?.bookingId) {
                                       router.push(
                                         `/view-booking-detail?bookingId=${item?.bookingId}`
                                       );
-                                    }
+                                    // }
                                   }}
                                 >
                                   <div className="my-quotes-inner">
@@ -483,7 +483,7 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                                 )
                                               )}
                                             {item?.services?.length > 1 && (
-                                              <>                                                {!isServicesOpen && (
+                                              <> {!isServicesOpen && (
                                                 <li
                                                   className="more-service"
                                                   style={{
@@ -640,40 +640,43 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                                   >
                                                     Cancel
                                                   </button>
-                                                  {canReschedule(
-                                                    item?.bookingDateTime
-                                                  ) ? (
-                                                    <button
-                                                      className="primary-cta rgt"
-                                                      onClick={() => {
-                                                        canRescheduleBooking
-                                                          ? handleLoadRescheduleRequest(
-                                                            item
-                                                          )
-                                                          : toast.error(
-                                                            "You have already rescheduled this booking once. Further rescheduling is not allowed."
-                                                          ),
+                                                 
+                                                    {item?.assign_status === false ? (
+                                                      <Link
+                                                        href={`/view-booking-detail?bookingId=${item?.bookingId}`}
+                                                        className="reject-btn"
+                                                      >
+                                                        View Details
+                                                      </Link>
+                                                    ) : canReschedule(item?.bookingDateTime) ? (
+                                                      <button
+                                                        className="primary-cta rgt"
+                                                        onClick={() => {
+                                                          canRescheduleBooking
+                                                            ? handleLoadRescheduleRequest(item)
+                                                            : toast.error(
+                                                                "You have already rescheduled this booking once. Further rescheduling is not allowed."
+                                                              );
+
                                                           setisReschedule(true);
-                                                      }}
-                                                      disabled={
-                                                        !canRescheduleBooking
-                                                      }
-                                                    >
-                                                      <img
-                                                        src="images/inner-page/clock-booking.svg"
-                                                        className="img-left"
-                                                        alt=""
-                                                      />
-                                                      Reschedule
-                                                    </button>
-                                                  ) : (
-                                                    <Link
-                                                      href={`/view-booking-detail?bookingId=${item?.bookingId}`}
-                                                      className="reject-btn"
-                                                    >
-                                                      View Details
-                                                    </Link>
-                                                  )}
+                                                        }}
+                                                        disabled={!canRescheduleBooking && item?.assign_status === false}
+                                                      >
+                                                        <img
+                                                          src="images/inner-page/clock-booking.svg"
+                                                          className="img-left"
+                                                          alt=""
+                                                        />
+                                                        Reschedule
+                                                      </button>
+                                                    ) : (
+                                                      <Link
+                                                        href={`/view-booking-detail?bookingId=${item?.bookingId}`}
+                                                        className="reject-btn"
+                                                      >
+                                                        View Details
+                                                      </Link>
+                                                    )}
                                                 </div>
                                               </div>
                                             ) : (
@@ -864,35 +867,38 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                                 >
                                                   Cancel
                                                 </button>
-                                                {canReschedule(
-                                                  item?.bookingDateTime
-                                                ) ? (
-                                                  <button
-                                                    className="primary-cta rgt"
-                                                    onClick={() =>
-                                                      toast.error(
-                                                        "Booking cancellation request is in review this action is not allowed at this moment."
-                                                      )
-                                                    }
-                                                    disabled={
-                                                      !canRescheduleBooking
-                                                    }
-                                                  >
-                                                    <img
-                                                      src="images/inner-page/clock-booking.svg"
-                                                      className="img-left"
-                                                      alt=""
-                                                    />
-                                                    Reschedule
-                                                  </button>
-                                                ) : (
-                                                  <Link
-                                                    href={`/view-booking-detail?bookingId=${item?.bookingId}`}
-                                                    className="reject-btn"
-                                                  >
-                                                    View Details
-                                                  </Link>
-                                                )}
+                                              {item?.assign_status === false ? (
+  <Link
+    href={`/view-booking-detail?bookingId=${item?.bookingId}`}
+    className="reject-btn"
+  >
+    View Details
+  </Link>
+) : canReschedule(item?.bookingDateTime) ? (
+  <button
+    className="primary-cta rgt"
+    onClick={() =>
+      toast.error(
+        "Booking cancellation request is in review this action is not allowed at this moment."
+      )
+    }
+    disabled={!canRescheduleBooking}
+  >
+    <img
+      src="images/inner-page/clock-booking.svg"
+      className="img-left"
+      alt=""
+    />
+    Reschedule
+  </button>
+) : (
+  <Link
+    href={`/view-booking-detail?bookingId=${item?.bookingId}`}
+    className="reject-btn"
+  >
+    View Details
+  </Link>
+)}
                                               </div>
                                             </div>
                                           )}

@@ -37,34 +37,63 @@ interface CardProps {
 }
 
 function PaymentMethodContent({ initialCardsData }: CardProps) {
-  console.log(initialCardsData, "initialCardsData")
   const searchParams = useSearchParams();
-  const bookingId = searchParams.get("booking_id");
-  const initialpayment = searchParams.get("initialpayment");
-  const remainingPayment = searchParams.get("remaingPayment");
-  const paymenttype = searchParams.get("paymenttype");
 
-  const initialPaymentNum = parseFloat(initialpayment || "0");
-  const remainingPaymentNum = parseFloat(remainingPayment || "0");
+  const rawBookingId = searchParams.get("booking_id");
+  const bookingId = rawBookingId && rawBookingId !== "null" && rawBookingId !== "undefined" ? rawBookingId : null;
 
-  console.log(remainingPayment, "remaining payment **");
+  const rawQuoteId = searchParams.get("quoteId") || searchParams.get("quote_id");
+  const quoteId = rawQuoteId && rawQuoteId !== "null" && rawQuoteId !== "undefined" ? rawQuoteId : null;
 
-  const planId: any = searchParams.get("subscription_plan_id");
-  const planType: any = searchParams.get("type");
-  const planAmount: any = searchParams.get("amount");
-  const quoteId: any = searchParams.get("quoteId") || searchParams.get("quote_id");
+  const rawInitialPayment = searchParams.get("initialpayment");
+  const initialpayment = rawInitialPayment && rawInitialPayment !== "null" && rawInitialPayment !== "undefined" ? rawInitialPayment : null;
 
-  console.log("quoteId", quoteId)
+  const rawRemainingPayment = searchParams.get("remaingPayment") || searchParams.get("remainingPayment");
+  const remainingPayment = rawRemainingPayment && rawRemainingPayment !== "null" && rawRemainingPayment !== "undefined" ? rawRemainingPayment : null;
 
-  console.log("PAYMENT PARAMS:", {
-  planId,
-  planType,
-  planAmount,
-  bookingId,
-  quoteId,
-  paymenttype,
-  url: window.location.href,
-});
+  const rawPaymentType = searchParams.get("paymenttype");
+  const paymenttype = rawPaymentType && rawPaymentType !== "null" && rawPaymentType !== "undefined" ? rawPaymentType : null;
+
+  const rawPlanId = searchParams.get("subscription_plan_id");
+  const planId = rawPlanId && rawPlanId !== "null" && rawPlanId !== "undefined" ? rawPlanId : null;
+
+  const rawPlanType = searchParams.get("type");
+  const planType = rawPlanType && rawPlanType !== "null" && rawPlanType !== "undefined" ? rawPlanType : null;
+
+  const rawPlanAmount = searchParams.get("amount");
+  const planAmount = rawPlanAmount && rawPlanAmount !== "null" && rawPlanAmount !== "undefined" ? rawPlanAmount : null;
+
+  const initialPaymentNum = initialpayment ? parseFloat(initialpayment) : 0;
+  const remainingPaymentNum = remainingPayment ? parseFloat(remainingPayment) : 0;
+  const planAmountNum = planAmount ? parseFloat(planAmount) : 0;
+
+  const hasBookingOrQuotePayment = Boolean(
+    (bookingId || quoteId) &&
+    (
+      (paymenttype === "full" && remainingPayment && !isNaN(remainingPaymentNum) && remainingPaymentNum > 0) ||
+      (paymenttype === "initial" && initialpayment && !isNaN(initialPaymentNum) && initialPaymentNum > 0)
+    )
+  );
+
+  const hasSubscriptionPayment = Boolean(
+    planId &&
+    planAmount &&
+    !isNaN(planAmountNum) &&
+    planAmountNum > 0
+  );
+
+  const isPayable = hasBookingOrQuotePayment || hasSubscriptionPayment;
+
+  let displayAmount = "";
+  if (hasBookingOrQuotePayment) {
+    if (paymenttype === "full") {
+      displayAmount = ` $${remainingPaymentNum.toFixed(2)}`;
+    } else if (paymenttype === "initial") {
+      displayAmount = ` $${initialPaymentNum.toFixed(2)}`;
+    }
+  } else if (hasSubscriptionPayment) {
+    displayAmount = ` $${planAmountNum.toFixed(2)}`;
+  }
 
   const router = useRouter();
   const [cards, setCards] = useState<Card[]>(initialCardsData?.cards || []);
@@ -146,10 +175,10 @@ function PaymentMethodContent({ initialCardsData }: CardProps) {
       return;
     }
     const formData = new FormData();
-    formData.append("subscription_plan_id", planId);
+    formData.append("subscription_plan_id", String(planId || ""));
     formData.append("card_id", String(selectedCard));
-    formData.append("type", planType);
-    formData.append("amount", planAmount);
+    formData.append("type", String(planType || ""));
+    formData.append("amount", String(planAmount || ""));
 
     try {
       const response = await globalServerRequest({
@@ -267,9 +296,11 @@ function PaymentMethodContent({ initialCardsData }: CardProps) {
                   <div className="add-card">
                       <Link
                         href={
-                          !(bookingId || quoteId)
-                            ? `/add-new-card?subscription_plan_id=${planId}&type=${planType}&amount=${planAmount}`
-                            : `/add-new-card?booking_id=${bookingId || ""}&quote_id=${quoteId || ""}&initialpayment=${initialpayment}&remaingPayment=${remainingPayment}&paymenttype=${paymenttype}`
+                          bookingId || quoteId
+                            ? `/add-new-card?booking_id=${bookingId || ""}&quote_id=${quoteId || ""}&initialpayment=${initialpayment || ""}&remaingPayment=${remainingPayment || ""}&paymenttype=${paymenttype || ""}`
+                            : planId && planAmount
+                              ? `/add-new-card?subscription_plan_id=${planId}&type=${planType || ""}&amount=${planAmount}`
+                              : `/add-new-card`
                         }
                       className="primary-cta"
                     >
@@ -378,114 +409,24 @@ function PaymentMethodContent({ initialCardsData }: CardProps) {
                       Help & Support
                     </button>
 
-                  {/* {planId===null && planType===null && planAmount === null?
-                  
-                    (<button
-                      type="button"
-                      className="primary-cta"
-                      disabled={!planId && !planType}
-                      // onClick={() =>
-                      //   (bookingId || quoteId) ? handlePayment() : handleSubscription()
-                      // }
-                    >
-                      
-                        <span style={{ fontWeight: 500 }}>
-                          Pay Now 
-                        </span>
-                 
-                    </button>):(
-
-                   <button
-                      type="button"
-                      className="primary-cta"
-                      disabled={cards.length === 0 || isPaying}
-                      onClick={() =>
-                        (bookingId || quoteId) ? handlePayment() : handleSubscription()
-                      }
-                    >
-                      {isPaying ? (
-                        "Processing..."
-                      ) : (
-                        <span style={{ fontWeight: 500 }}>
-                          Pay Now  $
-                          {paymenttype === "full"
-                            ? remainingPaymentNum.toFixed(2)
-                            : paymenttype === "initial"
-                              ? initialPaymentNum.toFixed(2)
-                              : planAmount}
-                        </span>
-                      )}
-                    </button>
-                    )
-                } */}
-
-                {/* {planId && planType && planAmount ? (
-  // Subscription payment
-  <button
-    type="button"
-    className="primary-cta"
-    disabled={cards.length === 0 || isPaying}
-    onClick={handleSubscription}
-  >
-    {isPaying ? (
-      "Processing..."
-    ) : (
-      <span style={{ fontWeight: 500 }}>
-        Pay Now ${Number(planAmount).toFixed(2)}
-      </span>
-    )}
-  </button>
-) : (
-  // Booking / Quote payment
-  <button
-    type="button"
-    className="primary-cta"
-    disabled={cards.length === 0 || isPaying}
-    onClick={handlePayment}
-  >
-    {isPaying ? (
-      "Processing..."
-    ) : (
-      <span style={{ fontWeight: 500 }}>
-        Pay Now $
-        {paymenttype === "full"
-          ? remainingPaymentNum.toFixed(2)
-          : initialPaymentNum.toFixed(2)}
-      </span>
-    )}
-  </button>
-)} */}
-
 <button
   type="button"
   className="primary-cta"
-  disabled={
-    cards.length === 0 ||
-    isPaying ||
-    (paymenttype === "full" && !remainingPayment) ||
-    (paymenttype === "initial" && !initialpayment) ||
-    (!paymenttype && !planAmount)
-  }
-  onClick={() =>
-    (bookingId || quoteId) ? handlePayment() : handleSubscription()
-  }
+  disabled={!isPayable || cards.length === 0 || isPaying}
+  onClick={() => {
+    if (!isPayable) return;
+    if (bookingId || quoteId) {
+      handlePayment();
+    } else if (hasSubscriptionPayment) {
+      handleSubscription();
+    }
+  }}
 >
   {isPaying ? (
     "Processing..."
   ) : (
     <span style={{ fontWeight: 500 }}>
-      Pay Now
-      {paymenttype === "full"
-        ? remainingPayment
-          ? ` $${remainingPaymentNum.toFixed(2)}`
-          : ""
-        : paymenttype === "initial"
-          ? initialpayment
-            ? ` $${initialPaymentNum.toFixed(2)}`
-            : ""
-          : planAmount
-            ? ` $${planAmount}`
-            : ""}
+      Pay Now{displayAmount}
     </span>
   )}
 </button>
