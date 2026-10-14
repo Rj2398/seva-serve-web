@@ -744,7 +744,7 @@ const SummaryEstimate = () => {
                                   </div>
 
                                   {/* CARD 3: Uploaded Image/Video */}
-                                  <div
+                                  {/* <div
                                     className="p-3 bg-white"
                                     style={{
                                       borderRadius: "24px",
@@ -788,7 +788,71 @@ const SummaryEstimate = () => {
                                           </p>
                                         )}
                                     </div>
-                                  </div>
+                                  </div> */}
+
+                                  <div
+                                      className="p-3 bg-white"
+                                      style={{
+                                        borderRadius: "24px",
+                                        border: "1px solid #99131833",
+                                      }}
+                                    >
+                                      <p
+                                        className="small mb-3 fw-semibold text-muted"
+                                        style={{ fontSize: "13px" }}
+                                      >
+                                        Uploaded Image/Video
+                                      </p>
+
+                                      <div className="d-flex flex-wrap gap-3">
+                                        {subCat?.media?.map((url: any, index: any) => {
+                                          const mediaUrl =
+                                            typeof url === "object"
+                                              ? url?.url
+                                              : url || "images/inner-page/issue-icon.svg";
+
+                                          const isVideo = /\.(mp4|webm|ogg|mov|avi|m4v)(\?.*)?$/i.test(
+                                            mediaUrl
+                                          );
+
+                                          return (
+                                            <div key={index}>
+                                              {isVideo ? (
+                                                <video
+                                                  src={mediaUrl}
+                                                  controls
+                                                  style={{
+                                                    width: "100px",
+                                                    height: "100px",
+                                                    objectFit: "cover",
+                                                    borderRadius: "20px",
+                                                    border: "1px solid #eee",
+                                                  }}
+                                                />
+                                              ) : (
+                                                <img
+                                                  src={mediaUrl}
+                                                  alt={`Uploaded attachment ${index + 1}`}
+                                                  style={{
+                                                    width: "100px",
+                                                    height: "100px",
+                                                    objectFit: "cover",
+                                                    borderRadius: "20px",
+                                                    border: "1px solid #eee",
+                                                  }}
+                                                />
+                                              )}
+                                            </div>
+                                          );
+                                        })}
+
+                                        {(!subCat?.media || subCat?.media?.length === 0) && (
+                                          <p className="text-muted small m-0">
+                                            No media uploaded
+                                          </p>
+                                        )}
+                                      </div>
+                                    </div>
                                 </div>
                               )}
                             </div>

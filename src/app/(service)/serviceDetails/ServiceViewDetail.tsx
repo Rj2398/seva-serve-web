@@ -953,7 +953,7 @@ export default function ServiceViewDetail({
                                     />
                                   </label>
 
-                                  <div className="service-issues-content-problem-thumbs">
+                                  {/* <div className="service-issues-content-problem-thumbs">
                                     {(uploadedImg[issueIdStr] || []).map(
                                       (imgUrl, imgIndex) => (
                                         <div
@@ -986,8 +986,72 @@ export default function ServiceViewDetail({
                                         </div>
                                       )
                                     )}
-                                  </div>
-                                </div>
+                                  </div> */}
+
+
+                                  <div className="service-issues-content-problem-thumbs">
+                                {(uploadedImg[issueIdStr] || []).map((fileUrl, fileIndex) => {
+                                  const file = uploadedFiles[issueIdStr]?.[fileIndex];
+
+                                  const isVideo = file?.type?.startsWith("video/");
+
+                                  return (
+                                    <div
+                                      key={fileIndex}
+                                      className="service-issues-content-problem-thumbs-image"
+                                    >
+                                      <button
+                                        type="button"
+                                        onClick={() =>
+                                          handleRemoveImage(fileIndex, issueIdStr)
+                                        }
+                                      >
+                                        <img
+                                          src="/images/service-details/cancel-icon.svg"
+                                          alt=""
+                                        />
+                                      </button>
+
+                                      {isVideo ? (
+                                        <video
+                                          src={fileUrl}
+                                          width={100}
+                                          height={100}
+                                          muted
+                                          playsInline
+                                          preload="metadata"
+                                          controls
+                                          style={{
+                                            width: "100%",
+                                            height: "100%",
+                                            objectFit: "cover",
+                                            borderRadius: "8px",
+                                            display: "block",
+                                          }}
+                                        />
+                                      ) : (
+                                        <img
+                                          src={
+                                            fileUrl ||
+                                            "/images/service-details/thumb-image.svg"
+                                          }
+                                          alt=""
+                                          width={100}
+                                          height={100}
+                                          style={{
+                                            width: "100%",
+                                            height: "100%",
+                                            objectFit: "cover",
+                                            borderRadius: "8px",
+                                            display: "block",
+                                          }}
+                                        />
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                                   </div>  
+                                                              </div>
                               </div>
                             </div>
                           );
