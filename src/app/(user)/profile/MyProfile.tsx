@@ -320,9 +320,14 @@ const MyProfile = ({ initialData }: MyProfileProps) => {
                                 name="phone"
                                 placeholder="Phone Number"
                                 value={profileData.phone}
-                                onChange={handleChange}
+                                // onChange={handleChange}
+                                onChange={(e) => {
+                                  handleChange(e);
+                                  // handleOpenVerifyModal("phone");
+                                }}
                                 disabled={!isEditing || loading}
                                 className={!isEditing ? "readonly-input" : ""}
+                                  onClick={() => handleOpenVerifyModal("phone")}
                               />
                             </div>
 
@@ -336,9 +341,14 @@ const MyProfile = ({ initialData }: MyProfileProps) => {
                                 name="email"
                                 placeholder="Email Address"
                                 value={profileData.email}
-                                onChange={handleChange}
+                                // onChange={handleChange}
+                                onChange={(e) => {
+                                  handleChange(e);
+                                  // handleOpenVerifyModal("email");
+                                }}
                                 disabled={!isEditing || loading}
                                 className={!isEditing ? "readonly-input" : ""}
+                                 onClick={() => handleOpenVerifyModal("email")}
                               />
                             </div>
                           </div>

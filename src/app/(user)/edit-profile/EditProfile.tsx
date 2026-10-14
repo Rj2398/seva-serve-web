@@ -218,7 +218,7 @@ const EditProfile = () => {
                                 onChange={handleChange}
                                 disabled={loading}
                                 readOnly
-                                onClick={() => handleOpenVerifyModal("phone")}
+                                // onClick={() => handleOpenVerifyModal("phone")}
                               />
                             </div>
 
@@ -235,7 +235,7 @@ const EditProfile = () => {
                                 onChange={handleChange}
                                 disabled={loading}
                                 readOnly
-                                onClick={() => handleOpenVerifyModal("email")}
+                                // onClick={() => handleOpenVerifyModal("email")}
                               />
                             </div>
                           </div>
