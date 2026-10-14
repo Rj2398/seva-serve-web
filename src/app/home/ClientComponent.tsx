@@ -11,6 +11,7 @@ import ServiceRejected from "@/components/modals/bookingmodals/ServiceRejected";
 import ServiceAccepted from "@/components/modals/bookingmodals/ServiceAccepted";
 import NewServiceRejectionModal from "@/components/modals/bookingmodals/NewServiceRejectionModal";
 import { globalServerRequest } from "@/actions/globalApi";
+import ReferralDetailModal from "@/components/modals/ReferralDetailModal"
 import toast from "react-hot-toast";
 import {
   FaWhatsapp,
@@ -1736,7 +1737,17 @@ useEffect(() => {
                               margin: "0 0 4px 0",
                             }}
                           >
-                            Invite Friends & Earn
+                            Invite Friends & Earn     <span
+              className="icon"
+              data-bs-target="#referaldetailModal"
+              data-bs-toggle="modal"
+            >
+              <img
+                src="/images/header/i-icon.svg"
+                alt="Logo"
+                className="logo"
+              />
+            </span>
                           </h3>
                           <p
                             style={{
@@ -1747,6 +1758,8 @@ useEffect(() => {
                             }}
                           >
                             Earn up to $20 for every successful referral.
+         
+  
                           </p>
                         </div>
 
@@ -2015,6 +2028,7 @@ useEffect(() => {
         rescheduleKey={isReschedule}
       />
       <RescheduleRequestSubmit />
+      
       <ServiceRejected  serviceId={serviceId} />
       <NewServiceRejectionModal
         serviceId={serviceId}
@@ -2031,6 +2045,7 @@ useEffect(() => {
         setIsOpen={setShowCancle}
         onCancel={handleCancel}
       />
+
       {showShareMenu && (
         <div
           className="share-overlay"
@@ -2075,6 +2090,10 @@ useEffect(() => {
           </div>
         </div>
       )}
+
+
+
+    <ReferralDetailModal   referdetail={data?.referralDetails}/>
     </>
   );
 };
