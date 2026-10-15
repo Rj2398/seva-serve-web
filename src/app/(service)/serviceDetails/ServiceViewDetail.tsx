@@ -1051,6 +1051,7 @@ export default function ServiceViewDetail({
                                   </label>
 
                                   {/* <div className="service-issues-content-problem-thumbs">
+                                  {/* <div className="service-issues-content-problem-thumbs">
                                     {(uploadedImg[issueIdStr] || []).map(
                                       (imgUrl, imgIndex) => (
                                         <div
