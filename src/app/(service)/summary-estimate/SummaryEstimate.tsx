@@ -9,6 +9,7 @@ import { useSelector } from "react-redux";
 import { globalServerRequest } from "@/actions/globalApi";
 import DatePopup from "@/components/modals/bookingmodals/DatePopup";
 import QuoteDatePopup from "@/components/modals/bookingmodals/QuoteDatePopup";
+import VideoModal from "@/components/modals/VideoModal";
 
 interface UserState {
   requestId: number;
@@ -66,6 +67,7 @@ const SummaryEstimate = () => {
   const [availabilitySlots, setAvailabilitySlots] = useState<any[]>([]);
   const [addressId, setAddressId] = useState("");
   const [expandedIndex, setExpandedIndex] = useState<number | null>(0); // Pehla default open rahega
+  const [selectedVideoModalUrl, setSelectedVideoModalUrl] = useState<string | null>(null);
 
   const toggleAccordion = (index: number) => {
     setExpandedIndex(expandedIndex === index ? null : index);
@@ -811,24 +813,83 @@ const SummaryEstimate = () => {
                                               ? url?.url
                                               : url || "images/inner-page/issue-icon.svg";
 
-                                          const isVideo = /\.(mp4|webm|ogg|mov|avi|m4v)(\?.*)?$/i.test(
-                                            mediaUrl
-                                          );
+                                          const isVideo =
+                                            (typeof url === "object" &&
+                                              (url?.type?.startsWith("video/") ||
+                                                url?.resource_type === "video" ||
+                                                url?.mimeType?.startsWith("video/"))) ||
+                                            /\.(mp4|webm|ogg|mov|avi|m4v)(\?.*)?$/i.test(
+                                              mediaUrl
+                                            ) ||
+                                            /\/video\//i.test(mediaUrl);
 
                                           return (
                                             <div key={index}>
                                               {isVideo ? (
-                                                <video
-                                                  src={mediaUrl}
-                                                  controls
+                                                <div
+                                                  role="button"
+                                                  tabIndex={0}
+                                                  onClick={() =>
+                                                    setSelectedVideoModalUrl(mediaUrl)
+                                                  }
                                                   style={{
+                                                    position: "relative",
                                                     width: "100px",
                                                     height: "100px",
-                                                    objectFit: "cover",
+                                                    cursor: "pointer",
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    justifyContent: "center",
                                                     borderRadius: "20px",
+                                                    overflow: "hidden",
                                                     border: "1px solid #eee",
                                                   }}
-                                                />
+                                                  title="Play video"
+                                                >
+                                                  <video
+                                                    src={mediaUrl}
+                                                    muted
+                                                    playsInline
+                                                    preload="metadata"
+                                                    style={{
+                                                      width: "100%",
+                                                      height: "100%",
+                                                      objectFit: "cover",
+                                                      borderRadius: "20px",
+                                                      display: "block",
+                                                      pointerEvents: "none",
+                                                    }}
+                                                  />
+                                                  {/* Centered play button overlay without browser controls */}
+                                                  <div
+                                                    style={{
+                                                      position: "absolute",
+                                                      top: "50%",
+                                                      left: "50%",
+                                                      transform: "translate(-50%, -50%)",
+                                                      width: "36px",
+                                                      height: "36px",
+                                                      borderRadius: "50%",
+                                                      backgroundColor: "rgba(0, 0, 0, 0.65)",
+                                                      boxShadow: "0 2px 8px rgba(0,0,0,0.35)",
+                                                      display: "flex",
+                                                      alignItems: "center",
+                                                      justifyContent: "center",
+                                                      color: "#ffffff",
+                                                      pointerEvents: "none",
+                                                    }}
+                                                  >
+                                                    <svg
+                                                      width="16"
+                                                      height="16"
+                                                      viewBox="0 0 24 24"
+                                                      fill="currentColor"
+                                                      style={{ marginLeft: "2px" }}
+                                                    >
+                                                      <path d="M8 5v14l11-7z" />
+                                                    </svg>
+                                                  </div>
+                                                </div>
                                               ) : (
                                                 <img
                                                   src={mediaUrl}
@@ -1039,6 +1100,10 @@ const SummaryEstimate = () => {
         </div>
       </main>
       <RequestModal isOpen={isOpenModal} setIsOpen={setIsOpenModal} />
+        <VideoModal
+        videoUrl={selectedVideoModalUrl}
+        onClose={() => setSelectedVideoModalUrl(null)}
+      />
       <DatePopup
         isOpen={showDatePopup}
         setIsOpen={setShowDatePopup}

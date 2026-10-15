@@ -9,6 +9,7 @@ import { incrementCartCount } from "@/store/slices/cartSlice";
 import { RootState } from "@/store";
 import { useDispatch } from "react-redux";
 import AddCardModal from "@/components/modals/AddCardModal";
+import VideoModal from "@/components/modals/VideoModal";
 
 const normalizeData = (data: any) => {
   if (!data || Object.keys(data).length === 0) return null;
@@ -99,6 +100,7 @@ export default function ServiceViewDetail({
   );
 
   const [showAddCardModal, setShowAddCardModal] = useState<boolean>(false);
+  const [selectedVideoModalUrl, setSelectedVideoModalUrl] = useState<string | null>(null);
   const [searchSubCategory, setSearchSubCategory] = useState<string>("");
   const [loadedData, setLoadedData] = useState<{
     subCategoryId: number | null;
@@ -285,6 +287,34 @@ export default function ServiceViewDetail({
     }
   }, [initialData]);
 
+  const isMediaVideo = (file?: File, url?: string): boolean => {
+    if (file?.type) {
+      return file.type.startsWith("video/");
+    }
+    if (typeof url === "string") {
+      return /\.(mp4|webm|ogg|mov|avi|m4v)(\?.*)?$/i.test(url) || /\/video\//i.test(url);
+    }
+    return false;
+  };
+
+  const getMediaCounts = (issueIdStr: string) => {
+    const urls = uploadedImg[issueIdStr] || [];
+    const files = uploadedFiles[issueIdStr] || [];
+    let imageCount = 0;
+    let videoCount = 0;
+
+    urls.forEach((url, idx) => {
+      const file = files[idx];
+      if (isMediaVideo(file, url)) {
+        videoCount++;
+      } else {
+        imageCount++;
+      }
+    });
+
+    return { imageCount, videoCount };
+  };
+
   const handleFile = (
     e: React.ChangeEvent<HTMLInputElement>,
     issueIdStr: string
@@ -293,6 +323,30 @@ export default function ServiceViewDetail({
 
     if (files) {
       const fileArray = Array.from(files);
+      const { imageCount, videoCount } = getMediaCounts(issueIdStr);
+
+      let newImages = 0;
+      let newVideos = 0;
+      fileArray.forEach((file) => {
+        if (file.type.startsWith("video/")) {
+          newVideos++;
+        } else {
+          newImages++;
+        }
+      });
+
+      if (imageCount + newImages > 6) {
+        toast.error("Maximum 6 images allowed");
+        e.target.value = "";
+        return;
+      }
+
+      if (videoCount + newVideos > 2) {
+        toast.error("Maximum 2 videos allowed");
+        e.target.value = "";
+        return;
+      }
+
       const imageUrls = fileArray.map((file) => URL.createObjectURL(file));
 
       setUploadedImage((prev) => ({
@@ -303,6 +357,7 @@ export default function ServiceViewDetail({
         ...prev,
         [issueIdStr]: [...(prev[issueIdStr] || []), ...fileArray],
       }));
+      e.target.value = "";
     }
   };
 
@@ -345,10 +400,18 @@ export default function ServiceViewDetail({
       ? problemDesc[activeIssueId] || ""
       : "";
 
+    const { imageCount, videoCount } = activeIssueId
+      ? getMediaCounts(activeIssueId)
+      : { imageCount: 0, videoCount: 0 };
+
     if (!addedCategory) {
       toast.error("please select sub Category");
-    } else if (currentUploadedImg.length === 0) {
-      toast.error("please upload at least one video/image");
+    } else if (imageCount === 0) {
+      toast.error("Please upload at least 1 image (mandatory)");
+    } else if (imageCount > 6) {
+      toast.error("Maximum 6 images allowed");
+    } else if (videoCount > 2) {
+      toast.error("Maximum 2 videos allowed");
     } else if (!currentProblemDesc) {
       toast.error("please enter the description");
     } else {
@@ -513,10 +576,18 @@ export default function ServiceViewDetail({
       ? problemDesc[activeIssueId] || ""
       : "";
 
+    const { imageCount, videoCount } = activeIssueId
+      ? getMediaCounts(activeIssueId)
+      : { imageCount: 0, videoCount: 0 };
+
     if (!addedCategory) {
       toast.error("please select sub Category");
-    } else if (currentUploadedImg.length === 0) {
-      toast.error("please upload at least one video/image");
+    } else if (imageCount === 0) {
+      toast.error("Please upload at least 1 image (mandatory)");
+    } else if (imageCount > 6) {
+      toast.error("Maximum 6 images allowed");
+    } else if (videoCount > 2) {
+      toast.error("Maximum 2 videos allowed");
     } else if (!currentProblemDesc) {
       toast.error("please enter the description");
     } else {
@@ -935,8 +1006,34 @@ export default function ServiceViewDetail({
                                     placeholder="Describe the specific issue..."
                                   ></textarea>
 
-                                  <h3>Uploaded Image/Video</h3>
+                                  <div
+                                    style={{
+                                      display: "flex",
+                                      justifyContent: "space-between",
+                                      alignItems: "center",
+                                      flexWrap: "wrap",
+                                      gap: "8px",
+                                      marginBottom: "10px",
+                                    }}
+                                  >
+                                    <h3 style={{ margin: 0 }}>Uploaded Image/Video</h3>
+                                    {(() => {
+                                      const counts = getMediaCounts(issueIdStr);
+                                      return (
+                                        <span
+                                          style={{
+                                            fontSize: "13px",
+                                            color: "#6c757d",
+                                            fontWeight: 400,
+                                          }}
+                                        >
+                                          Images: {counts.imageCount}/6 (Min 1) • Videos: {counts.videoCount}/2 (Optional)
+                                        </span>
+                                      );
+                                    })()}
+                                  </div>
                                   <label>
+
                                     <img
                                       src="images/service-details/upload-icon.svg"
                                       alt=""
@@ -990,68 +1087,117 @@ export default function ServiceViewDetail({
 
 
                                   <div className="service-issues-content-problem-thumbs">
-                                {(uploadedImg[issueIdStr] || []).map((fileUrl, fileIndex) => {
-                                  const file = uploadedFiles[issueIdStr]?.[fileIndex];
+                                    {(uploadedImg[issueIdStr] || []).map((fileUrl, fileIndex) => {
+                                      const file = uploadedFiles[issueIdStr]?.[fileIndex];
 
-                                  const isVideo = file?.type?.startsWith("video/");
+                                      const isVideo = isMediaVideo(file, fileUrl);
 
-                                  return (
-                                    <div
-                                      key={fileIndex}
-                                      className="service-issues-content-problem-thumbs-image"
-                                    >
-                                      <button
-                                        type="button"
-                                        onClick={() =>
-                                          handleRemoveImage(fileIndex, issueIdStr)
-                                        }
-                                      >
-                                        <img
-                                          src="/images/service-details/cancel-icon.svg"
-                                          alt=""
-                                        />
-                                      </button>
+                                      return (
+                                        <div
+                                          key={fileIndex}
+                                          className="service-issues-content-problem-thumbs-image"
+                                        >
+                                          <button
+                                            type="button"
+                                            style={{ zIndex: 3 }}
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              handleRemoveImage(fileIndex, issueIdStr);
+                                            }}
+                                          >
+                                            <img
+                                              src="/images/service-details/cancel-icon.svg"
+                                              alt=""
+                                            />
+                                          </button>
 
-                                      {isVideo ? (
-                                        <video
-                                          src={fileUrl}
-                                          width={100}
-                                          height={100}
-                                          muted
-                                          playsInline
-                                          preload="metadata"
-                                          controls
-                                          style={{
-                                            width: "100%",
-                                            height: "100%",
-                                            objectFit: "cover",
-                                            borderRadius: "8px",
-                                            display: "block",
-                                          }}
-                                        />
-                                      ) : (
-                                        <img
-                                          src={
-                                            fileUrl ||
-                                            "/images/service-details/thumb-image.svg"
-                                          }
-                                          alt=""
-                                          width={100}
-                                          height={100}
-                                          style={{
-                                            width: "100%",
-                                            height: "100%",
-                                            objectFit: "cover",
-                                            borderRadius: "8px",
-                                            display: "block",
-                                          }}
-                                        />
-                                      )}
-                                    </div>
-                                  );
-                                })}
-                                   </div>  
-                                                              </div>
+                                          {isVideo ? (
+                                            <div
+                                              role="button"
+                                              tabIndex={0}
+                                              onClick={() => setSelectedVideoModalUrl(fileUrl)}
+                                              style={{
+                                                position: "relative",
+                                                width: "100%",
+                                                height: "100%",
+                                                cursor: "pointer",
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                borderRadius: "8px",
+                                                overflow: "hidden",
+                                              }}
+                                              title="Play video"
+                                            >
+                                              <video
+                                                src={fileUrl}
+                                                width={100}
+                                                height={100}
+                                                muted
+                                                playsInline
+                                                preload="metadata"
+                                                style={{
+                                                  width: "100%",
+                                                  height: "100%",
+                                                  objectFit: "cover",
+                                                  borderRadius: "8px",
+                                                  display: "block",
+                                                  pointerEvents: "none",
+                                                }}
+                                              />
+                                              <div
+                                                style={{
+                                                  position: "absolute",
+                                                  top: "50%",
+                                                  left: "50%",
+                                                  transform: "translate(-50%, -50%)",
+                                                  width: "36px",
+                                                  height: "36px",
+                                                  borderRadius: "50%",
+                                                  backgroundColor: "rgba(0, 0, 0, 0.65)",
+                                                  boxShadow: "0 2px 8px rgba(0,0,0,0.35)",
+                                                  display: "flex",
+                                                  alignItems: "center",
+                                                  justifyContent: "center",
+                                                  color: "#ffffff",
+                                                  pointerEvents: "none",
+                                                  transition: "transform 0.2s ease, background-color 0.2s ease",
+                                                }}
+                                              >
+                                                <svg
+                                                  width="16"
+                                                  height="16"
+                                                  viewBox="0 0 24 24"
+                                                  fill="currentColor"
+                                                  style={{ marginLeft: "2px" }}
+                                                >
+                                                  <path d="M8 5v14l11-7z" />
+                                                </svg>
+                                              </div>
+                                            </div>
+                                          ) : (
+                                            <img
+                                              src={
+                                                fileUrl ||
+                                                "/images/service-details/thumb-image.svg"
+                                              }
+                                              alt=""
+                                              width={100}
+                                              height={100}
+                                              style={{
+                                                width: "100%",
+                                                height: "100%",
+                                                objectFit: "cover",
+                                                borderRadius: "8px",
+                                                display: "block",
+                                              }}
+                                            />
+                                          )}
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
                               </div>
                             </div>
                           );
@@ -1224,6 +1370,11 @@ export default function ServiceViewDetail({
         isOpen={showAddCardModal}
         setIsOpen={setShowAddCardModal}
         onClose={() => router.back()}
+      />
+
+      <VideoModal
+        videoUrl={selectedVideoModalUrl}
+        onClose={() => setSelectedVideoModalUrl(null)}
       />
     </>
   );

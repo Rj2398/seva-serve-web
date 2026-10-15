@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { db } from "@/config/firebase";
 import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react'
+import VideoModal from '@/components/modals/VideoModal';
 
 interface BookingUpdateProps {
   bookingtrackingData?: any;
@@ -19,6 +20,7 @@ const ViewBookingDetail = ({ bookingtrackingData }: BookingUpdateProps) => {
   const router = useRouter()
   const [showDropdown, setShowDropdown] = useState(false);
   const [showMaterialDropdown, setShowMaterialDropdown] = useState(false);
+  const [selectedVideoModalUrl, setSelectedVideoModalUrl] = useState<string | null>(null);
   const [expandedQuotes, setExpandedQuotes] = useState<Record<number, boolean>>(
     {}
   );
@@ -269,8 +271,109 @@ useEffect(() => {
                             </div>
                           )}
                           <div className="plumbing-wrp-book">
-                            <div className="boking-right-img">
-                              <img src={bookingData?.category?.categoryImageUrl || "images/inner-page/booking-traking-img.svg"} alt="" />
+                            <div
+                              className="boking-right-img"
+                              style={{
+                                width: "160px",
+                                height: "160px",
+                                minWidth: "160px",
+                                maxWidth: "160px",
+                              }}
+                            >
+                              {(() => {
+                                const mediaUrl =
+                                  bookingData?.category?.categoryImageUrl ||
+                                  bookingData?.mediaUrl ||
+                                  (Array.isArray(bookingData?.media)
+                                    ? bookingData?.media[0]?.url || bookingData?.media[0]
+                                    : typeof bookingData?.media === "string"
+                                    ? bookingData?.media
+                                    : "");
+
+                                const isVideo =
+                                  typeof mediaUrl === "string" &&
+                                  (/\.(mp4|webm|ogg|mov|avi|m4v)(\?.*)?$/i.test(mediaUrl) ||
+                                    /\/video\//i.test(mediaUrl));
+
+                                if (isVideo) {
+                                  return (
+                                    <div
+                                      role="button"
+                                      tabIndex={0}
+                                      onClick={() => setSelectedVideoModalUrl(mediaUrl)}
+                                      style={{
+                                        position: "relative",
+                                        width: "160px",
+                                        height: "160px",
+                                        cursor: "pointer",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        borderRadius: "12px",
+                                        overflow: "hidden",
+                                      }}
+                                      title="Play video"
+                                    >
+                                      <video
+                                        src={mediaUrl}
+                                        muted
+                                        playsInline
+                                        preload="metadata"
+                                        style={{
+                                          width: "160px",
+                                          height: "160px",
+                                          objectFit: "cover",
+                                          borderRadius: "12px",
+                                          display: "block",
+                                          pointerEvents: "none",
+                                        }}
+                                      />
+                                      <div
+                                        style={{
+                                          position: "absolute",
+                                          top: "50%",
+                                          left: "50%",
+                                          transform: "translate(-50%, -50%)",
+                                          width: "36px",
+                                          height: "36px",
+                                          borderRadius: "50%",
+                                          backgroundColor: "rgba(0, 0, 0, 0.65)",
+                                          boxShadow: "0 2px 8px rgba(0,0,0,0.35)",
+                                          display: "flex",
+                                          alignItems: "center",
+                                          justifyContent: "center",
+                                          color: "#ffffff",
+                                          pointerEvents: "none",
+                                        }}
+                                      >
+                                        <svg
+                                          width="16"
+                                          height="16"
+                                          viewBox="0 0 24 24"
+                                          fill="currentColor"
+                                          style={{ marginLeft: "2px" }}
+                                        >
+                                          <path d="M8 5v14l11-7z" />
+                                        </svg>
+                                      </div>
+                                    </div>
+                                  );
+                                }
+
+                                return (
+                                  <img
+                                    src={bookingData?.category?.categoryImageUrl || "images/inner-page/booking-traking-img.svg"}
+                                    alt=""
+                                    style={{
+                                      width: "160px",
+                                      height: "160px",
+                                      objectFit: "cover",
+                                      borderRadius: "12px",
+                                      display: "block",
+                                    }}
+                                  />
+                                );
+                              })()}
                             </div>
                             <div className="plumbing">
                               <p className="normal-text">Scheduled Time</p>
@@ -533,6 +636,10 @@ useEffect(() => {
       </main>
       <CompletedService bookingTrackingData={bookingData?.bookingCostDetails} bookingId={bookingData?.bookingId} />
       <ReviewAdditionalServices bookingId={bookingData?.bookingId} />
+      <VideoModal
+        videoUrl={selectedVideoModalUrl}
+        onClose={() => setSelectedVideoModalUrl(null)}
+      />
     </>
   )
 }

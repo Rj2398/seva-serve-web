@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
 import toast from "react-hot-toast";
+import VideoModal from "@/components/modals/VideoModal";
 
 const canReschedule = (
   bookingDateTime: string | Date | null | undefined
@@ -46,6 +47,7 @@ export default function Booking({ initialBookingData }: BookingProps) {
   const [showCancle, setShowCancle] = useState<boolean>(false);
   const [selectedBookingData, setSelectedBookingData] = useState<any>(null);
   const [isReschedule, setisReschedule] = useState<boolean>(false);
+  const [selectedVideoModalUrl, setSelectedVideoModalUrl] = useState<string | null>(null);
 
   const [expandedQuotes, setExpandedQuotes] = useState<Record<number, boolean>>(
     {}
@@ -338,12 +340,114 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                 >
                                   <div className="my-quotes-inner">
                                     <div className="my-booking-wrpper">
-                                      <div className="booking-left-img">
-                                        <img
-                                          src={item?.categoryImageUrl || ""}
-                                          alt={item?.categoryName || "Category"}
-                                        />
-                                      </div>
+                                      <div
+                                         className="booking-left-img"
+                                         style={{
+                                           width: "122px",
+                                           height: "98px",
+                                           minWidth: "122px",
+                                           maxWidth: "122px",
+                                           flexShrink: 0,
+                                         }}
+                                       >
+                                         {(() => {
+                                           const mediaUrl =
+                                             item?.categoryImageUrl ||
+                                             item?.mediaUrl ||
+                                             (Array.isArray(item?.media)
+                                               ? item?.media[0]?.url || item?.media[0]
+                                               : typeof item?.media === "string"
+                                               ? item?.media
+                                               : "");
+
+                                           const isVideo =
+                                             typeof mediaUrl === "string" &&
+                                             (/\.(mp4|webm|ogg|mov|avi|m4v)(\?.*)?$/i.test(mediaUrl) ||
+                                               /\/video\//i.test(mediaUrl));
+
+                                           if (isVideo) {
+                                             return (
+                                               <div
+                                                 role="button"
+                                                 tabIndex={0}
+                                                 onClick={(e) => {
+                                                   e.stopPropagation();
+                                                   setSelectedVideoModalUrl(mediaUrl);
+                                                 }}
+                                                 style={{
+                                                   position: "relative",
+                                                   width: "122px",
+                                                   height: "98px",
+                                                   cursor: "pointer",
+                                                   display: "flex",
+                                                   alignItems: "center",
+                                                   justifyContent: "center",
+                                                   borderRadius: "8px",
+                                                   overflow: "hidden",
+                                                 }}
+                                                 title="Play video"
+                                               >
+                                                 <video
+                                                   src={mediaUrl}
+                                                   muted
+                                                   playsInline
+                                                   preload="metadata"
+                                                   style={{
+                                                     width: "122px",
+                                                     height: "98px",
+                                                     objectFit: "cover",
+                                                     borderRadius: "8px",
+                                                     display: "block",
+                                                     pointerEvents: "none",
+                                                   }}
+                                                 />
+                                                 <div
+                                                   style={{
+                                                     position: "absolute",
+                                                     top: "50%",
+                                                     left: "50%",
+                                                     transform: "translate(-50%, -50%)",
+                                                     width: "32px",
+                                                     height: "32px",
+                                                     borderRadius: "50%",
+                                                     backgroundColor: "rgba(0, 0, 0, 0.65)",
+                                                     boxShadow: "0 2px 8px rgba(0,0,0,0.35)",
+                                                     display: "flex",
+                                                     alignItems: "center",
+                                                     justifyContent: "center",
+                                                     color: "#ffffff",
+                                                     pointerEvents: "none",
+                                                   }}
+                                                 >
+                                                   <svg
+                                                     width="14"
+                                                     height="14"
+                                                     viewBox="0 0 24 24"
+                                                     fill="currentColor"
+                                                     style={{ marginLeft: "2px" }}
+                                                   >
+                                                     <path d="M8 5v14l11-7z" />
+                                                   </svg>
+                                                 </div>
+                                               </div>
+                                             );
+                                           }
+
+                                           return (
+                                             <img
+                                               src={mediaUrl || item?.categoryImageUrl || ""}
+                                               alt={item?.categoryName || "Category"}
+                                               style={{
+                                                 width: "122px",
+                                                 height: "98px",
+                                                 objectFit: "cover",
+                                                 borderRadius: "8px",
+                                                 display: "block",
+                                               }}
+                                             />
+                                           );
+                                         })()}
+                                       </div>
                                       <div className="plumbing">
                                         {/* Header / Status Banner */}
                                         <div className="plumbing-top">
@@ -1178,6 +1282,10 @@ export default function Booking({ initialBookingData }: BookingProps) {
         bookingId={bookingId}
         callBooking={() => fetchBookingData(1)}
         reviewPayload={undefined}
+      />
+      <VideoModal
+        videoUrl={selectedVideoModalUrl}
+        onClose={() => setSelectedVideoModalUrl(null)}
       />
     </>
   );

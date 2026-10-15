@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { globalServerRequest } from "@/actions/globalApi";
+import VideoModal from "@/components/modals/VideoModal";
 
 const DEFAULT_CATEGORY_ICON = "/images/home/top-right-plumbing.svg";
 
@@ -31,6 +32,7 @@ const SevaServeAgentPanel = () => {
   const [editingExistingMedia, setEditingExistingMedia] = useState<any[]>([]); // URLs already uploaded
   const [editingNewFiles, setEditingNewFiles] = useState<File[]>([]); // New files added during edit
   const [editingNewPreviews, setEditingNewPreviews] = useState<any[]>([]);
+  const [selectedVideoModalUrl, setSelectedVideoModalUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
@@ -756,84 +758,227 @@ const SevaServeAgentPanel = () => {
                             {/* Existing Media Items in Edit Box */}
                             {editingExistingMedia.length > 0 && (
                               <div className="d-flex gap-2 flex-wrap">
-                                {editingExistingMedia.map((url, idx) => (
-                                  <div
-                                    key={idx}
-                                    style={{ position: "relative" }}
-                                  >
-                                    <img
-                                      src={url}
-                                      alt="existing"
-                                      style={{
-                                        width: "50px",
-                                        height: "50px",
-                                        objectFit: "cover",
-                                        borderRadius: "4px",
-                                      }}
-                                    />
-                                    <button
-                                      type="button"
-                                      onClick={() => removeExistingMedia(idx)}
-                                      style={{
-                                        position: "absolute",
-                                        top: "-5px",
-                                        right: "-5px",
-                                        background: "red",
-                                        color: "white",
-                                        border: "none",
-                                        borderRadius: "50%",
-                                        width: "18px",
-                                        height: "18px",
-                                        fontSize: "10px",
-                                        cursor: "pointer",
-                                      }}
+                                {editingExistingMedia.map((url, idx) => {
+                                  const isVideo =
+                                    /\.(mp4|webm|ogg|mov|avi|m4v)(\?.*)?$/i.test(url || "") ||
+                                    /\/video\//i.test(url || "");
+
+                                  return (
+                                    <div
+                                      key={idx}
+                                      style={{ position: "relative" }}
                                     >
-                                      ×
-                                    </button>
-                                  </div>
-                                ))}
+                                      {isVideo ? (
+                                        <div
+                                          role="button"
+                                          tabIndex={0}
+                                          onClick={() => setSelectedVideoModalUrl(url)}
+                                          style={{
+                                            position: "relative",
+                                            width: "50px",
+                                            height: "50px",
+                                            cursor: "pointer",
+                                            borderRadius: "4px",
+                                            overflow: "hidden",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                          }}
+                                          title="Play video"
+                                        >
+                                          <video
+                                            src={url}
+                                            muted
+                                            playsInline
+                                            preload="metadata"
+                                            style={{
+                                              width: "100%",
+                                              height: "100%",
+                                              objectFit: "cover",
+                                              display: "block",
+                                              pointerEvents: "none",
+                                            }}
+                                          />
+                                          <div
+                                            style={{
+                                              position: "absolute",
+                                              top: "50%",
+                                              left: "50%",
+                                              transform: "translate(-50%, -50%)",
+                                              width: "22px",
+                                              height: "22px",
+                                              borderRadius: "50%",
+                                              backgroundColor: "rgba(0,0,0,0.65)",
+                                              display: "flex",
+                                              alignItems: "center",
+                                              justifyContent: "center",
+                                              color: "#fff",
+                                              pointerEvents: "none",
+                                            }}
+                                          >
+                                            <svg
+                                              width="10"
+                                              height="10"
+                                              viewBox="0 0 24 24"
+                                              fill="currentColor"
+                                              style={{ marginLeft: "1px" }}
+                                            >
+                                              <path d="M8 5v14l11-7z" />
+                                            </svg>
+                                          </div>
+                                        </div>
+                                      ) : (
+                                        <img
+                                          src={url}
+                                          alt="existing"
+                                          style={{
+                                            width: "50px",
+                                            height: "50px",
+                                            objectFit: "cover",
+                                            borderRadius: "4px",
+                                          }}
+                                        />
+                                      )}
+                                      <button
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          removeExistingMedia(idx);
+                                        }}
+                                        style={{
+                                          position: "absolute",
+                                          top: "-5px",
+                                          right: "-5px",
+                                          background: "red",
+                                          color: "white",
+                                          border: "none",
+                                          borderRadius: "50%",
+                                          width: "18px",
+                                          height: "18px",
+                                          fontSize: "10px",
+                                          cursor: "pointer",
+                                          zIndex: 3,
+                                        }}
+                                      >
+                                        ×
+                                      </button>
+                                    </div>
+                                  );
+                                })}
                               </div>
                             )}
 
                             {/* New Files Added in Edit Box */}
                             {editingNewPreviews.length > 0 && (
                               <div className="d-flex gap-2 flex-wrap">
-                                {editingNewPreviews.map((file, idx) => (
-                                  <div
-                                    key={idx}
-                                    style={{ position: "relative" }}
-                                  >
-                                    <img
-                                      src={file.url}
-                                      alt="new-preview"
-                                      style={{
-                                        width: "50px",
-                                        height: "50px",
-                                        objectFit: "cover",
-                                        borderRadius: "4px",
-                                      }}
-                                    />
-                                    <button
-                                      type="button"
-                                      onClick={() => removeNewEditFile(idx)}
-                                      style={{
-                                        position: "absolute",
-                                        top: "-5px",
-                                        right: "-5px",
-                                        background: "red",
-                                        color: "white",
-                                        border: "none",
-                                        borderRadius: "50%",
-                                        width: "18px",
-                                        height: "18px",
-                                        fontSize: "10px",
-                                        cursor: "pointer",
-                                      }}
+                                {editingNewPreviews.map((file, idx) => {
+                                  const isVideo =
+                                    file.type?.startsWith("video/") ||
+                                    /\.(mp4|webm|ogg|mov|avi|m4v)(\?.*)?$/i.test(file.name || file.url || "") ||
+                                    /\/video\//i.test(file.url || "");
+
+                                  return (
+                                    <div
+                                      key={idx}
+                                      style={{ position: "relative" }}
                                     >
-                                      ×
-                                    </button>
-                                  </div>
-                                ))}
+                                      {isVideo ? (
+                                        <div
+                                          role="button"
+                                          tabIndex={0}
+                                          onClick={() => setSelectedVideoModalUrl(file.url)}
+                                          style={{
+                                            position: "relative",
+                                            width: "50px",
+                                            height: "50px",
+                                            cursor: "pointer",
+                                            borderRadius: "4px",
+                                            overflow: "hidden",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                          }}
+                                          title="Play video"
+                                        >
+                                          <video
+                                            src={file.url}
+                                            muted
+                                            playsInline
+                                            preload="metadata"
+                                            style={{
+                                              width: "100%",
+                                              height: "100%",
+                                              objectFit: "cover",
+                                              display: "block",
+                                              pointerEvents: "none",
+                                            }}
+                                          />
+                                          <div
+                                            style={{
+                                              position: "absolute",
+                                              top: "50%",
+                                              left: "50%",
+                                              transform: "translate(-50%, -50%)",
+                                              width: "22px",
+                                              height: "22px",
+                                              borderRadius: "50%",
+                                              backgroundColor: "rgba(0,0,0,0.65)",
+                                              display: "flex",
+                                              alignItems: "center",
+                                              justifyContent: "center",
+                                              color: "#fff",
+                                              pointerEvents: "none",
+                                            }}
+                                          >
+                                            <svg
+                                              width="10"
+                                              height="10"
+                                              viewBox="0 0 24 24"
+                                              fill="currentColor"
+                                              style={{ marginLeft: "1px" }}
+                                            >
+                                              <path d="M8 5v14l11-7z" />
+                                            </svg>
+                                          </div>
+                                        </div>
+                                      ) : (
+                                        <img
+                                          src={file.url}
+                                          alt="new-preview"
+                                          style={{
+                                            width: "50px",
+                                            height: "50px",
+                                            objectFit: "cover",
+                                            borderRadius: "4px",
+                                          }}
+                                        />
+                                      )}
+                                      <button
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          removeNewEditFile(idx);
+                                        }}
+                                        style={{
+                                          position: "absolute",
+                                          top: "-5px",
+                                          right: "-5px",
+                                          background: "red",
+                                          color: "white",
+                                          border: "none",
+                                          borderRadius: "50%",
+                                          width: "18px",
+                                          height: "18px",
+                                          fontSize: "10px",
+                                          cursor: "pointer",
+                                          zIndex: 3,
+                                        }}
+                                      >
+                                        ×
+                                      </button>
+                                    </div>
+                                  );
+                                })}
                               </div>
                             )}
 
@@ -892,26 +1037,76 @@ const SevaServeAgentPanel = () => {
                           <>
                             {msg.media &&
                               msg.media.map((med: any, idx: number) => {
-                                if (med.type?.startsWith("video/")) {
+                                const medUrl = typeof med === "string" ? med : med?.url;
+                                const isVideo =
+                                  med?.type?.startsWith("video/") ||
+                                  /\.(mp4|webm|ogg|mov|avi|m4v)(\?.*)?$/i.test(medUrl || "") ||
+                                  /\/video\//i.test(medUrl || "");
+
+                                if (isVideo) {
                                   return (
-                                    <video
+                                    <div
                                       key={idx}
-                                      src={med.url}
-                                      controls
+                                      role="button"
+                                      tabIndex={0}
+                                      onClick={() => setSelectedVideoModalUrl(medUrl)}
                                       style={{
+                                        position: "relative",
                                         maxWidth: "100%",
                                         maxHeight: "200px",
                                         borderRadius: "8px",
                                         marginBottom: "8px",
-                                        display: "block",
+                                        overflow: "hidden",
+                                        cursor: "pointer",
                                       }}
-                                    />
+                                      title="Play video"
+                                    >
+                                      <video
+                                        src={medUrl}
+                                        muted
+                                        playsInline
+                                        preload="metadata"
+                                        style={{
+                                          width: "100%",
+                                          height: "100%",
+                                          objectFit: "cover",
+                                          display: "block",
+                                          pointerEvents: "none",
+                                        }}
+                                      />
+                                      <div
+                                        style={{
+                                          position: "absolute",
+                                          top: "50%",
+                                          left: "50%",
+                                          transform: "translate(-50%, -50%)",
+                                          width: "36px",
+                                          height: "36px",
+                                          borderRadius: "50%",
+                                          backgroundColor: "rgba(0,0,0,0.65)",
+                                          display: "flex",
+                                          alignItems: "center",
+                                          justifyContent: "center",
+                                          color: "#fff",
+                                          pointerEvents: "none",
+                                        }}
+                                      >
+                                        <svg
+                                          width="16"
+                                          height="16"
+                                          viewBox="0 0 24 24"
+                                          fill="currentColor"
+                                        >
+                                          <path d="M8 5v14l11-7z" />
+                                        </svg>
+                                      </div>
+                                    </div>
                                   );
                                 }
                                 return (
                                   <img
                                     key={idx}
-                                    src={med.url}
+                                    src={medUrl}
                                     alt="Uploaded Media"
                                     style={{
                                       maxWidth: "100%",
@@ -1063,54 +1258,114 @@ const SevaServeAgentPanel = () => {
               className="d-flex gap-2 p-2 mx-3 mb-2"
               style={{ background: "#f8f9fa", borderRadius: "8px" }}
             >
-              {previewFiles.map((file, index) => (
-                <div key={index} style={{ position: "relative" }}>
-                  {file.type?.startsWith("video/") ? (
-                    <video
-                      src={file.url}
-                      style={{
-                        width: "50px",
-                        height: "50px",
-                        objectFit: "cover",
-                        borderRadius: "4px",
+              {previewFiles.map((file, index) => {
+                const isVideo =
+                  file.type?.startsWith("video/") ||
+                  /\.(mp4|webm|ogg|mov|avi|m4v)(\?.*)?$/i.test(file.name || file.url || "") ||
+                  /\/video\//i.test(file.url || "");
+
+                return (
+                  <div key={index} style={{ position: "relative" }}>
+                    {isVideo ? (
+                      <div
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => setSelectedVideoModalUrl(file.url)}
+                        style={{
+                          position: "relative",
+                          width: "50px",
+                          height: "50px",
+                          cursor: "pointer",
+                          borderRadius: "4px",
+                          overflow: "hidden",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                        title="Play video"
+                      >
+                        <video
+                          src={file.url}
+                          muted
+                          playsInline
+                          preload="metadata"
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                            display: "block",
+                            pointerEvents: "none",
+                          }}
+                        />
+                        <div
+                          style={{
+                            position: "absolute",
+                            top: "50%",
+                            left: "50%",
+                            transform: "translate(-50%, -50%)",
+                            width: "22px",
+                            height: "22px",
+                            borderRadius: "50%",
+                            backgroundColor: "rgba(0,0,0,0.65)",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            color: "#fff",
+                            pointerEvents: "none",
+                          }}
+                        >
+                          <svg
+                            width="10"
+                            height="10"
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                            style={{ marginLeft: "1px" }}
+                          >
+                            <path d="M8 5v14l11-7z" />
+                          </svg>
+                        </div>
+                      </div>
+                    ) : (
+                      <img
+                        src={file.url}
+                        alt="preview"
+                        style={{
+                          width: "50px",
+                          height: "50px",
+                          objectFit: "cover",
+                          borderRadius: "4px",
+                        }}
+                      />
+                    )}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeFile(index);
                       }}
-                    />
-                  ) : (
-                    <img
-                      src={file.url}
-                      alt="preview"
                       style={{
-                        width: "50px",
-                        height: "50px",
-                        objectFit: "cover",
-                        borderRadius: "4px",
+                        position: "absolute",
+                        top: "-5px",
+                        right: "-5px",
+                        background: "red",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "50%",
+                        width: "18px",
+                        height: "18px",
+                        fontSize: "10px",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        zIndex: 3,
                       }}
-                    />
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => removeFile(index)}
-                    style={{
-                      position: "absolute",
-                      top: "-5px",
-                      right: "-5px",
-                      background: "red",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "50%",
-                      width: "18px",
-                      height: "18px",
-                      fontSize: "10px",
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
+                    >
+                      ×
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           )}
 
@@ -1138,6 +1393,10 @@ const SevaServeAgentPanel = () => {
             </div>
           </form>
         </div>
+        <VideoModal
+          videoUrl={selectedVideoModalUrl}
+          onClose={() => setSelectedVideoModalUrl(null)}
+        />
       </div>
     </div>
   );
