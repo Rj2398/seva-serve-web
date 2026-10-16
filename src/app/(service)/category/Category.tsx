@@ -34,14 +34,27 @@ const Category = ({ initialData }: categoryProps) => {
                         <ul>
                           {featuredCategory?.map((item: any) => (
                             <li key={item?.id}  >
-                              <Link href={`/serviceDetails?categoryId=${item?.id}`} className="wrp-img">
+                              <Link href={`/serviceDetails?categoryId=${item?.id}`} className="wrp-img"  style={{
+    width: "120px",
+    display: "block",
+  }}>
                                 <div className="c-img">
                                   <img
                                     src={item?.icon || "images/home/browse-category/1.svg"}
                                     alt=""
                                   />
                                 </div>
-                                <span>{item?.name}</span>
+                                {/* <span  style={{wordBreak:'auto-phrase'}}>{item?.name}</span> */}
+                                <span
+  style={{
+       display: "block",
+    width: "100%",
+    whiteSpace: "normal",
+    overflowWrap: "break-word",
+  }}
+>
+  {item?.name}
+</span>
                               </Link>
                             </li>
                           ))}

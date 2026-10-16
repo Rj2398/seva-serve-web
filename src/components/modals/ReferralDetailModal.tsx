@@ -123,7 +123,7 @@ const ReferralDetailModal = ({referdetail}:ReferedDetailProps) => {
                   <img src="/images/contractor-icon.svg" alt=''/>
                 </div>
 
-                <h3>For Provider Referrals</h3>
+                <h3>For Technician Referrals</h3>
               </div>
 
               <div className="referral-reward-row">

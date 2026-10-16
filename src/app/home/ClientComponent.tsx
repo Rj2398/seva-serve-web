@@ -960,7 +960,7 @@ useEffect(() => {
                       </div>
                       <div className="browse-inner">
                         <ul>
-                          {data?.categories?.map((item: any) => (
+                          {data?.categories?.slice(0, 9)?.map((item: any) => (
                             <li key={item?.id}>
                               <Link
                                 href={
@@ -968,6 +968,11 @@ useEffect(() => {
                                     ? `/serviceDetails?categoryId=${item?.id}`
                                     : "#"
                                 }
+                                 style={{
+                                  width: "120px",
+                                  display: "block",
+                                }}
+
                                 className="wrp-img"
                                 data-bs-toggle={!isLogin ? "modal" : undefined}
                                 data-bs-target={
@@ -983,12 +988,17 @@ useEffect(() => {
                                   <img
                                     src={
                                       item?.iconUrl ||
-                                      "images/home/browse-category/2.svg"
+                                      ""
                                     }
-                                    alt=""
+                                    alt="NA"
                                   />
                                 </div>
-                                <span>{item?.name || "Repairing"}</span>
+                                <span  style={{
+                                      display: "block",
+                                    width: "100%",
+                                    whiteSpace: "normal",
+                                    overflowWrap: "break-word",
+                                }}  >{item?.name || ""}</span>
                               </Link>
                             </li>
                           ))}
