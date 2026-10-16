@@ -11,6 +11,7 @@ import { VscReferences } from "react-icons/vsc";
 const LoginModal = () => {
   const [isEmailLogin, setIsEmailLogin] = useState(false);
   const [inputValue, setInputValue] = useState("");
+  const [checked,setChecked]= useState(false)
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [referCode, setReferCode] = useState("");
@@ -351,6 +352,30 @@ const LoginModal = () => {
                       />
                     </div>
 
+                     <p className="terms">
+                      By continuing, you agree to our <br />
+
+                     <input style={{marginRight:'5px'}} type="checkbox" checked={checked} onChange={()=>setChecked(!checked)} />
+                    <Link
+                      href="/termcondition"
+                      onClick={() =>
+                        closeModalBeforeNavigation("login-screen-1")
+                      } // Pass the ID of the current modal
+                    >
+                     
+                      Terms &
+                    </Link>
+                    <Link
+                      href="/privacypolicy"
+                      onClick={() =>
+                        closeModalBeforeNavigation("login-screen-1")
+                      } // or "login-screen-2" if inside OtpModal
+                    >
+                      Privacy Policy
+                    </Link>
+                    .
+                  </p>
+
                     <button
                       // type="button"
                       // data-bs-toggle="modal"
@@ -359,7 +384,7 @@ const LoginModal = () => {
                       // onClick={handleContinue}
                       type="submit"
                       className="continue-btn"
-                      disabled={!isvalidInput || loading}
+                      disabled={(!isvalidInput || !checked) || loading}
                     >
                       Continue
                     </button>
@@ -395,7 +420,7 @@ const LoginModal = () => {
 
                   {/* <p className="terms"> */}
 
-                  <p className="terms">
+                  {/* <p className="terms">
                     By continuing, you agree to our <br />
                     <Link
                       href="/termcondition"
@@ -414,7 +439,7 @@ const LoginModal = () => {
                       Privacy Policy
                     </Link>
                     .
-                  </p>
+                  </p> */}
                   {/* </p> */}
                 </div>
               </div>
