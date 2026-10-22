@@ -136,7 +136,7 @@ const ClientComponent = ({ data, isLogin = false }: homeprops) => {
               userData?.isProfileCompleted !== "false";
 
             if (!isProfileComplete) {
-              window.location.href = "/profile";
+              router.push("/profile");
               return;
             }
 

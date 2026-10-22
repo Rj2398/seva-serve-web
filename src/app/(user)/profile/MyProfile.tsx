@@ -36,7 +36,7 @@ const MyProfile = ({ initialData }: MyProfileProps) => {
     };
   }, [profileData.profile_image]);
 
-  useEffect(() => {
+  const syncProfileData = () => {
     let localUserData: any = null;
     if (typeof window !== "undefined") {
       const rawUser = localStorage.getItem("user");
@@ -50,7 +50,7 @@ const MyProfile = ({ initialData }: MyProfileProps) => {
       }
     }
 
-    const currentData = initialData || localUserData;
+    const currentData = localUserData || initialData;
 
     if (currentData) {
       const name = currentData.name ?? localUserData?.name ?? "";
@@ -63,13 +63,14 @@ const MyProfile = ({ initialData }: MyProfileProps) => {
       const created_at =
         currentData.created_at || localUserData?.created_at || null;
 
-      setProfileData({
-        name,
-        phone,
-        email,
-        profile_image,
-        created_at,
-      });
+      setProfileData((prev) => ({
+        ...prev,
+        name: name !== undefined && name !== "" ? name : prev.name,
+        phone: phone !== undefined && phone !== "" ? phone : prev.phone,
+        email: email !== undefined && email !== "" ? email : prev.email,
+        profile_image: profile_image || prev.profile_image,
+        created_at: created_at || prev.created_at,
+      }));
 
       const isProfileComplete =
         Boolean(name && name.trim().length > 0) &&
@@ -84,6 +85,21 @@ const MyProfile = ({ initialData }: MyProfileProps) => {
         setIsEditing(true);
       }
     }
+  };
+
+  useEffect(() => {
+    syncProfileData();
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("loginStatusChanged", syncProfileData);
+      window.addEventListener("profileUpdated", syncProfileData);
+    }
+    return () => {
+      if (typeof window !== "undefined") {
+        window.removeEventListener("loginStatusChanged", syncProfileData);
+        window.removeEventListener("profileUpdated", syncProfileData);
+      }
+    };
   }, [initialData]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -220,7 +236,8 @@ const MyProfile = ({ initialData }: MyProfileProps) => {
 
         // Redirect to Home page after profile completion
         if (typeof window !== "undefined") {
-          window.location.href = "/";
+          router.push("/");
+          router.refresh();
         }
       } else {
         toast.error(response.error || "Failed to update profile");

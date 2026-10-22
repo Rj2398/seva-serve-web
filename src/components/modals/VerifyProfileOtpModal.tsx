@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { globalServerRequest } from "@/actions/globalApi";
 
@@ -13,6 +14,7 @@ const VerifyProfileOtpModal = ({
   emailLogin = false,
   loginValue = "",
 }: VerifyProfileOtpModalProps) => {
+  const router = useRouter();
   const [otp, setOtp] = useState(["", "", "", "", ""]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -152,18 +154,34 @@ const VerifyProfileOtpModal = ({
           console.error("Failed to fetch fresh profile data:", e);
         }
 
-        // Trigger a global UI refresh
+        // Trigger a global UI refresh without hard reload
         if (typeof window !== "undefined") {
           window.dispatchEvent(new Event("loginStatusChanged"));
-          // We also reload the page to make sure the NextJS context (if any) is fully synced
-          window.location.reload();
+          window.dispatchEvent(new Event("profileUpdated"));
         }
 
+        router.refresh();
+
         const currentModal = document.getElementById("verify-profile-screen-2");
-        if (currentModal) {
+        if (currentModal && typeof window !== "undefined" && (window as any).bootstrap) {
           const currentInstance =
-            window.bootstrap?.Modal.getInstance(currentModal);
+            (window as any).bootstrap.Modal.getInstance(currentModal);
           currentInstance?.hide();
+        }
+
+        const screen1 = document.getElementById("verify-profile-screen-1");
+        if (screen1 && typeof window !== "undefined" && (window as any).bootstrap) {
+          const inst1 = (window as any).bootstrap.Modal.getInstance(screen1);
+          inst1?.hide();
+        }
+
+        if (typeof window !== "undefined") {
+          setTimeout(() => {
+            document.querySelectorAll(".modal-backdrop").forEach((el) => el.remove());
+            document.body.classList.remove("modal-open");
+            document.body.style.removeProperty("overflow");
+            document.body.style.removeProperty("padding-right");
+          }, 300);
         }
       } else {
         setError(response.error || "Invalid OTP entered. Please try again.");

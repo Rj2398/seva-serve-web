@@ -126,9 +126,7 @@ export default function ServiceViewDetail({
       }
     } else {
       setSelectSubCategories(subCategories?.[0]?.id);
-      if (initialData?.hasCard === false || initialData?.hasCard === "false") {
-        setShowAddCardModal(true)
-      }
+      // Note: hasCard check has been moved to SummaryEstimate page
     }
   }, [searchSubCategory, subCategories]);
 

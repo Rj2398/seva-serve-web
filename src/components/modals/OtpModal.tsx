@@ -211,13 +211,27 @@ const OtpModal = ({ emailLogin = false, loginValue = "" }: OtpModalProps) => {
           currentInstance?.hide();
         }
 
+        const screen1 = document.getElementById("login-screen-1");
+        if (screen1 && typeof window !== "undefined" && (window as any).bootstrap) {
+          const inst1 = (window as any).bootstrap.Modal.getInstance(screen1);
+          inst1?.hide();
+        }
+
         if (typeof window !== "undefined") {
+          setTimeout(() => {
+            document.querySelectorAll(".modal-backdrop").forEach((el) => el.remove());
+            document.body.classList.remove("modal-open");
+            document.body.style.removeProperty("overflow");
+            document.body.style.removeProperty("padding-right");
+          }, 300);
+
           if (!isProfileComplete) {
             sessionStorage.removeItem("showWelcomeModal");
             sessionStorage.removeItem("showAddCardModal");
-            window.location.href = "/profile";
+            router.push("/profile");
           } else {
-            window.location.href = "/";
+            router.push("/");
+            router.refresh();
           }
         }
       } else {

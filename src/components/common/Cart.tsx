@@ -556,13 +556,36 @@ function Cart() {
                         </div>
 
                         <div className="service-quotes card-quotes">
-                          <p className="service-cost cart-cost">
-                            Estimated Cost:{" "}
-                            <span>
-                              {item.estimated_cost?.formatted ??
-                                `$${item.estimated_cost?.amount ?? 0}`}
-                            </span>
-                          </p>
+                          <div className="service-cost cart-cost">
+                            <div className="cart-cost-header">
+                              <span className="cart-cost-label">
+                                Estimated Cost:
+                              </span>
+                              <span className="cart-cost-value">
+                                {item.estimated_cost?.formatted ??
+                                  `$${item.estimated_cost?.amount ?? 0}`}
+                              </span>
+                            </div>
+                            <div className="cart-cost-note">
+                              <svg
+                                width="14"
+                                height="14"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                aria-hidden="true"
+                              >
+                                <circle cx="12" cy="12" r="10" />
+                                <line x1="12" y1="16" x2="12" y2="12" />
+                                <circle cx="12" cy="8" r="1.2" fill="currentColor" stroke="none" />
+                              </svg>
+                              <span>This estimate is configured by Admin.</span>
+                            </div>
+                          </div>
+                      
 
                           <div className="home-quotes-cta cart-cta">
                             <button

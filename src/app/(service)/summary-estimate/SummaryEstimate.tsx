@@ -10,6 +10,7 @@ import { globalServerRequest } from "@/actions/globalApi";
 import DatePopup from "@/components/modals/bookingmodals/DatePopup";
 import QuoteDatePopup from "@/components/modals/bookingmodals/QuoteDatePopup";
 import VideoModal from "@/components/modals/VideoModal";
+import AddCardModal from "@/components/modals/AddCardModal";
 
 interface UserState {
   requestId: number;
@@ -68,6 +69,10 @@ const SummaryEstimate = () => {
   const [addressId, setAddressId] = useState("");
   const [expandedIndex, setExpandedIndex] = useState<number | null>(0); // Pehla default open rahega
   const [selectedVideoModalUrl, setSelectedVideoModalUrl] = useState<string | null>(null);
+  const [showAddCardModal, setShowAddCardModal] = useState<boolean>(false);
+  const [hasCard, setHasCard] = useState<boolean>(true); // default true to avoid false flash
+  const [pendingQuoteSlots, setPendingQuoteSlots] = useState<any[] | null>(null);
+  const [pendingAddressId, setPendingAddressId] = useState<string | undefined>(undefined);
 
   const toggleAccordion = (index: number) => {
     setExpandedIndex(expandedIndex === index ? null : index);
@@ -86,6 +91,38 @@ const SummaryEstimate = () => {
 
   const activeRequestId = requestedId || summary_estimate?.requestId;
 
+  // Helper to extract hasCard / hascard from API response, redux, or localStorage
+  const extractCardStatus = (...sources: any[]): boolean | null => {
+    for (const src of sources) {
+      if (!src || typeof src !== "object") continue;
+
+      const candidates = [
+        src.hasCard,
+        src.hascard,
+        src.has_card,
+        src.has_Card,
+        src?.data?.hasCard,
+        src?.data?.hascard,
+        src?.data?.has_card,
+        src?.user?.hasCard,
+        src?.user?.hascard,
+        src?.user?.has_card,
+        src?.userData?.hasCard,
+        src?.userData?.hascard,
+      ];
+
+      for (const val of candidates) {
+        if (val === true || val === "true" || val === 1 || val === "1") {
+          return true;
+        }
+        if (val === false || val === "false" || val === 0 || val === "0") {
+          return false;
+        }
+      }
+    }
+    return null;
+  };
+
   const fetchQuote = async () => {
     if (!activeRequestId) return;
     try {
@@ -94,10 +131,21 @@ const SummaryEstimate = () => {
         method: "GET",
       });
 
+      console.log("quote API response:", response);
       const fetchedData = response?.data?.data || response?.data || response;
-      console.log("response", fetchedData);
+      console.log("fetchedData:", fetchedData);
       if (fetchedData) {
         setApiEstimate(fetchedData);
+      }
+
+      // ✅ API se hasCard / hascard check karo
+      const apiCardStatus = extractCardStatus(response, response?.data, fetchedData);
+      console.log("apiCardStatus from API:", apiCardStatus);
+      if (apiCardStatus !== null) {
+        setHasCard(apiCardStatus);
+        if (!apiCardStatus) {
+          setShowAddCardModal(true);
+        }
       }
     } catch (error) {
       console.error("Failed to fetch quote data:", error);
@@ -109,12 +157,70 @@ const SummaryEstimate = () => {
     fetchQuote();
   }, [activeRequestId]);
 
+  // Redux data se bhi hasCard check karo
+  useEffect(() => {
+    const cardStatusFromRedux = extractCardStatus(summary_estimate, reduxData);
+    if (cardStatusFromRedux !== null) {
+      setHasCard(cardStatusFromRedux);
+      if (!cardStatusFromRedux) {
+        setShowAddCardModal(true);
+      }
+    }
+  }, [summary_estimate, reduxData]);
+
+  // LocalStorage check helper
+  const checkLocalStorage = () => {
+    try {
+      const userStr = localStorage.getItem("user");
+      if (userStr) {
+        const userData = JSON.parse(userStr);
+        return extractCardStatus(userData?.user || userData);
+      }
+    } catch {
+      return null;
+    }
+    return null;
+  };
+
+  // Check localStorage and re-check on window focus (e.g. after adding card in another tab/page)
+  useEffect(() => {
+    const handleFocus = () => {
+      const localStatus = checkLocalStorage();
+      if (localStatus !== null) {
+        setHasCard(localStatus);
+      }
+      if (activeRequestId) {
+        fetchQuote();
+      }
+    };
+
+    const localStatus = checkLocalStorage();
+    if (localStatus !== null) {
+      setHasCard(localStatus);
+    }
+
+    window.addEventListener("focus", handleFocus);
+    return () => window.removeEventListener("focus", handleFocus);
+  }, [activeRequestId]);
+
   const requestQuote = async (
     incomingSlots?: typeof availabilitySlots,
     incomingAddressId?: string
   ) => {
     if (!summary_estimate) {
       toast.error("Estimation details are not available");
+      return;
+    }
+
+    // ✅ Card check: API ya state se agar card nahi hai to AddCardModal popup dikhao aur request block karo
+    const currentCard =
+      hasCard &&
+      extractCardStatus(apiEstimate, summary_estimate) !== false;
+
+    if (!currentCard) {
+      setPendingQuoteSlots(incomingSlots || availabilitySlots || null);
+      setPendingAddressId(incomingAddressId);
+      setShowAddCardModal(true);
       return;
     }
 
@@ -1046,7 +1152,27 @@ const SummaryEstimate = () => {
                           style={{ fontSize: "15px" }}
                         >
                           Total Estimate Price
+                         <div className="cart-cost-note">
+                              <svg
+                                width="14"
+                                height="14"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                aria-hidden="true"
+                              >
+                                <circle cx="12" cy="12" r="10" />
+                                <line x1="12" y1="16" x2="12" y2="12" />
+                                <circle cx="12" cy="8" r="1.2" fill="currentColor" stroke="none" />
+                              </svg>{"  "}
+                              <span style={{fontSize:'11px',color:'#8B1414'}}>This estimate is configured by Admin.</span>
+                          </div>
+                          
                         </p>
+                        
                         <span
                           className="fw-bold text-danger h5 m-0"
                           style={{ color: "#8B1414" }}
@@ -1100,7 +1226,7 @@ const SummaryEstimate = () => {
         </div>
       </main>
       <RequestModal isOpen={isOpenModal} setIsOpen={setIsOpenModal} />
-        <VideoModal
+      <VideoModal
         videoUrl={selectedVideoModalUrl}
         onClose={() => setSelectedVideoModalUrl(null)}
       />
@@ -1129,6 +1255,29 @@ const SummaryEstimate = () => {
           fetchQuote();
         }}
         getAddressIdCallback={setAddressId}
+      />
+
+      {/* ✅ AddCardModal — agar card nahi hoga to popup show hoga */}
+      {/* Close hone par router.back() nahi hoga, page pe hi rahega */}
+      <AddCardModal
+        isOpen={showAddCardModal}
+        setIsOpen={(open) => {
+          setShowAddCardModal(open);
+          if (!open) {
+            // Modal close hua — card status re-check karo
+            const localCard = checkLocalStorage();
+            if (localCard !== null) {
+              setHasCard(localCard);
+              // Agar card add ho gaya to pending quote retry karo
+              if (localCard && pendingQuoteSlots !== null) {
+                requestQuote(pendingQuoteSlots ?? undefined, pendingAddressId);
+                setPendingQuoteSlots(null);
+                setPendingAddressId(undefined);
+              }
+            }
+          }
+        }}
+        // onClose undefined — close hone par router.back() NAHI hoga, usi page par rahega
       />
     </>
   );

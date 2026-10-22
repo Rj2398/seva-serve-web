@@ -238,7 +238,7 @@ const NewAddressModal: React.FC<NewAddressModalProps> = ({ selectedAddress, onSa
             window.dispatchEvent(new Event("loginStatusChanged"));
           };
         })
-        .catch(() => {});
+        .catch(() => { });
     }
 
     return () => {
@@ -361,6 +361,7 @@ const NewAddressModal: React.FC<NewAddressModalProps> = ({ selectedAddress, onSa
 
           let houseInfo = "";
           let areaName = "";
+          let cityName = "";
           let postcodeInfo = "";
           let landmarkInfo = "";
           let stateName = "";
@@ -386,20 +387,26 @@ const NewAddressModal: React.FC<NewAddressModalProps> = ({ selectedAddress, onSa
             }
           });
 
-          // Search through all results to reliably find area and postal code
+          // Search through all results to reliably find area, city and postal code
           for (const result of results) {
             result.address_components.forEach((component: any) => {
               const types = component.types;
 
+              // sublocality/neighborhood => Area field
               if (
                 !areaName &&
                 (
                   types.includes("sublocality") ||
-                  types.includes("neighborhood") ||
-                  types.includes("locality")
+                  types.includes("sublocality_level_1") ||
+                  types.includes("neighborhood")
                 )
               ) {
                 areaName = component.long_name;
+              }
+
+              // locality => City field
+              if (!cityName && types.includes("locality")) {
+                cityName = component.long_name;
               }
 
               if (!postcodeInfo && types.includes("postal_code")) {
@@ -426,6 +433,11 @@ const NewAddressModal: React.FC<NewAddressModalProps> = ({ selectedAddress, onSa
             });
           }
 
+          // Fallback: if area still empty, use city as area
+          if (!areaName && cityName) {
+            areaName = cityName;
+          }
+
           // Fallbacks
           if (!houseInfo) {
             houseInfo =
@@ -442,6 +454,7 @@ const NewAddressModal: React.FC<NewAddressModalProps> = ({ selectedAddress, onSa
 
           formik.setFieldValue("house", houseInfo);
           formik.setFieldValue("area", areaName);
+          formik.setFieldValue("city_name", cityName);
           formik.setFieldValue("state_name", stateName);
           formik.setFieldValue("lat", lat);
           formik.setFieldValue("long", lng);
@@ -478,6 +491,8 @@ const NewAddressModal: React.FC<NewAddressModalProps> = ({ selectedAddress, onSa
 
     landmark: Yup.string(),
 
+    city_name: Yup.string(),
+
     state_name: Yup.string(),
 
     addressType: Yup.string().required(),
@@ -497,6 +512,7 @@ const NewAddressModal: React.FC<NewAddressModalProps> = ({ selectedAddress, onSa
       floor: "",
       area: "",
       landmark: "",
+      city_name: "",
       state_name: "",
       addressType: "Home",
       Zip_code: "",
@@ -515,6 +531,7 @@ const NewAddressModal: React.FC<NewAddressModalProps> = ({ selectedAddress, onSa
           flat_house_building: values.house,
           floor: values.floor,
           area_sector_locality: values.area,
+          city_name: values.city_name,
           state_name: values.state_name,
           nearby_landmark: values.landmark,
           label: values.addressType.toLowerCase(),
@@ -560,6 +577,10 @@ const NewAddressModal: React.FC<NewAddressModalProps> = ({ selectedAddress, onSa
             area:
               savedAddress?.area_sector_locality ||
               values.area,
+
+            city_name:
+              savedAddress?.city_name ||
+              values.city_name,
 
             state_name:
               savedAddress?.state_name ||
@@ -656,6 +677,10 @@ const NewAddressModal: React.FC<NewAddressModalProps> = ({ selectedAddress, onSa
           selectedAddress.landmark ||
           "",
 
+        city_name:
+          selectedAddress.city_name ||
+          "",
+
         state_name:
           selectedAddress.state_name ||
           "",
@@ -743,6 +768,7 @@ const NewAddressModal: React.FC<NewAddressModalProps> = ({ selectedAddress, onSa
 
                 let houseInfo = "";
                 let areaName = "";
+                let cityName = "";
                 let postcodeInfo = "";
                 let landmarkInfo = "";
                 let stateName = "";
@@ -771,22 +797,28 @@ const NewAddressModal: React.FC<NewAddressModalProps> = ({ selectedAddress, onSa
                 });
 
 
-                // Search through all results to reliably find area and postal code
+                // Search through all results to reliably find area, city and postal code
                 for (const result of results) {
 
                   result.address_components.forEach((component: any) => {
 
                     const types = component.types;
 
+                    // sublocality/neighborhood => Area field
                     if (
                       !areaName &&
                       (
                         types.includes("sublocality") ||
-                        types.includes("neighborhood") ||
-                        types.includes("locality")
+                        types.includes("sublocality_level_1") ||
+                        types.includes("neighborhood")
                       )
                     ) {
                       areaName = component.long_name;
+                    }
+
+                    // locality => City field
+                    if (!cityName && types.includes("locality")) {
+                      cityName = component.long_name;
                     }
 
                     if (
@@ -818,6 +850,11 @@ const NewAddressModal: React.FC<NewAddressModalProps> = ({ selectedAddress, onSa
 
                 }
 
+                // Fallback: if area still empty, use city as area
+                if (!areaName && cityName) {
+                  areaName = cityName;
+                }
+
 
                 if (!houseInfo) {
                   houseInfo =
@@ -840,6 +877,11 @@ const NewAddressModal: React.FC<NewAddressModalProps> = ({ selectedAddress, onSa
                 formik.setFieldValue(
                   "area",
                   areaName
+                );
+
+                formik.setFieldValue(
+                  "city_name",
+                  cityName
                 );
 
                 formik.setFieldValue(
@@ -1133,7 +1175,7 @@ const NewAddressModal: React.FC<NewAddressModalProps> = ({ selectedAddress, onSa
                           }}
                           style={
                             formik.touched.house &&
-                            formik.errors.house
+                              formik.errors.house
                               ? {
                                 borderColor: 'red'
                               }
@@ -1186,13 +1228,13 @@ const NewAddressModal: React.FC<NewAddressModalProps> = ({ selectedAddress, onSa
                                   }}
 
                                   onMouseEnter={(e) =>
-                                    (e.currentTarget.style.backgroundColor =
-                                      "#f9f9f9")
+                                  (e.currentTarget.style.backgroundColor =
+                                    "#f9f9f9")
                                   }
 
                                   onMouseLeave={(e) =>
-                                    (e.currentTarget.style.backgroundColor =
-                                      "transparent")
+                                  (e.currentTarget.style.backgroundColor =
+                                    "transparent")
                                   }
                                 >
 
@@ -1259,7 +1301,7 @@ const NewAddressModal: React.FC<NewAddressModalProps> = ({ selectedAddress, onSa
                           {...formik.getFieldProps("area")}
                           style={
                             formik.touched.area &&
-                            formik.errors.area
+                              formik.errors.area
                               ? {
                                 borderColor: 'red'
                               }
@@ -1280,6 +1322,18 @@ const NewAddressModal: React.FC<NewAddressModalProps> = ({ selectedAddress, onSa
                             </span>
 
                           )}
+
+                      </div>
+
+
+                      {/* City Input */}
+                      <div className="mb-3">
+
+                        <input
+                          type="text"
+                          placeholder="City"
+                          {...formik.getFieldProps("city_name")}
+                        />
 
                       </div>
 
@@ -1316,7 +1370,7 @@ const NewAddressModal: React.FC<NewAddressModalProps> = ({ selectedAddress, onSa
                           {...formik.getFieldProps("Zip_code")}
                           style={
                             formik.touched.Zip_code &&
-                            formik.errors.Zip_code
+                              formik.errors.Zip_code
                               ? {
                                 borderColor: 'red'
                               }

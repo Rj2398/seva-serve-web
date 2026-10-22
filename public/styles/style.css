@@ -665,6 +665,7 @@ a.wrp-img {
   margin-left: 10px;
 }
 
+
 .additional-services .additional-text {
   font-size: 16px;
   font-weight: 600;
@@ -2747,17 +2748,68 @@ h5#offcanvasRightLabel {
   flex-direction: column;
 }
 
-p.service-cost.cart-cost span {
-  margin-left: auto;
-  color: var(--white);
-}
-
+.service-cost.cart-cost,
 p.service-cost.cart-cost {
   display: flex;
+  flex-direction: column;
+  gap: 4px;
   color: var(--white);
   background-color: var(--primary-color);
   padding: 10px 22px;
 }
+
+.service-cost.cart-cost .cart-cost-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.service-cost.cart-cost .cart-cost-label {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--white);
+}
+
+.service-cost.cart-cost .cart-cost-value,
+.service-cost.cart-cost span.cart-cost-value {
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--white) !important;
+  margin-left: auto !important;
+}
+
+.service-cost.cart-cost span.cart-cost-label {
+  color: var(--white) !important;
+  font-size: 16px;
+  font-weight: 500;
+  margin-left: 0 !important;
+}
+
+.service-cost.cart-cost .cart-cost-note {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--white);
+  line-height: 1.2;
+}
+
+.service-cost.cart-cost .cart-cost-note span {
+  color: var(--white) !important;
+  font-size: 12px !important;
+  font-weight: 400 !important;
+  margin-left: 0 !important;
+}
+
+.service-cost.cart-cost .cart-cost-note svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  color: var(--white);
+}
+
 
 .home-quotes-cta.cart-cta img {
   width: 12px;
@@ -2780,6 +2832,7 @@ p.service-cost.cart-cost {
 
 .home-quotes-cta.cart-cta {
   padding: 0 20px 20px 20px;
+  margin-top: 10px;
 }
 
 .offcanvas-body.cart-data .plumbing {

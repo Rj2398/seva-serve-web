@@ -94,7 +94,7 @@ const RequestModal: React.FC<RequestModalProps> = ({ isOpen, setIsOpen }) => {
                   className="check"
                   alt=""
                 />
-                <h4>Request Sent Successfully!</h4>
+                <h4>Quote Request Sent Successfully!</h4>
                 <p>
                   Your quote request has been shared with our admin team. You
                   will receive an update shortly.

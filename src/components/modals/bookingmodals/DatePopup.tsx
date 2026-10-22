@@ -495,8 +495,15 @@ const DatePopup: React.FC<DatePopupProps> = ({
 
             <div className="modal-body">
               <div className="select-date-time-wrp">
-                <h1>{rescheduleKey ? "Reschedule Booking" : "Schedule Booking"}</h1>
+                <h1>{rescheduleKey ? "Reschedule Booking" : "Schedule Booking"}
 
+              {  !rescheduleKey   &&  <span style={{ marginLeft: "210px", fontSize: "12px" ,color:'#8B1414'}}>
+                <span style={{ marginRight: "5px" }}>ⓘ</span>
+                You can choose upto 3 different date & time slots
+              </span>}
+                </h1>
+              
+                     
                 <form onSubmit={(e) => e.preventDefault()}>
                   <div className="select-date-time-inner">
                     <div className="select-date-in">
@@ -658,7 +665,7 @@ const DatePopup: React.FC<DatePopupProps> = ({
                       className="filled"
                       onClick={handleConfirmBooking}
                     >
-                      Confirm & Book
+                      Confirm & Schedule Booking
                       <img src="images/home/right-img.svg" alt="" />
                     </button>
                   </div>
