@@ -347,7 +347,7 @@ function PaymentMethodContent({ initialCardsData }: CardProps) {
                                 style={{ cursor: "pointer" }}
                               />
                             </div>
-                            <button
+                           {cards?.length > 1 && <button
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -360,7 +360,7 @@ function PaymentMethodContent({ initialCardsData }: CardProps) {
                                 src="images/inner-page/card-cross.svg"
                                 alt="Remove"
                               />
-                            </button>
+                            </button>}
                             <div className="custom-blank-card">
                               <div className="card-details-overlay">
                                 <div className="card-brand-label">

@@ -1014,7 +1014,10 @@ export default function ServiceViewDetail({
                                       marginBottom: "10px",
                                     }}
                                   >
-                                    <h3 style={{ margin: 0 }}>Uploaded Image/Video</h3>
+                                    <h3 style={{ margin: 0 }}>Please upload image for the issue you are facing.</h3>
+                                    {/* <div>
+                                    <span>Please uploaded image for the issue you are facing.</span>
+                                    </div> */}
                                     {(() => {
                                       const counts = getMediaCounts(issueIdStr);
                                       return (

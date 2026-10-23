@@ -582,7 +582,7 @@ function Cart() {
                                 <line x1="12" y1="16" x2="12" y2="12" />
                                 <circle cx="12" cy="8" r="1.2" fill="currentColor" stroke="none" />
                               </svg>
-                              <span>This estimate is configured by Admin.</span>
+                              <span>This estimate is based on Seva Serve’s experience. The final price will be provided once the quote has been reviewed and approved in person.</span>
                             </div>
                           </div>
                       
@@ -610,7 +610,7 @@ function Cart() {
                                 )
                               }
                             >
-                              Request
+                              View Details
                             </button>
                           </div>
                         </div>

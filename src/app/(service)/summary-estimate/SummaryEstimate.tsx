@@ -1168,7 +1168,7 @@ const SummaryEstimate = () => {
                                 <line x1="12" y1="16" x2="12" y2="12" />
                                 <circle cx="12" cy="8" r="1.2" fill="currentColor" stroke="none" />
                               </svg>{"  "}
-                              <span style={{fontSize:'11px',color:'#8B1414'}}>This estimate is configured by Admin.</span>
+                              <span style={{fontSize:'11px',color:'#8B1414'}}>This estimate is based on Seva Serve’s experience. The final price will be provided once the quote has been reviewed and approved in person.</span>
                           </div>
                           
                         </p>
