@@ -34,7 +34,7 @@ const MyProfile = ({ initialData }: MyProfileProps) => {
         URL.revokeObjectURL(profileData.profile_image);
       }
     };
-  }, [profileData.profile_image]);
+  }, [profileData.profile_image]); 
 
   const syncProfileData = () => {
     let localUserData: any = null;
@@ -155,100 +155,243 @@ const MyProfile = ({ initialData }: MyProfileProps) => {
     }
   };
 
-  const handleSave = async () => {
-    if (!profileData.name.trim()) {
-      toast.error("Name is required");
-      return;
-    }
-    if (!profileData.phone.trim()) {               
-      toast.error("Phone number is required");
-      return;
-    }
-    if (!profileData.email.trim()) {
-      toast.error("Email address is required");
-      return;
-    }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(profileData.email.trim())) {
-      toast.error("Please enter a valid email address");
-      return;
-    }
+  // const handleSave = async () => {
+  //   if (!profileData.name.trim()) {
+  //     toast.error("Name is required");
+  //     return;
+  //   }
+  //   if (!profileData.phone.trim()) {               
+  //     toast.error("Phone number is required");
+  //     return;
+  //   }
+  //   if (!profileData.email.trim()) {
+  //     toast.error("Email address is required");
+  //     return;
+  //   }
+  //   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  //   if (!emailRegex.test(profileData.email.trim())) {
+  //     toast.error("Please enter a valid email address");
+  //     return;
+  //   }
 
-    setLoading(true);
-    try {
-      const formData = new FormData();
-      formData.append("name", profileData.name.trim());
-      formData.append("phone", profileData.phone.trim());
-      formData.append("email", profileData.email.trim());
+  //   setLoading(true);
+  //   try {
+  //     const formData = new FormData();
+  //     formData.append("name", profileData.name.trim());
+  //     formData.append("phone", profileData.phone.trim());
+  //     formData.append("email", profileData.email.trim());
       
-      if (selectedFile) {
-        formData.append("profileImg", selectedFile);
+  //     if (selectedFile) {
+  //       formData.append("profileImg", selectedFile);
+  //     }
+
+  //     const response = await globalServerRequest({
+  //       endpoint: "profile/update",
+  //       method: "POST",
+  //       payload: formData,
+  //       isFormData: true,
+  //     });
+
+  //     if (response.success) {
+  //       toast.success("Profile updated successfully");
+  //       const updatedUser = response.data?.data || response.data;
+
+  //       if (updatedUser) {
+  //         setProfileData({
+  //           name: updatedUser.name ?? profileData.name,
+  //           phone: updatedUser.phone ?? profileData.phone,
+  //           email: updatedUser.email ?? profileData.email,
+  //           profile_image:
+  //             updatedUser.profile_image ||
+  //             profileData.profile_image ||
+  //             "/images/inner-page/user-profile.svg",
+  //           created_at: updatedUser.created_at || profileData.created_at,
+  //         });
+
+          
+  //         const rawUser = localStorage.getItem("user");
+  //         if (rawUser) {
+  //           try {
+  //             const userObj = JSON.parse(rawUser);
+  //             if (userObj.user) {
+  //               userObj.user = {
+  //                 ...userObj.user,
+  //                 ...updatedUser,
+  //                 isProfileCompleted: true,
+  //               };
+  //             } else {
+  //               Object.assign(userObj, updatedUser, { isProfileCompleted: true });
+  //             }
+  //             userObj.isProfileCompleted = true;
+
+  //             localStorage.setItem("user", JSON.stringify(userObj));
+  //             window.dispatchEvent(new Event("loginStatusChanged"));
+  //           } catch (e) {
+  //             console.error("Failed to update user cache in localStorage", e);
+  //           }
+  //         }
+  //       }
+  //       setSelectedFile(null);
+  //       setIsEditing(false);
+
+        
+  //       if (typeof window !== "undefined") {
+  //         router.push("/");
+  //         router.refresh();
+  //       }
+  //     } else {
+  //       toast.error(response.error || "Failed to update profile");
+  //     }
+  //   } catch (error) {
+  //     console.error("Profile update error:", error);
+  //     toast.error("An unexpected error occurred while saving profile changes");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+ const handleSave = async () => {
+  if (!profileData.name.trim()) {
+    toast.error("Name is required");
+    return;
+  }
+
+  if (!profileData.phone.trim()) {
+    toast.error("Phone number is required");
+    return;
+  }
+
+  if (!profileData.email.trim()) {
+    toast.error("Email address is required");
+    return;
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (!emailRegex.test(profileData.email.trim())) {
+    toast.error("Please enter a valid email address");
+    return;
+  }
+
+  // Check whether profile was already completed before this save
+  let isProfileAlreadyCompleted = false;
+
+  if (typeof window !== "undefined") {
+    const rawUser = localStorage.getItem("user");
+
+    if (rawUser) {
+      try {
+        const userObj = JSON.parse(rawUser);
+
+        isProfileAlreadyCompleted =
+          userObj?.isProfileCompleted === true ||
+          userObj?.user?.isProfileCompleted === true;
+      } catch (e) {
+        console.error("Failed to read user data", e);
       }
+    }
+  }
 
-      const response = await globalServerRequest({
-        endpoint: "profile/update",
-        method: "POST",
-        payload: formData,
-        isFormData: true,
-      });
+  setLoading(true);
 
-      if (response.success) {
-        toast.success("Profile updated successfully");
-        const updatedUser = response.data?.data || response.data;
+  try {
+    const formData = new FormData();
 
-        if (updatedUser) {
-          setProfileData({
-            name: updatedUser.name ?? profileData.name,
-            phone: updatedUser.phone ?? profileData.phone,
-            email: updatedUser.email ?? profileData.email,
-            profile_image:
-              updatedUser.profile_image ||
-              profileData.profile_image ||
-              "/images/inner-page/user-profile.svg",
-            created_at: updatedUser.created_at || profileData.created_at,
-          });
+    formData.append("name", profileData.name.trim());
+    formData.append("phone", profileData.phone.trim());
+    formData.append("email", profileData.email.trim());
 
-          // Sync localStorage seamlessly
-          const rawUser = localStorage.getItem("user");
-          if (rawUser) {
-            try {
-              const userObj = JSON.parse(rawUser);
-              if (userObj.user) {
-                userObj.user = {
-                  ...userObj.user,
-                  ...updatedUser,
-                  isProfileCompleted: true,
-                };
-              } else {
-                Object.assign(userObj, updatedUser, { isProfileCompleted: true });
-              }
-              userObj.isProfileCompleted = true;
+    if (selectedFile) {
+      formData.append("profileImg", selectedFile);
+    }
 
-              localStorage.setItem("user", JSON.stringify(userObj));
-              window.dispatchEvent(new Event("loginStatusChanged"));
-            } catch (e) {
-              console.error("Failed to update user cache in localStorage", e);
+    const response = await globalServerRequest({
+      endpoint: "profile/update",
+      method: "POST",
+      payload: formData,
+      isFormData: true,
+    });
+
+    if (response.success) {
+      toast.success("Profile updated successfully");
+
+      const updatedUser = response.data?.data || response.data;
+
+      if (updatedUser) {
+        setProfileData({
+          name: updatedUser.name ?? profileData.name,
+          phone: updatedUser.phone ?? profileData.phone,
+          email: updatedUser.email ?? profileData.email,
+          profile_image:
+            updatedUser.profile_image ||
+            profileData.profile_image ||
+            "/images/inner-page/user-profile.svg",
+          created_at:
+            updatedUser.created_at || profileData.created_at,
+        });
+
+        // Sync localStorage
+        const rawUser = localStorage.getItem("user");
+
+        if (rawUser) {
+          try {
+            const userObj = JSON.parse(rawUser);
+
+            if (userObj.user) {
+              userObj.user = {
+                ...userObj.user,
+                ...updatedUser,
+                isProfileCompleted: true,
+              };
+            } else {
+              Object.assign(userObj, updatedUser, {
+                isProfileCompleted: true,
+              });
             }
+
+            userObj.isProfileCompleted = true;
+
+            localStorage.setItem(
+              "user",
+              JSON.stringify(userObj)
+            );
+
+            window.dispatchEvent(
+              new Event("loginStatusChanged")
+            );
+          } catch (e) {
+            console.error(
+              "Failed to update user cache in localStorage",
+              e
+            );
           }
         }
-        setSelectedFile(null);
-        setIsEditing(false);
-
-        // Redirect to Home page after profile completion
-        if (typeof window !== "undefined") {
-          router.push("/");
-          router.refresh();
-        }
-      } else {
-        toast.error(response.error || "Failed to update profile");
       }
-    } catch (error) {
-      console.error("Profile update error:", error);
-      toast.error("An unexpected error occurred while saving profile changes");
-    } finally {
-      setLoading(false);
+
+      setSelectedFile(null);
+      setIsEditing(false);
+
+      // Redirect ONLY when profile was incomplete before saving
+      if (!isProfileAlreadyCompleted) {
+        router.push("/");
+        router.refresh();
+      }
+    } else {
+      toast.error(
+        response.error || "Failed to update profile"
+      );
     }
-  };
+  } catch (error) {
+    console.error("Profile update error:", error);
+
+    toast.error(
+      "An unexpected error occurred while saving profile changes"
+    );
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <main>
