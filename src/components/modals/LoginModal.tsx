@@ -120,7 +120,7 @@ const LoginModal = () => {
         toast.error(
           response.error || "Something went wrong. Please try again."
         );
-        setError(response.error || "Something went wrong. Please try again.");
+        setError("Something went wrong. Please try again.");
       }
     } catch (error) {
       setLoading(false);

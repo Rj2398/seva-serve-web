@@ -808,47 +808,92 @@ export default function ServiceViewDetail({
                         {filtersubCategory?.map((item) => (
                           <button
                             type="button"
-                            onClick={() => {
-                              if (
-                                String(selectSubCategories) !==
-                                String(item?.id) &&
-                                activeIssueId &&
-                                addedCategory
-                              ) {
-                                setPendingAction({
-                                  type: "subcategory",
-                                  subCategoryId: item?.id,
-                                });
+                            // onClick={() => {
+                            //   if (
+                            //     String(selectSubCategories) !==
+                            //     String(item?.id) &&
+                            //     activeIssueId &&
+                            //     addedCategory
+                            //   ) {
+                            //     setPendingAction({
+                            //       type: "subcategory",
+                            //       subCategoryId: item?.id,
+                            //     });
+                            //     if (
+                            //       typeof window !== "undefined" &&
+                            //       (window as any).bootstrap
+                            //     ) {
+                            //       const modalElement = document.getElementById(
+                            //         "confirm-add-to-cart-popup"
+                            //       );
+                            //       if (modalElement) {
+                            //         const bootstrapModal =
+                            //           (
+                            //             window as any
+                            //           ).bootstrap.Modal.getInstance(
+                            //             modalElement
+                            //           ) ||
+                            //           new (window as any).bootstrap.Modal(
+                            //             modalElement
+                            //           );
+                            //         bootstrapModal.show();
+                            //       }
+                            //     }
+                            //   } else {
+                            //     setSelectSubCategories(item?.id);
+                            //     setActiveIssueId(null);
+                            //     setAddedCategory(false);
+                            //     setSelectedSpecificIssueId({});
+                            //     setProblemDesc({});
+                            //     setUploadedImage({});
+                            //     setUploadedFiles({});
+                            //   }
+                            // }}
+
+                             onClick={() => {
+                                const shouldSkipPopup =
+                                  quote_update === "1" && is_quote_edit === "1";
+
                                 if (
-                                  typeof window !== "undefined" &&
-                                  (window as any).bootstrap
+                                  String(selectSubCategories) !== String(item?.id) &&
+                                  activeIssueId &&
+                                  addedCategory &&
+                                  !shouldSkipPopup
                                 ) {
-                                  const modalElement = document.getElementById(
-                                    "confirm-add-to-cart-popup"
-                                  );
-                                  if (modalElement) {
+                                  setPendingAction({
+                                    type: "subcategory",
+                                    subCategoryId: item?.id,
+                                  });
+
+                                  if (
+                                    typeof window !== "undefined" &&
+                                    window.bootstrap
+                                  ) {
+                                    const modalElement = document.getElementById(
+                                      "confirm-add-to-cart-popup"
+                                    );
+
+                                    if (modalElement) {
+                                    const Modal = window.bootstrap.Modal as any;
+
                                     const bootstrapModal =
-                                      (
-                                        window as any
-                                      ).bootstrap.Modal.getInstance(
-                                        modalElement
-                                      ) ||
-                                      new (window as any).bootstrap.Modal(
-                                        modalElement
-                                      );
+                                      Modal.getInstance(modalElement) ||
+                                      new Modal(modalElement);
+
                                     bootstrapModal.show();
                                   }
+                                  }
+                                } else {
+                                  setSelectSubCategories(item?.id);
+                                  setActiveIssueId(null);
+                                  setAddedCategory(false);
+                                  setSelectedSpecificIssueId({});
+                                  setProblemDesc({});
+                                  setUploadedImage({});
+                                  setUploadedFiles({});
+                                  setPendingAction(null);
                                 }
-                              } else {
-                                setSelectSubCategories(item?.id);
-                                setActiveIssueId(null);
-                                setAddedCategory(false);
-                                setSelectedSpecificIssueId({});
-                                setProblemDesc({});
-                                setUploadedImage({});
-                                setUploadedFiles({});
-                              }
-                            }}
+                              }}
                             className={
                               String(selectSubCategories) === String(item?.id)
                                 ? "active"
