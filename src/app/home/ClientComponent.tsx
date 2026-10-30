@@ -119,26 +119,83 @@ const ClientComponent = ({ data, isLogin = false }: homeprops) => {
 
         if (isLoggedIn && userStr) {
           try {
+         
             const userData = JSON.parse(userStr);
-            const user = userData?.user ? userData.user : userData;
+            const user = userData?.user || userData;
 
-            const name = typeof user?.name === "string" ? user.name.trim() : "";
-            const phone = typeof user?.phone === "string" ? user.phone.trim() : "";
-            const email = typeof user?.email === "string" ? user.email.trim() : "";
+            const name = String(user?.name ?? "").trim();
+            const phone = String(user?.phone ?? "").trim();
+            const email = String(user?.email ?? "").trim();
 
+            const loginMethod = String(
+              user?.loginMethod ||
+                user?.login_method ||
+                user?.channel ||
+                userData?.loginMethod ||
+                userData?.login_method ||
+                userData?.channel ||
+                ""
+            ).toLowerCase();
+
+            let isPhoneLogin = false;
+            if (
+              loginMethod.includes("phone") ||
+              loginMethod.includes("mobile")
+            ) {
+              isPhoneLogin = true;
+            } else if (loginMethod.includes("email")) {
+              isPhoneLogin = false;
+            } else {
+              let sessionChannel = "";
+              try {
+                const sessionUserData = JSON.parse(
+                  sessionStorage.getItem("userData") || "{}"
+                );
+                sessionChannel = String(
+                  sessionUserData?.channel || ""
+                ).toLowerCase();
+              } catch (e) {}
+
+              if (
+                sessionChannel.includes("phone") ||
+                sessionChannel.includes("mobile")
+              ) {
+                isPhoneLogin = true;
+              } else if (sessionChannel.includes("email")) {
+                isPhoneLogin = false;
+              } else if (phone && !email) {
+                isPhoneLogin = true;
+              } else if (email && !phone) {
+                isPhoneLogin = false;
+              } else {
+                isPhoneLogin = Boolean(phone);
+              }
+            }
+
+            // For phone login: name is mandatory, phone is mandatory, email is optional.
+            // For email login: name, phone, and email are mandatory.
             const isProfileComplete =
-              Boolean(name.length > 0) &&
-              Boolean(phone.length > 0) &&
-              Boolean(email.length > 0) &&
+              (isPhoneLogin
+                ? Boolean(name && phone)
+                : Boolean(name && phone && email)) &&
               user?.isProfileCompleted !== false &&
               user?.isProfileCompleted !== "false" &&
               userData?.isProfileCompleted !== false &&
               userData?.isProfileCompleted !== "false";
 
+            console.log("HOME PROFILE CHECK:", {
+              name,
+              phone,
+              email,
+              isPhoneLogin,
+              isProfileComplete,
+            });
+
             if (!isProfileComplete) {
               router.push("/profile");
               return;
             }
+
 
             const userIsNew =
               userData?.isNewUser === true ||
@@ -1036,7 +1093,11 @@ useEffect(() => {
                         (item: any, index: number) => (
                           <div
                             className="upcoming-my-slide"
+                            style={{cursor:'pointer'}}
                             key={item?.bookingId}
+                            onClick={() =>
+                              router.push(`/view-booking-detail?bookingId=${item?.bookingId}`)
+                            }
                           >
                             <div
                               className="upcoming-img"
@@ -1045,7 +1106,7 @@ useEffect(() => {
                               <img
                                 src={
                                   item?.image[0] ||
-                                  "images/home/home-slider/1.svg"
+                                  "/images/header/logo.svg"
                                 }
                                 alt=""
                               />

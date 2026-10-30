@@ -435,7 +435,7 @@ export default function Booking({ initialBookingData }: BookingProps) {
 
                                            return (
                                              <img
-                                               src={mediaUrl || item?.categoryImageUrl || ""}
+                                               src={mediaUrl || item?.categoryImageUrl || "/images/header/logo.svg"}
                                                alt={item?.categoryName || "Category"}
                                                style={{
                                                  width: "122px",

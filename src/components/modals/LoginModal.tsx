@@ -107,9 +107,9 @@ const LoginModal = () => {
         }
 
         // Show Screen 2
-        const nextModal = document.getElementById("login-screen-2");
+        const nextModal = document.getElementById("login-screen-2") ;
         if (nextModal) {
-          const nextInstance = new window.bootstrap.Modal(nextModal);
+          const nextInstance = new window.bootstrap.Modal(nextModal) ;
           nextInstance.show();
           window.dispatchEvent(new Event("start-otp-timer"));
         }
@@ -355,7 +355,10 @@ const LoginModal = () => {
                      <p className="terms">
                       By continuing, you agree to our <br />
 
-                     <input style={{marginRight:'5px'}} type="checkbox" checked={checked} onChange={()=>setChecked(!checked)} />
+                     <input 
+                      style={{ marginRight: "5px", accentColor: "#991318" }}
+                     type="checkbox" checked={checked} 
+                     onChange={()=>setChecked(!checked)} />
                     <Link
                       href="/termcondition"
                       onClick={() =>

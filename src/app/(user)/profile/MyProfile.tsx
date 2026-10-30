@@ -38,12 +38,13 @@ const MyProfile = ({ initialData }: MyProfileProps) => {
 
   const syncProfileData = () => {
     let localUserData: any = null;
+    let rawUserObj: any = null;
     if (typeof window !== "undefined") {
       const rawUser = localStorage.getItem("user");
       if (rawUser) {
         try {
-          const parsed = JSON.parse(rawUser);
-          localUserData = parsed?.user ? parsed.user : parsed;
+          rawUserObj = JSON.parse(rawUser);
+          localUserData = rawUserObj?.user ? rawUserObj.user : rawUserObj;
         } catch (e) {
           console.error("Failed to parse user from localStorage", e);
         }
@@ -53,15 +54,16 @@ const MyProfile = ({ initialData }: MyProfileProps) => {
     const currentData = localUserData || initialData;
 
     if (currentData) {
-      const name = currentData.name ?? localUserData?.name ?? "";
-      const phone = currentData.phone ?? localUserData?.phone ?? "";
-      const email = currentData.email ?? localUserData?.email ?? "";
+      const name = currentData.name ?? localUserData?.name ?? initialData?.name ?? "";
+      const phone = currentData.phone ?? localUserData?.phone ?? initialData?.phone ?? "";
+      const email = currentData.email ?? localUserData?.email ?? initialData?.email ?? "";
       const profile_image =
         currentData.profile_image ||
         localUserData?.profile_image ||
+        initialData?.profile_image ||
         "/images/inner-page/user-profile.svg";
       const created_at =
-        currentData.created_at || localUserData?.created_at || null;
+        currentData.created_at || localUserData?.created_at || initialData?.created_at || null;
 
       setProfileData((prev) => ({
         ...prev,
@@ -72,10 +74,62 @@ const MyProfile = ({ initialData }: MyProfileProps) => {
         created_at: created_at || prev.created_at,
       }));
 
+      const loginMethod = String(
+        currentData?.loginMethod ||
+          currentData?.login_method ||
+          currentData?.channel ||
+          localUserData?.loginMethod ||
+          localUserData?.login_method ||
+          localUserData?.channel ||
+          rawUserObj?.loginMethod ||
+          rawUserObj?.channel ||
+          ""
+      ).toLowerCase();
+
+      let isPhoneLogin = false;
+      if (
+        loginMethod.includes("phone") ||
+        loginMethod.includes("mobile")
+      ) {
+        isPhoneLogin = true;
+      } else if (loginMethod.includes("email")) {
+        isPhoneLogin = false;
+      } else {
+        let sessionChannel = "";
+        try {
+          const sessionUserData = JSON.parse(
+            sessionStorage.getItem("userData") || "{}"
+          );
+          sessionChannel = String(sessionUserData?.channel || "").toLowerCase();
+        } catch (e) {}
+
+        if (
+          sessionChannel.includes("phone") ||
+          sessionChannel.includes("mobile")
+        ) {
+          isPhoneLogin = true;
+        } else if (sessionChannel.includes("email")) {
+          isPhoneLogin = false;
+        } else if (phone && !email) {
+          isPhoneLogin = true;
+        } else if (email && !phone) {
+          isPhoneLogin = false;
+        } else {
+          isPhoneLogin = Boolean(phone);
+        }
+      }
+
       const isProfileComplete =
-        Boolean(name && name.trim().length > 0) &&
-        Boolean(phone && phone.trim().length > 0) &&
-        Boolean(email && email.trim().length > 0) &&
+        (isPhoneLogin
+          ? Boolean(name && name.trim().length > 0 && phone && phone.trim().length > 0)
+          : Boolean(
+              name &&
+                name.trim().length > 0 &&
+                phone &&
+                phone.trim().length > 0 &&
+                email &&
+                email.trim().length > 0
+            )) &&
         currentData.isProfileCompleted !== false &&
         currentData.isProfileCompleted !== "false" &&
         localUserData?.isProfileCompleted !== false &&
@@ -155,242 +209,205 @@ const MyProfile = ({ initialData }: MyProfileProps) => {
     }
   };
 
-  // const handleSave = async () => {
-  //   if (!profileData.name.trim()) {
-  //     toast.error("Name is required");
-  //     return;
-  //   }
-  //   if (!profileData.phone.trim()) {               
-  //     toast.error("Phone number is required");
-  //     return;
-  //   }
-  //   if (!profileData.email.trim()) {
-  //     toast.error("Email address is required");
-  //     return;
-  //   }
-  //   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  //   if (!emailRegex.test(profileData.email.trim())) {
-  //     toast.error("Please enter a valid email address");
-  //     return;
-  //   }
+  const handleSave = async () => {
+    let userObj: any = {};
 
-  //   setLoading(true);
-  //   try {
-  //     const formData = new FormData();
-  //     formData.append("name", profileData.name.trim());
-  //     formData.append("phone", profileData.phone.trim());
-  //     formData.append("email", profileData.email.trim());
-      
-  //     if (selectedFile) {
-  //       formData.append("profileImg", selectedFile);
-  //     }
-
-  //     const response = await globalServerRequest({
-  //       endpoint: "profile/update",
-  //       method: "POST",
-  //       payload: formData,
-  //       isFormData: true,
-  //     });
-
-  //     if (response.success) {
-  //       toast.success("Profile updated successfully");
-  //       const updatedUser = response.data?.data || response.data;
-
-  //       if (updatedUser) {
-  //         setProfileData({
-  //           name: updatedUser.name ?? profileData.name,
-  //           phone: updatedUser.phone ?? profileData.phone,
-  //           email: updatedUser.email ?? profileData.email,
-  //           profile_image:
-  //             updatedUser.profile_image ||
-  //             profileData.profile_image ||
-  //             "/images/inner-page/user-profile.svg",
-  //           created_at: updatedUser.created_at || profileData.created_at,
-  //         });
-
-          
-  //         const rawUser = localStorage.getItem("user");
-  //         if (rawUser) {
-  //           try {
-  //             const userObj = JSON.parse(rawUser);
-  //             if (userObj.user) {
-  //               userObj.user = {
-  //                 ...userObj.user,
-  //                 ...updatedUser,
-  //                 isProfileCompleted: true,
-  //               };
-  //             } else {
-  //               Object.assign(userObj, updatedUser, { isProfileCompleted: true });
-  //             }
-  //             userObj.isProfileCompleted = true;
-
-  //             localStorage.setItem("user", JSON.stringify(userObj));
-  //             window.dispatchEvent(new Event("loginStatusChanged"));
-  //           } catch (e) {
-  //             console.error("Failed to update user cache in localStorage", e);
-  //           }
-  //         }
-  //       }
-  //       setSelectedFile(null);
-  //       setIsEditing(false);
-
-        
-  //       if (typeof window !== "undefined") {
-  //         router.push("/");
-  //         router.refresh();
-  //       }
-  //     } else {
-  //       toast.error(response.error || "Failed to update profile");
-  //     }
-  //   } catch (error) {
-  //     console.error("Profile update error:", error);
-  //     toast.error("An unexpected error occurred while saving profile changes");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
- const handleSave = async () => {
-  if (!profileData.name.trim()) {
-    toast.error("Name is required");
-    return;
-  }
-
-  if (!profileData.phone.trim()) {
-    toast.error("Phone number is required");
-    return;
-  }
-
-  if (!profileData.email.trim()) {
-    toast.error("Email address is required");
-    return;
-  }
-
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-  if (!emailRegex.test(profileData.email.trim())) {
-    toast.error("Please enter a valid email address");
-    return;
-  }
-
-  // Check whether profile was already completed before this save
-  let isProfileAlreadyCompleted = false;
-
-  if (typeof window !== "undefined") {
-    const rawUser = localStorage.getItem("user");
-
-    if (rawUser) {
+    if (typeof window !== "undefined") {
       try {
-        const userObj = JSON.parse(rawUser);
-
-        isProfileAlreadyCompleted =
-          userObj?.isProfileCompleted === true ||
-          userObj?.user?.isProfileCompleted === true;
-      } catch (e) {
-        console.error("Failed to read user data", e);
+        userObj = JSON.parse(localStorage.getItem("user") || "{}");
+      } catch (error) {
+        console.error("Failed to read user data", error);
       }
     }
-  }
 
-  setLoading(true);
+    const currentUser = userObj?.user || userObj;
 
-  try {
-    const formData = new FormData();
+    const loginMethod = String(
+      currentUser?.loginMethod ||
+        currentUser?.login_method ||
+        currentUser?.authMethod ||
+        currentUser?.auth_method ||
+        currentUser?.loginType ||
+        currentUser?.login_type ||
+        currentUser?.channel ||
+        userObj?.loginMethod ||
+        userObj?.login_method ||
+        userObj?.channel ||
+        ""
+    ).toLowerCase();
 
-    formData.append("name", profileData.name.trim());
-    formData.append("phone", profileData.phone.trim());
-    formData.append("email", profileData.email.trim());
+    // Identify login method
+    let isPhoneLogin = false;
+    if (
+      loginMethod.includes("phone") ||
+      loginMethod.includes("mobile")
+    ) {
+      isPhoneLogin = true;
+    } else if (loginMethod.includes("email")) {
+      isPhoneLogin = false;
+    } else {
+      let sessionChannel = "";
+      try {
+        const sessionUserData = JSON.parse(
+          sessionStorage.getItem("userData") || "{}"
+        );
+        sessionChannel = String(sessionUserData?.channel || "").toLowerCase();
+      } catch (e) {}
 
-    if (selectedFile) {
-      formData.append("profileImg", selectedFile);
+      if (
+        sessionChannel.includes("phone") ||
+        sessionChannel.includes("mobile")
+      ) {
+        isPhoneLogin = true;
+      } else if (sessionChannel.includes("email")) {
+        isPhoneLogin = false;
+      } else if (currentUser?.phone && !currentUser?.email) {
+        isPhoneLogin = true;
+      } else if (currentUser?.email && !currentUser?.phone) {
+        isPhoneLogin = false;
+      } else {
+        isPhoneLogin = Boolean(currentUser?.phone);
+      }
     }
 
-    const response = await globalServerRequest({
-      endpoint: "profile/update",
-      method: "POST",
-      payload: formData,
-      isFormData: true,
-    });
+    // Check if profile was already completed before this save
+    const isProfileAlreadyCompleted = Boolean(
+      currentUser?.isProfileCompleted === true ||
+        currentUser?.isProfileCompleted === "true" ||
+        userObj?.isProfileCompleted === true ||
+        userObj?.isProfileCompleted === "true"
+    );
 
-    if (response.success) {
-      toast.success("Profile updated successfully");
+    // Requirement 1 & 2:
+    // 1. For phone login, name is mandatory but email is optional.
+    // 2. For email login, both name and phone are mandatory.
+    if (!profileData.name?.trim()) {
+      toast.error("Name is required");
+      return;
+    }
 
-      const updatedUser = response.data?.data || response.data;
+    if (!isPhoneLogin && !profileData.phone?.trim()) {
+      toast.error("Phone number is required");
+      return;
+    }
 
-      if (updatedUser) {
-        setProfileData({
-          name: updatedUser.name ?? profileData.name,
-          phone: updatedUser.phone ?? profileData.phone,
-          email: updatedUser.email ?? profileData.email,
-          profile_image:
-            updatedUser.profile_image ||
-            profileData.profile_image ||
-            "/images/inner-page/user-profile.svg",
-          created_at:
-            updatedUser.created_at || profileData.created_at,
-        });
+    // Email is optional for phone login, validate format if entered
+    if (profileData.email?.trim()) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(profileData.email.trim())) {
+        toast.error("Please enter a valid email address");
+        return;
+      }
+    }
 
-        // Sync localStorage
-        const rawUser = localStorage.getItem("user");
+    setLoading(true);
 
-        if (rawUser) {
-          try {
-            const userObj = JSON.parse(rawUser);
+    try {
+      const formData = new FormData();
 
-            if (userObj.user) {
-              userObj.user = {
-                ...userObj.user,
-                ...updatedUser,
-                isProfileCompleted: true,
-              };
-            } else {
-              Object.assign(userObj, updatedUser, {
-                isProfileCompleted: true,
-              });
+      formData.append("name", profileData.name.trim());
+      formData.append("phone", profileData.phone?.trim() || "");
+      formData.append("email", profileData.email?.trim() || "");
+
+      if (selectedFile) {
+        formData.append("profileImg", selectedFile);
+      }
+
+      const response = await globalServerRequest({
+        endpoint: "profile/update",
+        method: "POST",
+        payload: formData,
+        isFormData: true,
+      });
+
+      if (response.success) {
+        toast.success("Profile updated successfully");
+
+        const updatedUser = response.data?.data || response.data;
+
+        if (updatedUser) {
+          setProfileData({
+            name: updatedUser.name ?? profileData.name,
+            phone: updatedUser.phone ?? profileData.phone,
+            email: updatedUser.email ?? profileData.email,
+            profile_image:
+              updatedUser.profile_image ||
+              profileData.profile_image ||
+              "/images/inner-page/user-profile.svg",
+            created_at:
+              updatedUser.created_at || profileData.created_at,
+          });
+
+          // Sync localStorage
+          const rawUser = localStorage.getItem("user");
+
+          if (rawUser) {
+            try {
+              const storedUser = JSON.parse(rawUser);
+              const resolvedLoginMethod = isPhoneLogin ? "phone" : "email";
+
+              if (storedUser.user) {
+                storedUser.user = {
+                  ...storedUser.user,
+                  ...updatedUser,
+                  isProfileCompleted: true,
+                  loginMethod: storedUser.user.loginMethod || resolvedLoginMethod,
+                };
+              } else {
+                Object.assign(storedUser, updatedUser, {
+                  isProfileCompleted: true,
+                  loginMethod: storedUser.loginMethod || resolvedLoginMethod,
+                });
+              }
+
+              storedUser.isProfileCompleted = true;
+              storedUser.loginMethod = storedUser.loginMethod || resolvedLoginMethod;
+
+              localStorage.setItem(
+                "user",
+                JSON.stringify(storedUser)
+              );
+
+              window.dispatchEvent(
+                new Event("loginStatusChanged")
+              );
+              window.dispatchEvent(
+                new Event("profileUpdated")
+              );
+            } catch (error) {
+              console.error(
+                "Failed to update user cache in localStorage",
+                error
+              );
             }
-
-            userObj.isProfileCompleted = true;
-
-            localStorage.setItem(
-              "user",
-              JSON.stringify(userObj)
-            );
-
-            window.dispatchEvent(
-              new Event("loginStatusChanged")
-            );
-          } catch (e) {
-            console.error(
-              "Failed to update user cache in localStorage",
-              e
-            );
           }
         }
-      }
 
-      setSelectedFile(null);
-      setIsEditing(false);
+        setSelectedFile(null);
+        setIsEditing(false);
 
-      // Redirect ONLY when profile was incomplete before saving
-      if (!isProfileAlreadyCompleted) {
-        router.push("/");
-        router.refresh();
+        // Requirement 3 & 4:
+        // Redirect only after first-time profile completion. Existing completed user stays on profile page.
+        if (!isProfileAlreadyCompleted) {
+          router.push("/");
+          router.refresh();
+        }
+      } else {
+        toast.error(
+          response.error || "Failed to update profile"
+        );
       }
-    } else {
+    } catch (error) {
+      console.error("Profile update error:", error);
+
       toast.error(
-        response.error || "Failed to update profile"
+        "An unexpected error occurred while saving profile changes"
       );
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error("Profile update error:", error);
+  };
 
-    toast.error(
-      "An unexpected error occurred while saving profile changes"
-    );
-  } finally {
-    setLoading(false);
-  }
-};
 
 
   return (

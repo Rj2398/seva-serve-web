@@ -404,8 +404,6 @@ export default function ServiceViewDetail({
 
     if (!addedCategory) {
       toast.error("please select sub Category");
-    } else if (imageCount === 0) {
-      toast.error("Please upload at least 1 image (mandatory)");
     } else if (imageCount > 6) {
       toast.error("Maximum 6 images allowed");
     } else if (videoCount > 2) {
@@ -580,9 +578,7 @@ export default function ServiceViewDetail({
 
     if (!addedCategory) {
       toast.error("please select sub Category");
-    } else if (imageCount === 0) {
-      toast.error("Please upload at least 1 image (mandatory)");
-    } else if (imageCount > 6) {
+    }  else if (imageCount > 6) {
       toast.error("Maximum 6 images allowed");
     } else if (videoCount > 2) {
       toast.error("Maximum 2 videos allowed");
@@ -1073,7 +1069,8 @@ export default function ServiceViewDetail({
                                             fontWeight: 400,
                                           }}
                                         >
-                                          Images: {counts.imageCount}/6 (Min 1) • Videos: {counts.videoCount}/2 (Optional)
+                                          {/* Images: {counts.imageCount}/6 (Min 1) • Videos: {counts.videoCount}/2 (Optional) */}
+                                           Upload up to 6 images and 2 videos (both optional).
                                         </span>
                                       );
                                     })()}

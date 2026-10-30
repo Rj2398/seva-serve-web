@@ -288,7 +288,7 @@ useEffect(() => {
                                     ? bookingData?.media[0]?.url || bookingData?.media[0]
                                     : typeof bookingData?.media === "string"
                                     ? bookingData?.media
-                                    : "");
+                                    : "/images/header/logo.svg");
 
                                 const isVideo =
                                   typeof mediaUrl === "string" &&
@@ -362,7 +362,7 @@ useEffect(() => {
 
                                 return (
                                   <img
-                                    src={bookingData?.category?.categoryImageUrl || "images/inner-page/booking-traking-img.svg"}
+                                    src={bookingData?.category?.categoryImageUrl || "/images/header/logo.svg"}
                                     alt=""
                                     style={{
                                       width: "160px",
