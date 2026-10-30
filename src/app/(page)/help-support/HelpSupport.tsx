@@ -26,7 +26,23 @@ const HelpSupport = () => {
                     <h3>Need Assistance? We’re Here to Help!</h3>
                     <p className="wht">Whether you’re managing your profile, booking services, or facing technical issues, the SevaServe support team is always ready to assist you</p>
                     <a href="mailto:support@sevaserve.com" className="email-box">
-                        <span>Email Us: support@sevaserve.com</span>
+                        {/* <span>Email Us: support@sevaserve.com</span> */}
+                           <a
+              href="tel:+(908) 462-2260"
+              style={{ textDecoration: "none", cursor: "pointer" }}
+              className="text-decoration-none"
+            >
+              <span
+                className="agent-call-icon mb-0"
+                title="+18764680987"
+              >
+                <img
+                  src="/images/off-canvas/agent-call-icon.svg"
+                  alt="Call"
+                />
+                Phone no: (908) 462-2260
+              </span>
+            </a>
                     </a>
 
                     <div className="share-facebook">
