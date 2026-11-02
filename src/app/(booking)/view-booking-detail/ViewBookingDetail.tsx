@@ -615,6 +615,14 @@ useEffect(() => {
                                 <span><b>${bookingData?.bookingCostDetails?.totalCost}</b></span>
                               </p>
                             </div>
+                     {bookingData?.serviceStatus?.currentStep === 4 &&
+                    bookingData?.is_paid === false && (
+                      <div className="cost-details-in" style={{ marginTop: "10px"}}>
+                        <span>
+                          Kindly pay within 24hrs. to avoid auto deduct & additional 3% charges.
+                        </span>
+                      </div>
+                    )}
                           </div>
                         </>
                       ) : (

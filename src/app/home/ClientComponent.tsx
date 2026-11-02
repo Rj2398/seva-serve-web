@@ -1125,8 +1125,9 @@ useEffect(() => {
                               <div className="upcm-slider-btn">
                              <button
                                   className="primary-cta upcm-btn"
-                                  onClick={() => {
+                                  onClick={(e) => {
                                     handleLoadRescheduleRequest(item),
+                                    e.stopPropagation();
                                       setisReschedule(true);
                                     // setShowDatePicker(true), setBookingId(item?.bookingId)
                                   }}
@@ -1134,10 +1135,10 @@ useEffect(() => {
                                   // data-bs-target="#select-date-time-popup"
                                   // data-bs-toggle="modal"
                                     disabled={
-    item?.assign_status !== true ||
-    !canReschedule(item?.scheduledAt) ||
-    item?.is_previous_rescheduled
-  }
+                                      item?.assign_status !== true ||
+                                      !canReschedule(item?.scheduledAt) ||
+                                      item?.is_previous_rescheduled
+                                    }
                                 >
                                   <img
                                     src="images/home/home-slider/re-sdl-btn.svg"
@@ -1149,7 +1150,8 @@ useEffect(() => {
                                   className="cnl"
                                   // data-bs-target="#cancelBookingPopup"
                                   // data-bs-toggle="modal"
-                                  onClick={() => {
+                                  onClick={(e) => {
+                                    e.stopPropagation();
                                     setSelectedBookingData(item);
                                     setShowCancle(true);
                                   }}

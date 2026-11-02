@@ -5832,3 +5832,10 @@ div#paymentCompleted a.secondary-cta {
 div#importantNoticeModal .modal-dialog {
   margin-top: 65px;
 }
+
+/* Highlight active step container */
+.service-status-item.active-step {
+  background-color: #fff5e6; /* light orange background */
+  border-radius: 12px;
+  padding: 8px;
+}

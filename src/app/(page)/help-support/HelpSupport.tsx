@@ -28,21 +28,21 @@ const HelpSupport = () => {
                     <a href="mailto:support@sevaserve.com" className="email-box">
                         {/* <span>Email Us: support@sevaserve.com</span> */}
                            <a
-              href="tel:+(908) 462-2260"
-              style={{ textDecoration: "none", cursor: "pointer" }}
-              className="text-decoration-none"
-            >
-              <span
-                className="agent-call-icon mb-0"
-                title="+18764680987"
-              >
-                <img
-                  src="/images/off-canvas/agent-call-icon.svg"
-                  alt="Call"
-                />
-                Phone no: (908) 462-2260
-              </span>
-            </a>
+                          href="tel:+(908) 462-2260"
+                          style={{ textDecoration: "none", cursor: "pointer" }}
+                          className="text-decoration-none"
+                        >
+                          <span
+                            className="agent-call-icon mb-0"
+                            title="+18764680987"
+                          >
+                            <img
+                              src="/images/off-canvas/agent-call-icon.svg"
+                              alt="Call"
+                            />
+                            Phone no: (908) 462-2260
+                          </span>
+                        </a>
                     </a>
 
                     <div className="share-facebook">

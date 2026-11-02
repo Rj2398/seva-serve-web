@@ -3619,6 +3619,14 @@ a.hel-cta {
   justify-content: center;
 }
 
+/* .service-status-item.active-step > img:first-child {
+  background-color: #FFA500;
+  border-radius: 50%;
+  filter: brightness(0) invert(1);
+} */
+
+
+
 .service-status-item img {
   width: 32px;
   height: 32px;
@@ -3663,6 +3671,25 @@ a.hel-cta {
 
 .progress-line.step-fill {
   background-color: #2ab500;
+}
+.service-status-item .active-icon-bg {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+  border-radius: 50%;
+  background-color: #FFA500 !important;
+
+  /* display: inline-flex;
+  align-items: center; */
+  justify-content: center;
+}
+
+.service-status-item .active-icon-bg img {
+  width: 32px !important;
+  height: 32px !important;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
 }
 
 .additional-services-wrp {
@@ -6781,4 +6808,6 @@ div#importantNoticeModal .modal-dialog {
     font-size: 13px;
   }
 }
+
+
 

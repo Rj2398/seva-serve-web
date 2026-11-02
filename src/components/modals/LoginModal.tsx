@@ -351,14 +351,14 @@ const LoginModal = () => {
                         onChange={(e) => setReferCode(e.target.value)}
                       />
                     </div>
-
                      <p className="terms">
-                      By continuing, you agree to our <br />
-
-                     <input 
+                             <input 
                       style={{ marginRight: "5px", accentColor: "#991318" }}
                      type="checkbox" checked={checked} 
                      onChange={()=>setChecked(!checked)} />
+                      By continuing, you agree to our <br />
+
+             
                     <Link
                       href="/termcondition"
                       onClick={() =>
@@ -393,8 +393,8 @@ const LoginModal = () => {
                     </button>
                   </form>
 
-                  <div className="divider"></div>
-
+                  {/* <div className="divider"></div> */}
+{/* 
                   <div
                     className="email-option"
                     onClick={() => {
@@ -419,7 +419,7 @@ const LoginModal = () => {
                         ? "Continue with phone"
                         : "Continue with mail"}
                     </span>
-                  </div>
+                  </div> */}
 
                   {/* <p className="terms"> */}
 

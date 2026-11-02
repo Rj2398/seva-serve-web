@@ -330,7 +330,7 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                   style={{
                                     cursor: "pointer" 
                                   }}
-                                  onClick={() => {
+                                  onClick={(e) => {
                                     // if (isCompletedOrPrevious && item?.bookingId) {
                                       router.push(
                                         `/view-booking-detail?bookingId=${item?.bookingId}`
@@ -697,9 +697,10 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                                       className="primary-cta rgt"
                                                       data-bs-target="#contractorTime"
                                                       data-bs-toggle="modal"
-                                                      onClick={() =>
-                                                        setSelectedBooking(item)
-                                                      }
+                                                      onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setSelectedBooking(item);
+                                                      }}
                                                     >
                                                       View Technician Request
                                                     </button>
@@ -735,7 +736,8 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                                 <div className="home-quotes-cta">
                                                   <button
                                                     className="reject-btn"
-                                                    onClick={() => {
+                                                    onClick={(e) => {
+                                                      e.stopPropagation();
                                                       setSelectedBookingData(
                                                         item
                                                       );
@@ -752,10 +754,11 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                                       >
                                                         View Details
                                                       </Link>
-                                                    ) : canReschedule(item?.bookingDateTime) ? (
+                                                    ) : canReschedule(item?.bookingDateTime) && item?.assign_status === false ? (
                                                       <button
                                                         className="primary-cta rgt"
-                                                        onClick={() => {
+                                                        onClick={(e) => {
+                                                          e.stopPropagation();
                                                           canRescheduleBooking
                                                             ? handleLoadRescheduleRequest(item)
                                                             : toast.error(
@@ -788,7 +791,8 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                                 <div className="home-quotes-cta">
                                                   <button
                                                     className="reject-btn"
-                                                    onClick={() => {
+                                                    onClick={(e) => {
+                                                      e.stopPropagation();
                                                       setSelectedBookingData(
                                                         item
                                                       );
