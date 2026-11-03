@@ -37,9 +37,17 @@ interface ContractorTimeRequest {
   booking_address?: BookingAddress;
 }
 
+// interface BookingData {
+//   bookingId?: string | number;
+//   categoryName?: string;
+//   services?: ServiceItem[];
+//   contractorTimeRequest?: ContractorTimeRequest;
+// }
+
 interface BookingData {
   bookingId?: string | number;
   categoryName?: string;
+  bookingDateTime?: string | null;
   services?: ServiceItem[];
   contractorTimeRequest?: ContractorTimeRequest;
 }
@@ -49,49 +57,99 @@ interface ContractorRequestProps {
   onConfirm: () => void
 }
 
+// const formatSlot = (slot: any): string => {
+//   if (!slot) return "";
+//   if (typeof slot === "string") return slot;
+
+//   try {
+//     const dateObj = slot.date ? new Date(slot.date) : null;
+//     const startObj = slot.startTime ? new Date(slot.startTime) : null;
+//     const endObj = slot.endTime ? new Date(slot.endTime) : null;
+
+//     const formattedDate = dateObj
+//       ? dateObj.toLocaleDateString("en-US", {
+//         month: "short",
+//         day: "numeric",
+//         year: "numeric",
+//       })
+//       : "";
+
+//     const formattedStart = startObj
+//       ? startObj.toLocaleTimeString("en-US", {
+//         hour: "numeric",
+//         minute: "2-digit",
+//         hour12: true,
+//       })
+//       : "";
+
+//     const formattedEnd = endObj
+//       ? endObj.toLocaleTimeString("en-US", {
+//         hour: "numeric",
+//         minute: "2-digit",
+//         hour12: true,
+//       })
+//       : "";
+
+//     if (formattedStart && formattedEnd) {
+//       return `${formattedDate} •  ${formattedStart} - ${formattedEnd}`;
+//     }
+
+//     return formattedDate || `${slot.date}`;
+//   } catch (err) {
+//     return String(slot.date || "");
+//   }
+// };
+
+
 const formatSlot = (slot: any): string => {
   if (!slot) return "";
-  if (typeof slot === "string") return slot;
 
   try {
-    const dateObj = slot.date ? new Date(slot.date) : null;
-    const startObj = slot.startTime ? new Date(slot.startTime) : null;
-    const endObj = slot.endTime ? new Date(slot.endTime) : null;
+    if (typeof slot === "string") {
+      slot = { date: slot };
+    }
 
-    const formattedDate = dateObj
-      ? dateObj.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      })
+    const dateValue = slot.date;
+
+    const [year, month, day] = String(dateValue).split("T")[0].split("-");
+
+    const dateObj = new Date(
+      Number(year),
+      Number(month) - 1,
+      Number(day)
+    );
+
+    const formattedDate = dateObj.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+
+    const formattedStart = slot.startTime
+      ? new Date(slot.startTime).toLocaleTimeString("en-US", {
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: true,
+        })
       : "";
 
-    const formattedStart = startObj
-      ? startObj.toLocaleTimeString("en-US", {
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      })
-      : "";
-
-    const formattedEnd = endObj
-      ? endObj.toLocaleTimeString("en-US", {
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      })
+    const formattedEnd = slot.endTime
+      ? new Date(slot.endTime).toLocaleTimeString("en-US", {
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: true,
+        })
       : "";
 
     if (formattedStart && formattedEnd) {
-      return `${formattedDate} •  ${formattedStart} - ${formattedEnd}`;
+      return `${formattedDate} • ${formattedStart} - ${formattedEnd}`;
     }
 
-    return formattedDate || `${slot.date}`;
-  } catch (err) {
-    return String(slot.date || "");
+    return formattedDate;
+  } catch (error) {
+    return String(slot.date || slot);
   }
 };
-
 const ContractorRequest = ({ booking, onConfirm }: ContractorRequestProps) => {
   console.log(booking, "jdsfdksfjkfj");
   const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
@@ -158,7 +216,7 @@ const ContractorRequest = ({ booking, onConfirm }: ContractorRequestProps) => {
 
   // Optional: Safe access extraction to make your JSX cleaner and prevent array index crashes
   const firstService = booking?.services?.[0];
-  console.log("booking?.contractorTimeRequest?.preferredDateTime", booking?.contractorTimeRequest)
+  console.log("booking?.contractorTimeRequest?.preferredDateTime", booking)
   return (
     <>
       <div
@@ -187,11 +245,19 @@ const ContractorRequest = ({ booking, onConfirm }: ContractorRequestProps) => {
                   <h6>
                     {booking?.categoryName} - {firstService?.serviceName}
                   </h6>
-                  <p>
-                    Preferred :{" "}
+                  {/* <p>
+                    Preferred :{" "} */}
                     {/* {booking?.contractorTimeRequest?.preferredDateTime} */}
-                    {formatSlot(booking?.contractorTimeRequest?.preferredDateTime)}
-                  </p>
+                    {/* {formatSlot(booking?.bookingDateTime)} */}
+                  {/* </p> */}
+
+                  <p>
+  Preferred:{" "}
+  {formatSlot(
+    booking?.contractorTimeRequest?.preferredDateTime ||
+    booking?.bookingDateTime
+  )}
+</p>
                  {/* <p>
   <img src="images/modal/location-icon.svg" alt="" /> */}
 

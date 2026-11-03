@@ -711,28 +711,28 @@ const canRescheduleBooking = !hasAlreadyRescheduled;
                                                 {canReschedule(item?.bookingDateTime) &&
                                                 item?.assign_status !== false ? (
                                                  <button
-  className="primary-cta rgt"
-  disabled={!canRescheduleBooking}
-  style={{
-    opacity: canRescheduleBooking ? 1 : 0.5,
-    cursor: canRescheduleBooking ? "pointer" : "not-allowed",
-  }}
-  onClick={(e) => {
-    e.stopPropagation();
+                                                    className="primary-cta rgt"
+                                                    disabled={!canRescheduleBooking}
+                                                    style={{
+                                                      opacity: canRescheduleBooking ? 1 : 0.5,
+                                                      cursor: canRescheduleBooking ? "pointer" : "not-allowed",
+                                                    }}
+                                                    onClick={(e) => {
+                                                      e.stopPropagation();
 
-    if (!canRescheduleBooking) return;
+                                                      if (!canRescheduleBooking) return;
 
-    handleLoadRescheduleRequest(item);
-    setisReschedule(true);
-  }}
->
-  <img
-    src="images/inner-page/clock-booking.svg"
-    className="img-left"
-    alt=""
-  />
-  Reschedule
-</button>
+                                                      handleLoadRescheduleRequest(item);
+                                                      setisReschedule(true);
+                                                    }}
+                                                  >
+                                                    <img
+                                                      src="images/inner-page/clock-booking.svg"
+                                                      className="img-left"
+                                                      alt=""
+                                                    />
+                                                    Reschedule
+                                                  </button>
                                                 ) : (
                                                   <Link
                                                     href={`/view-booking-detail?bookingId=${item?.bookingId}`}
@@ -746,12 +746,25 @@ const canRescheduleBooking = !hasAlreadyRescheduled;
                                             )
                                                  : (
                                                   <div className="home-quotes-cta">
+                                                       <button
+                                                        className="reject-btn"
+                                                        onClick={() => {
+                                                          setSelectedBookingData(
+                                                            item
+                                                          );
+                                                          setShowCancle(true);
+                                                        }}
+                                                      >
+                                                        Cancel
+                                                      </button>
                                                     <Link
                                                       href={`/view-booking-detail?bookingId=${item?.bookingId}`}
                                                       className="reject-btn"
                                                     >
                                                       View Details
                                                     </Link>
+
+                                                      
                                                     <button
                                                       className="primary-cta rgt"
                                                       data-bs-target="#contractorTime"
@@ -763,6 +776,8 @@ const canRescheduleBooking = !hasAlreadyRescheduled;
                                                     >
                                                       View Technician Request
                                                     </button>
+
+
                                                   </div>
                                                 )
                                               ) : (
