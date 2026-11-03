@@ -450,9 +450,14 @@ export default function ServiceViewDetail({
       toast.error("Maximum 6 images allowed");
     } else if (videoCount > 2) {
       toast.error("Maximum 2 videos allowed");
-    } else if (!currentProblemDesc) {
-      toast.error("please enter the description");
-    } else {
+    } else if (
+  !activeIssueId ||
+  !(selectedSpecificIssueId[activeIssueId] || []).length
+) {
+  toast.error("Please select at least one specific issue");
+} else if (!currentProblemDesc.trim()) {
+  toast.error("Please enter the description");
+} else {
       if (requestedId && !isFormChanged()) {
         toast.success(
           actionType === "addtocart" || actionType === "checkout_cart"
@@ -624,8 +629,13 @@ export default function ServiceViewDetail({
       toast.error("Maximum 6 images allowed");
     } else if (videoCount > 2) {
       toast.error("Maximum 2 videos allowed");
-    } else if (!currentProblemDesc) {
-      toast.error("please enter the description");
+    } else if (
+      !activeIssueId ||
+      !(selectedSpecificIssueId[activeIssueId] || []).length
+    ) {
+      toast.error("Please select at least one specific issue");
+    } else if (!currentProblemDesc.trim()) {
+      toast.error("Please enter the description");
     } else {
       if (requestedId && !isFormChanged()) {
         toast.success(

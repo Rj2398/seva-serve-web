@@ -333,6 +333,23 @@ const NotificationDropdown = () => {
   // };
 
   const handleRedirection = (notif: any) => {
+
+
+ const dropdownElement = document.querySelector(
+    ".bell-icon .dropdown-toggle"
+  ) as HTMLElement;
+
+  if (dropdownElement && window.bootstrap) {
+    const dropdownInstance =
+      window.bootstrap.Dropdown.getOrCreateInstance(dropdownElement);
+
+    dropdownInstance.hide();
+  }
+
+  if (!notif?.meta?.screen_type) {
+    console.warn("screen_type missing:", notif);
+    return;
+  }
   if (!notif?.meta?.screen_type) {
     console.warn("screen_type missing:", notif);
     return;

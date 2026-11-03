@@ -72,14 +72,18 @@ const MyProfile = ({ initialData }: MyProfileProps) => {
         created_at: created_at || prev.created_at,
       }));
 
+      // const isProfileComplete =
+      //   Boolean(name && name.trim().length > 0) &&
+      //   Boolean(phone && phone.trim().length > 0) &&
+      //   Boolean(email && email.trim().length > 0) &&
+      //   currentData.isProfileCompleted !== false &&
+      //   currentData.isProfileCompleted !== "false" &&
+      //   localUserData?.isProfileCompleted !== false &&
+      //   localUserData?.isProfileCompleted !== "false";
+
       const isProfileComplete =
-        Boolean(name && name.trim().length > 0) &&
-        Boolean(phone && phone.trim().length > 0) &&
-        Boolean(email && email.trim().length > 0) &&
-        currentData.isProfileCompleted !== false &&
-        currentData.isProfileCompleted !== "false" &&
-        localUserData?.isProfileCompleted !== false &&
-        localUserData?.isProfileCompleted !== "false";
+  Boolean(name?.trim()) &&
+  Boolean(phone?.trim());
 
       if (!isProfileComplete) {
         setIsEditing(true);

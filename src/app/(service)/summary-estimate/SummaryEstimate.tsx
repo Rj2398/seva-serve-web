@@ -73,6 +73,7 @@ const SummaryEstimate = () => {
   const [hasCard, setHasCard] = useState<boolean>(true); // default true to avoid false flash
   const [pendingQuoteSlots, setPendingQuoteSlots] = useState<any[] | null>(null);
   const [pendingAddressId, setPendingAddressId] = useState<string | undefined>(undefined);
+  const [isQuoteRequested, setIsQuoteRequested] = useState(false);
 
   const toggleAccordion = (index: number) => {
     setExpandedIndex(expandedIndex === index ? null : index);
@@ -122,6 +123,16 @@ const SummaryEstimate = () => {
     }
     return null;
   };
+
+  useEffect(() => {
+  const status = String(summary_estimate?.status || "")
+    .toLowerCase()
+    .trim();
+
+  if (["requested", "quote_requested", "quote requested"].includes(status)) {
+    setIsQuoteRequested(true);
+  }
+}, [summary_estimate]);
 
   const fetchQuote = async () => {
     if (!activeRequestId) return;
@@ -207,6 +218,11 @@ const SummaryEstimate = () => {
     incomingSlots?: typeof availabilitySlots,
     incomingAddressId?: string
   ) => {
+
+    if (isQuoteRequested) {
+      toast.error("You have already requested this quote.");
+      return;
+    }
     if (!summary_estimate) {
       toast.error("Estimation details are not available");
       return;
@@ -256,6 +272,7 @@ const SummaryEstimate = () => {
       });
 
       if (response?.success) {
+        setIsQuoteRequested(true);
         toast.success("Quote requested successfully!");
         window.dispatchEvent(new Event("cartUpdated"));
         window.dispatchEvent(new Event("newNotification"));
@@ -347,7 +364,7 @@ const SummaryEstimate = () => {
                         <p>Selected Category</p>
                       </div>
                       <h4 style={{ fontSize: "20px", color: "#000" }}>
-                        {summary_estimate?.category?.name || "N/A"}
+                        {summary_estimate?.category?.name || "$0"}
                       </h4>
                     </div>
                     <div
@@ -1179,7 +1196,7 @@ const SummaryEstimate = () => {
                         >
                           {summary_estimate?.estimatedAmount
                             ? `$${summary_estimate.estimatedAmount}`
-                            : "N/A"}
+                            : "$0"}
                         </span>
                       </div>
                       {is_quote === "1" ? (
@@ -1208,12 +1225,25 @@ const SummaryEstimate = () => {
                           >
                             Save & Add More
                           </button>
-                          <button
+                          {/* <button
                             type="button"
                             className="primary-cta"
                             onClick={() => requestQuote()}
                           >
                             Request Quote
+                          </button> */}
+
+                          <button
+                            type="button"
+                            className="primary-cta"
+                            onClick={() => requestQuote()}
+                            disabled={isQuoteRequested}
+                            style={{
+                              opacity: isQuoteRequested ? 0.5 : 1,
+                              cursor: isQuoteRequested ? "not-allowed" : "pointer",
+                            }}
+                          >
+                            {isQuoteRequested ? "Quote Already Requested" : "Request Quote"}
                           </button>
                         </div>
                       )}

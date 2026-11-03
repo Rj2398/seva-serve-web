@@ -183,19 +183,30 @@ const OtpModal = ({ emailLogin = false, loginValue = "" }: OtpModalProps) => {
         }
 
         // Check if profile is complete (ALL fields name, phone, and email are strictly mandatory)
-        const userObj = verifyData?.user ? verifyData.user : verifyData;
-        const name = typeof userObj?.name === "string" ? userObj.name.trim() : "";
-        const phone = typeof userObj?.phone === "string" ? userObj.phone.trim() : "";
-        const email = typeof userObj?.email === "string" ? userObj.email.trim() : "";
+        // const userObj = verifyData?.user ? verifyData.user : verifyData;
+        // const name = typeof userObj?.name === "string" ? userObj.name.trim() : "";
+        // const phone = typeof userObj?.phone === "string" ? userObj.phone.trim() : "";
+        // const email = typeof userObj?.email === "string" ? userObj.email.trim() : "";
 
-        const isProfileComplete =
-          Boolean(name.length > 0) &&
-          Boolean(phone.length > 0) &&
-          Boolean(email.length > 0) &&
-          userObj?.isProfileCompleted !== false &&
-          userObj?.isProfileCompleted !== "false" &&
-          verifyData?.isProfileCompleted !== false &&
-          verifyData?.isProfileCompleted !== "false";
+        // Check profile completion (Name and Phone mandatory, Email optional)
+const userObj = verifyData?.user ? verifyData.user : verifyData;
+
+const name =
+  typeof userObj?.name === "string" ? userObj.name.trim() : "";
+
+const phone =
+  typeof userObj?.phone === "string" ? userObj.phone.trim() : "";
+
+const isProfileComplete = Boolean(name && phone);
+
+        // const isProfileComplete =
+        //   Boolean(name.length > 0) &&
+        //   Boolean(phone.length > 0) &&
+        //   Boolean(email.length > 0) &&
+        //   userObj?.isProfileCompleted !== false &&
+        //   userObj?.isProfileCompleted !== "false" &&
+        //   verifyData?.isProfileCompleted !== false &&
+        //   verifyData?.isProfileCompleted !== "false";
 
         // ✅ SET COOKIE for server-side access
         const token =
@@ -225,12 +236,22 @@ const OtpModal = ({ emailLogin = false, loginValue = "" }: OtpModalProps) => {
             document.body.style.removeProperty("padding-right");
           }, 300);
 
+          // if (!isProfileComplete) {
+          //   sessionStorage.removeItem("showWelcomeModal");
+          //   sessionStorage.removeItem("showAddCardModal");
+          //   router.push("/profile");
+          // } else {
+          //   router.push("/");
+          //   router.refresh();
+          // }
+
           if (!isProfileComplete) {
             sessionStorage.removeItem("showWelcomeModal");
             sessionStorage.removeItem("showAddCardModal");
-            router.push("/profile");
+
+            router.replace("/profile");
           } else {
-            router.push("/");
+            router.replace("/home");
             router.refresh();
           }
         }

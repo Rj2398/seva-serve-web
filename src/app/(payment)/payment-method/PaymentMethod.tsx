@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect, Suspense, useRef } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { globalServerRequest } from "@/actions/globalApi";
@@ -38,6 +38,7 @@ interface CardProps {
 
 function PaymentMethodContent({ initialCardsData }: CardProps) {
   const searchParams = useSearchParams();
+   const paymentLockRef = useRef(false);
 
   const rawBookingId = searchParams.get("booking_id");
   const bookingId = rawBookingId && rawBookingId !== "null" && rawBookingId !== "undefined" ? rawBookingId : null;
@@ -107,8 +108,21 @@ function PaymentMethodContent({ initialCardsData }: CardProps) {
   const [isPaying, setIsPaying] = useState(false);
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [invoiceUrl, setInvoiceUrl] = useState<string>("");
+  const [isPaymentCompleted, setIsPaymentCompleted] = useState(false);
+
+const paymentKey = `payment_completed_${quoteId || bookingId || `subscription_${planId}`}_${paymenttype || planType || "payment"}`;
+
+useEffect(() => {
+  const completed = localStorage.getItem(paymentKey) === "true";
+  setIsPaymentCompleted(completed);
+}, [paymentKey]);
 
   const handlePayment = async () => {
+
+      if (paymentLockRef.current || isPaymentCompleted) {
+      toast.error("Payment is already processing or completed.");
+      return;
+    }
     if (!selectedCard) {
       toast.error("Please select a card to pay.");
       return;
@@ -118,7 +132,8 @@ function PaymentMethodContent({ initialCardsData }: CardProps) {
       (c) => (c.card_id || c.id) === selectedCard
     );
     const paymentMethodId = selectedCardObj?.payment_method_id || selectedCard;
-
+     paymentLockRef.current = true;
+ 
     setIsPaying(true);
     const toastId = toast.loading("Processing payment...");
 
@@ -137,7 +152,8 @@ function PaymentMethodContent({ initialCardsData }: CardProps) {
 
       if (response.success) {
         toast.success(response?.data?.message || "Payment completed successfully!", { id: toastId });
-
+        setIsPaymentCompleted(true);
+        localStorage.setItem(paymentKey, "true");
         const invUrl =
           response?.data?.data?.invoiceUrl ||
           response?.data?.data?.invoice_url ||
@@ -157,45 +173,110 @@ function PaymentMethodContent({ initialCardsData }: CardProps) {
 
         setShowInvoiceModal(true);
       } else {
+        paymentLockRef.current = false;
         toast.error(response.error || "Failed to process payment.", {
           id: toastId,
         });
       }
     } catch (error) {
       console.error("Payment API Error:", error);
+      paymentLockRef.current = false;
       toast.error("Something went wrong. Please try again.", { id: toastId });
     } finally {
       setIsPaying(false);
     }
   };
 
+  // const handleSubscription = async () => {
+  //   if (!selectedCard) {
+  //     toast.error("Please select a card to pay.");
+  //     return;
+  //   }
+  //   const formData = new FormData();
+  //   formData.append("subscription_plan_id", String(planId || ""));
+  //   formData.append("card_id", String(selectedCard));
+  //   formData.append("type", String(planType || ""));
+  //   formData.append("amount", String(planAmount || ""));
+
+  //   try {
+  //     const response = await globalServerRequest({
+  //       endpoint: "payment/card/subscription-pay-now",
+  //       method: "POST",
+  //       payload: formData,
+  //       isFormData: true,
+  //     });
+
+  //     if (response?.success) {
+  //       toast.success(response?.data.message);
+  //       router.push("/");
+  //     }
+  //   } catch (error) {
+  //     console.error("Subscription payment failed:", error);
+  //   }
+  // };
+  
   const handleSubscription = async () => {
-    if (!selectedCard) {
-      toast.error("Please select a card to pay.");
-      return;
-    }
-    const formData = new FormData();
-    formData.append("subscription_plan_id", String(planId || ""));
-    formData.append("card_id", String(selectedCard));
-    formData.append("type", String(planType || ""));
-    formData.append("amount", String(planAmount || ""));
+  if (paymentLockRef.current || isPaymentCompleted) {
+    toast.error("Payment is already processing or completed.");
+    return;
+  }
 
-    try {
-      const response = await globalServerRequest({
-        endpoint: "payment/card/subscription-pay-now",
-        method: "POST",
-        payload: formData,
-        isFormData: true,
-      });
+  if (!selectedCard) {
+    toast.error("Please select a card to pay.");
+    return;
+  }
 
-      if (response?.success) {
-        toast.success(response?.data.message);
-        router.push("/");
-      }
-    } catch (error) {
-      console.error("Subscription payment failed:", error);
+  paymentLockRef.current = true;
+  setIsPaying(true);
+
+  const toastId = toast.loading("Processing subscription payment...");
+
+  const formData = new FormData();
+  formData.append("subscription_plan_id", String(planId || ""));
+  formData.append("card_id", String(selectedCard));
+  formData.append("type", String(planType || ""));
+  formData.append("amount", String(planAmount || ""));
+
+  try {
+    const response = await globalServerRequest({
+      endpoint: "payment/card/subscription-pay-now",
+      method: "POST",
+      payload: formData,
+      isFormData: true,
+    });
+
+    if (response?.success) {
+      setIsPaymentCompleted(true);
+      localStorage.setItem(paymentKey, "true");
+
+      toast.success(
+        response?.data?.message || "Subscription payment successful!",
+        { id: toastId }
+      );
+
+      router.push("/");
+    } else {
+      paymentLockRef.current = false;
+
+      toast.error(
+        response?.error || "Subscription payment failed.",
+        { id: toastId }
+      );
     }
-  };
+  } catch (error) {
+    console.error("Subscription payment failed:", error);
+
+    paymentLockRef.current = false;
+
+    toast.error("Something went wrong. Please try again.", {
+      id: toastId,
+    });
+  } finally {
+    setIsPaying(false);
+  }
+};
+  
+  
   const fetchCards = async () => {
     try {
       const response = await globalServerRequest({
@@ -277,6 +358,16 @@ function PaymentMethodContent({ initialCardsData }: CardProps) {
 
   return (
     <div className="container home-wraper my-profile">
+
+      {isPaying && (
+          <div className="payment-processing-overlay">
+            <div className="payment-processing-content">
+              <div className="payment-spinner"></div>
+              <h4>Processing Your Payment</h4>
+              <p>Please wait. Do not refresh or close this page.</p>
+            </div>
+          </div>
+        )}
       <section>
         <div className="container">
           <div className="row">
@@ -409,7 +500,7 @@ function PaymentMethodContent({ initialCardsData }: CardProps) {
                       Help & Support
                     </button>
 
-<button
+{/* <button
   type="button"
   className="primary-cta"
   disabled={!isPayable || cards.length === 0 || isPaying}
@@ -429,6 +520,37 @@ function PaymentMethodContent({ initialCardsData }: CardProps) {
       Pay Now{displayAmount}
     </span>
   )}
+</button> */}
+
+
+<button
+  type="button"
+  className="primary-cta"
+  disabled={
+    !isPayable ||
+    cards.length === 0 ||
+    isPaying ||
+    isPaymentCompleted
+  }
+  onClick={() => {
+    if (isPaymentCompleted || isPaying) return;
+
+    if (bookingId || quoteId) {
+      handlePayment();
+    } else if (hasSubscriptionPayment) {
+      handleSubscription();
+    }
+  }}
+>
+  {isPaying
+    ? "Processing..."
+    : isPaymentCompleted
+      ? "Payment Completed"
+      : (
+        <span style={{ fontWeight: 500 }}>
+          Pay Now{displayAmount}
+        </span>
+      )}
 </button>
                    
                     

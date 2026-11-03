@@ -585,6 +585,7 @@ const DatePopup: React.FC<DatePopupProps> = ({
                           setAddress(e.target.value);
                           setSelectedAddressId(""); // Reset ID if user types custom address
                         }}
+                        readOnly
                         className="dropdown-toggle"
                         data-bs-toggle="dropdown"
                         aria-expanded="false"
@@ -598,6 +599,7 @@ const DatePopup: React.FC<DatePopupProps> = ({
                         className="dropdown-toggle"
                         // data-bs-toggle="dropdown"
                         aria-expanded="false"
+                        readOnly
                       />
                     )}
                     {savedAddresses.length > 0 && (

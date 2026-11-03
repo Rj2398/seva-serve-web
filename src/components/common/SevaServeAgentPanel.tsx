@@ -175,21 +175,44 @@ const SevaServeAgentPanel = () => {
       ].filter(Boolean);
 
       // Update message bubble in UI
-      setMessages((prev: any[]) =>
-        prev.map((msg) =>
-          msg.id === msgId
-            ? {
-              ...msg,
-              text: editingText,
-              serverMedia: allFinalMediaUrls,
-              media: allFinalMediaUrls.map((url) => ({
-                url,
-                type: "image/jpeg",
-              })),
-            }
-            : msg
-        )
-      );
+      // setMessages((prev: any[]) =>
+      //   prev.map((msg) =>
+      //     msg.id === msgId
+      //       ? {
+      //         ...msg,
+      //         text: editingText,
+      //         serverMedia: allFinalMediaUrls,
+      //         media: allFinalMediaUrls.map((url) => ({
+      //           url,
+      //           type: "image/jpeg",
+      //         })),
+      //       }
+      //       : msg
+      //   )
+      // );
+
+      // Update edited message and remove all messages after it
+setMessages((prev: any[]) => {
+  const editIndex = prev.findIndex((msg) => msg.id === msgId);
+
+  if (editIndex === -1) return prev;
+
+  const updatedMessages = prev.slice(0, editIndex + 1);
+
+  return updatedMessages.map((msg) =>
+    msg.id === msgId
+      ? {
+          ...msg,
+          text: editingText,
+          serverMedia: allFinalMediaUrls,
+          media: allFinalMediaUrls.map((url) => ({
+            url,
+            type: "image/jpeg",
+          })),
+        }
+      : msg
+  );
+});
 
       // Clear Editing States
       setEditingMessageId(null);
@@ -292,7 +315,42 @@ const SevaServeAgentPanel = () => {
         }
       } else {
         // If all images deleted and only text remains
-        handleSendMessage(editingText, []);
+        // handleSendMessage(editingText, []);
+
+        // } else {
+  // Re-run chatbot with edited text without adding duplicate user message
+  const response = await globalServerRequest({
+    endpoint: "chatbot/chat",
+    method: "POST",
+    payload: {
+      category_id: selectedCategory?.id || "",
+      message: editingText,
+      conversation_id: conversationId,
+    },
+  });
+
+  if (response.success) {
+    const resData = response.data?.data || response.data || {};
+
+    const newConvId =
+      resData.conversation_id || resData.data?.conversation_id;
+
+    if (newConvId) updateConversationId(newConvId);
+
+    const botText = resData.ai_response || resData.message || "";
+
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: Date.now() + 1,
+        sender: "agent",
+        text: botText,
+        options: resData.options || null,
+        type: "text",
+      },
+    ]);
+  }
+// }
       }
     } catch (err) {
       console.error("Error saving edit:", err);

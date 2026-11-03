@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { globalServerRequest } from "@/actions/globalApi";
 import toast from "react-hot-toast";
@@ -15,6 +15,23 @@ const LoginModal = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [referCode, setReferCode] = useState("");
+
+
+  useEffect(() => {
+  const loginModal = document.getElementById("login-screen-1");
+
+  if (!loginModal) return;
+
+  const handleModalOpen = () => {
+    setChecked(false);
+  };
+
+  loginModal.addEventListener("show.bs.modal", handleModalOpen);
+
+  return () => {
+    loginModal.removeEventListener("show.bs.modal", handleModalOpen);
+  };
+}, []);
 
   // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
