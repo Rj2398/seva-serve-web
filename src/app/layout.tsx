@@ -5,7 +5,7 @@ import { Metadata } from "next";
 
 
 export const metadata: Metadata = {
-  title: "Seva Serve",
+  title: "Sevaserve",
   description: "My application description",
   icons : {
      icon: "/images/header/logo.svg",

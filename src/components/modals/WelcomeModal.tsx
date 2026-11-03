@@ -91,7 +91,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ isOpen, setIsOpen, onConfir
                     <div className="modal-body">
                         <div className="welcome-seva-ser">
                             <img src="images/modal/welcome-img.svg" className="check" alt="Welcome" />
-                            <h4>Welcome to SevaServe!</h4>
+                            <h4>Welcome to Sevaserve!</h4>
                             <p>Your trusted service partner is now in your pocket.</p>
 
                             <button

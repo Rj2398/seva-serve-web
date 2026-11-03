@@ -13,12 +13,12 @@ const SevaServeAgentPanel = () => {
   const [conversationId, setConversationId] = useState<string>("");
 
   const [messages, setMessages] = useState<any[]>([
-    {
-      id: 1,
-      sender: "agent",
-      text: "How can I help you today?",
-      type: "text",
-    },
+    // {
+    //   id: 1,
+    //   sender: "agent",
+    //   text: "How can I help you today?",
+    //   type: "text",
+    // },
   ]);
 
   const [inputValue, setInputValue] = useState("");

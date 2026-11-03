@@ -17,6 +17,8 @@ const normalizeData = (data: any) => {
     return data;
   }
 
+  
+
   return {
     category: {
       id: data.category?.id || 1,
@@ -87,9 +89,14 @@ export default function ServiceViewDetail({
     initialNormalized?.subCategories || []
   );
   const [addedCategory, setAddedCategory] = useState<boolean>(false);
+  // const [selectSubCategories, setSelectSubCategories] = useState<any>(
+  //   initialNormalized?.subCategories?.[0]?.id
+  // );
+  
   const [selectSubCategories, setSelectSubCategories] = useState<any>(
-    initialNormalized?.subCategories?.[0]?.id
-  );
+  subCategoryId || initialNormalized?.subCategories?.[0]?.id
+);
+
   const [problemDesc, setProblemDesc] = useState<Record<string, string>>({});
   const [uploadedImg, setUploadedImage] = useState<Record<string, string[]>>(
     {}
@@ -117,18 +124,41 @@ export default function ServiceViewDetail({
     subCategoryId?: any;
   } | null>(null);
 
+  // useEffect(() => {
+  //   if (searchSubCategory) {
+  //     if (filtersubCategory.length > 0) {
+  //       setSelectSubCategories(filtersubCategory[0].id);
+  //     } else {
+  //       setSelectSubCategories(null);
+  //     }
+  //   } else {
+  //     setSelectSubCategories(subCategories?.[0]?.id);
+  //     // Note: hasCard check has been moved to SummaryEstimate page
+  //   }
+  // }, [searchSubCategory, subCategories]);
+
   useEffect(() => {
-    if (searchSubCategory) {
-      if (filtersubCategory.length > 0) {
-        setSelectSubCategories(filtersubCategory[0].id);
-      } else {
-        setSelectSubCategories(null);
-      }
-    } else {
-      setSelectSubCategories(subCategories?.[0]?.id);
-      // Note: hasCard check has been moved to SummaryEstimate page
+  if (subCategoryId && !searchSubCategory) {
+    const matchedSubCategory = subCategories.find(
+      (sub: any) => String(sub.id) === String(subCategoryId)
+    );
+
+    if (matchedSubCategory) {
+      setSelectSubCategories(matchedSubCategory.id);
+      return;
     }
-  }, [searchSubCategory, subCategories]);
+  }
+
+  if (searchSubCategory) {
+    if (filtersubCategory.length > 0) {
+      setSelectSubCategories(filtersubCategory[0].id);
+    } else {
+      setSelectSubCategories(null);
+    }
+  } else {
+    setSelectSubCategories(subCategories?.[0]?.id);
+  }
+}, [searchSubCategory, subCategories, subCategoryId]);
 
   useEffect(() => {
     const fetchSavedRequest = async () => {
@@ -274,15 +304,27 @@ export default function ServiceViewDetail({
     const normalized = normalizeData(
       initialData && Object.keys(initialData).length > 0 ? initialData : null
     );
-    if (normalized) {
-      setServiceDetails(normalized);
-      setSubCategories(normalized.subCategories || []);
-      if (normalized.subCategories?.length > 0) {
-        setSelectSubCategories(normalized.subCategories[0].id);
-      } else {
-        setSelectSubCategories(null);
-      }
-    }
+    // if (normalized) {
+    //   setServiceDetails(normalized);
+    //   setSubCategories(normalized.subCategories || []);
+    //   if (normalized.subCategories?.length > 0) {
+    //     setSelectSubCategories(normalized.subCategories[0].id);
+    //   } else {
+    //     setSelectSubCategories(null);
+    //   }
+    // }
+
+    if (normalized.subCategories?.length > 0) {
+  const matchedSubCategory = normalized.subCategories.find(
+    (sub: any) => String(sub.id) === String(subCategoryId)
+  );
+
+  setSelectSubCategories(
+    matchedSubCategory?.id || normalized.subCategories[0].id
+  );
+} else {
+  setSelectSubCategories(null);
+}
   }, [initialData]);
 
   const isMediaVideo = (file?: File, url?: string): boolean => {

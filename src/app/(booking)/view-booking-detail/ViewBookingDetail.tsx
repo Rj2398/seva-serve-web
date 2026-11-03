@@ -26,11 +26,11 @@ const ViewBookingDetail = ({ bookingtrackingData }: BookingUpdateProps) => {
   );
 
 
-  console.log(bookingData?.is_pop_up,"shivamkjjkdksfdjasf")
+  console.log(bookingData?.is_pop_up, "shivamkjjkdksfdjasf")
 
   const bookingId = bookingData?.bookingId || bookingData?.id;
 
-  console.log(bookingId,"nndsnf")
+  console.log(bookingId, "nndsnf")
 
   const fetchTrackingDetails = async (): Promise<boolean> => {
     try {
@@ -109,17 +109,17 @@ const ViewBookingDetail = ({ bookingtrackingData }: BookingUpdateProps) => {
       console.error("❌ Error initializing Firestore listener:", err);
     }
   }, [bookingId]);
-  
-useEffect(() => {
-  if (bookingData?.is_pop_up) {
-    const modalElement = document.getElementById("reviewAdditional");
 
-    if (modalElement && window.bootstrap) {
-      const modal = window.bootstrap.Modal.getOrCreateInstance(modalElement);
-      modal.show();
+  useEffect(() => {
+    if (bookingData?.is_pop_up) {
+      const modalElement = document.getElementById("reviewAdditional");
+
+      if (modalElement && window.bootstrap) {
+        const modal = window.bootstrap.Modal.getOrCreateInstance(modalElement);
+        modal.show();
+      }
     }
-  }
-}, [bookingData]);
+  }, [bookingData]);
 
 
   useEffect(() => {
@@ -211,65 +211,123 @@ useEffect(() => {
                               </Link>
 
                             </div>)}
-                          {bookingData?.serviceStatus && (
-                            <div className="service-status-wrp">
-                              <h4>Service Status</h4>
-                              <div className="service-status-inner">
-                                {bookingData.serviceStatus.steps.map((step: any, index: number) => {
-                                  const isChecked = step.state === "completed" || step.state === "active";
+{bookingData?.serviceStatus && (
+  <div className="service-status-wrp">
+    <h4>Service Status</h4>
 
-                                    const isWorkInProgress =
-                                        step.stepKey === "work_in_progress" &&
-                                        step.state === "active";
+    <div className="service-status-inner">
+      {(() => {
+        const steps = bookingData?.serviceStatus?.steps || [];
 
-                                  const getStepImage = (stepKey: string) => {
-                                    switch (stepKey) {
-                                      case 'on_the_way': return "images/service-status/on-way.svg";
-                                      case 'work_in_progress': return "images/service-status/start-job.svg";
-                                        //                                     case "work_in_progress":
-                                        // return step?.state === "completed"||  step?.state === "active"
-                                        //   ? "images/service-status/start-job.svg"
-                                        //   : "images/service-status/work-in-progress.svg";
-                                      case 'completed': return "images/service-status/completed.svg";
-                                      default: return "images/service-status/not-started.svg";
-                                    }
-                                  };
-                                  const mainImg = getStepImage(step.stepKey);
-                                  const isLineFilled = isChecked;
-                                  return (
-                                    <React.Fragment key={step?.stepNumber}>
-                                      <div className={`service-status-item step-${step?.stepNumber} ${isChecked ? 'check' : ''}`}>
-                                        {mainImg && <img src={mainImg} alt="" />}
-                                        {/* {isChecked && <img src="images/service-status/check.svg" className="check-image" alt="" />} */}
+        const isFinalStepReached = steps.some(
+          (step: any) =>
+            step?.stepKey === "completed" &&
+            ["active", "completed"].includes(
+              String(step?.state).toLowerCase()
+            )
+        );
 
-                                            {isWorkInProgress ? (
-                                                <img
-                                                  src="images/service-status/work-in-progress.svg"
-                                                  className="check-image"
-                                                  alt="Work in progress"
-                                                />
-                                              ) : (
-                                                /* Completed/other active → existing check */
-                                                isChecked && (
-                                                  <img
-                                                    src="images/service-status/check.svg"
-                                                    className="check-image"
-                                                    alt="Completed"
-                                                  />
-                                                )
-                                              )}
-                                        <h5>STEP {step?.stepNumber}</h5>
-                                        <p>{step?.label==="Provider Not Assigned"?"Technician Not Assigned":step?.label}</p>
-                                      </div>
-                                      {index < bookingData?.serviceStatus?.steps?.length - 1 && (
-                                        <div className={`progress-line ${isLineFilled ? 'step-fill' : ''}`}></div>
-                                      )}
-                                    </React.Fragment>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          )}
+        const activeIndex = steps.findIndex(
+          (step: any) =>
+            String(step?.state).toLowerCase() === "active"
+        );
+
+        const nextPendingIndex = steps.findIndex(
+          (step: any, index: number) =>
+            index > 0 &&
+            String(step?.state).toLowerCase() !== "completed" &&
+            String(steps[index - 1]?.state).toLowerCase() === "completed"
+        );
+
+        const currentIndex =
+          activeIndex !== -1 ? activeIndex : nextPendingIndex;
+
+        return steps.map((step: any, index: number) => {
+          const state = String(step?.state || "").toLowerCase();
+
+          const isCompleted =
+            isFinalStepReached ||
+            state === "completed" ||
+            (currentIndex !== -1 && index < currentIndex);
+
+          const isCurrent =
+            !isFinalStepReached &&
+            index === currentIndex &&
+            !isCompleted;
+
+    const showChecked =
+  isCompleted ||
+  (isCurrent && (index === 0 || index === steps.length - 1));
+
+          const getStepImage = (stepKey: string) => {
+            switch (stepKey) {
+              case "on_the_way":
+                return "images/service-status/on-way.svg";
+
+              case "work_in_progress":
+                return "images/service-status/start-job.svg";
+
+              case "completed":
+                return "images/service-status/completed.svg";
+
+              default:
+                return "images/service-status/not-started.svg";
+            }
+          };
+
+          const mainImg = getStepImage(step?.stepKey);
+
+          return (
+            <React.Fragment
+              key={step?.stepNumber ?? step?.stepKey ?? index}
+            >
+         <div
+  className={`service-status-item step-${step?.stepNumber} ${
+    showChecked ? "check" : ""
+  } ${isCurrent ? "current-step" : ""}`}
+>
+  {showChecked ? (
+  <img
+    src="images/service-status/check.svg"
+    className="check-image"
+    alt="Completed"
+  />
+) : isCurrent && step?.stepKey === "work_in_progress" ? (
+  <img
+    src="images/service-status/work-in-progress.svg"
+    alt="Work In Progress"
+  />
+) : isCurrent ? (
+  <span className="active-icon-bg">
+    <img src={mainImg} alt="" />
+  </span>
+) : (
+  <img src={mainImg} alt="" />
+)}
+
+  <h5>STEP {step?.stepNumber}</h5>
+
+  <p>
+    {step?.label === "Provider Not Assigned"
+      ? "Technician Not Assigned"
+      : step?.label}
+  </p>
+</div>
+
+              {index < steps.length - 1 && (
+                <div
+                  className={`progress-line ${
+                    isCompleted ? "step-fill" : ""
+                  }`}
+                />
+              )}
+            </React.Fragment>
+          );
+        });
+      })()}
+    </div>
+  </div>
+)}
                           <div className="plumbing-wrp-book">
                             <div
                               className="boking-right-img"
@@ -287,8 +345,8 @@ useEffect(() => {
                                   (Array.isArray(bookingData?.media)
                                     ? bookingData?.media[0]?.url || bookingData?.media[0]
                                     : typeof bookingData?.media === "string"
-                                    ? bookingData?.media
-                                    : "/images/header/logo.svg");
+                                      ? bookingData?.media
+                                      : "/images/header/logo.svg");
 
                                 const isVideo =
                                   typeof mediaUrl === "string" &&
@@ -615,14 +673,14 @@ useEffect(() => {
                                 <span><b>${bookingData?.bookingCostDetails?.totalCost}</b></span>
                               </p>
                             </div>
-                     {bookingData?.serviceStatus?.currentStep === 4 &&
-                    bookingData?.is_paid === false && (
-                      <div className="cost-details-in" style={{ marginTop: "10px"}}>
-                        <span>
-                          Kindly pay within 24hrs. to avoid auto deduct & additional 3% charges.
-                        </span>
-                      </div>
-                    )}
+                            {bookingData?.serviceStatus?.currentStep === 4 &&
+                              bookingData?.is_paid === false && (
+                                <div className="cost-details-in" style={{ marginTop: "10px" }}>
+                                  <span>
+                                    Kindly pay within 24hrs. to avoid auto deduct & additional 3% charges.
+                                  </span>
+                                </div>
+                              )}
                           </div>
                         </>
                       ) : (

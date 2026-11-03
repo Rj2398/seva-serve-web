@@ -47,7 +47,7 @@ const HelpSupport = () => {
 
                     <div className="share-facebook">
                       <h3>Share Your Feedback</h3>
-                      <p className="exp">Your experience matters to us! Share your feedback, suggestions, or feature ideas to help us make SevaServe more reliable, user-friendly, and community-driven.</p>
+                      <p className="exp">Your experience matters to us! Share your feedback, suggestions, or feature ideas to help us make Sevaserve more reliable, user-friendly, and community-driven.</p>
                     </div>
                   </div>
                 </div>

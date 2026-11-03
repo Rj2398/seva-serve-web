@@ -3669,28 +3669,53 @@ a.hel-cta {
   display: block;
 }
 
+.service-status-item.current-step .active-step-icon {
+  display: block !important;
+  background-color: #F9A825 !important;
+  border-radius: 50%;
+  padding: 5px;
+  filter: none !important;
+}
+
 .progress-line.step-fill {
   background-color: #2ab500;
 }
-.service-status-item .active-icon-bg {
-  width: 32px;
-  height: 32px;
-  min-width: 32px;
-  min-height: 32px;
-  border-radius: 50%;
-  background-color: #FFA500 !important;
-
-  /* display: inline-flex;
-  align-items: center; */
-  justify-content: center;
-}
-
-.service-status-item .active-icon-bg img {
+/* Only active middle step */
+.service-status-item.current-step .active-icon-bg {
   width: 32px !important;
   height: 32px !important;
-  object-fit: contain;
-  filter: brightness(0) invert(1);
+  min-width: 32px !important;
+  min-height: 32px !important;
+  box-sizing: border-box;
+  border-radius: 50%;
+  background: #F9A825 !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  position: relative !important;
+  padding: 0 !important;
 }
+
+.service-status-item.current-step .active-icon-bg img {
+  position: static !important;
+  display: block !important;
+  width: 20px !important;
+  height: 20px !important;
+  max-width: 20px !important;
+  max-height: 20px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  object-fit: contain !important;
+  transform: none !important;
+  filter: none !important;
+}
+.progress-line.step-fill {
+  background-color: #2ab500;
+}
+
+
 
 .additional-services-wrp {
   box-shadow: 0px 4px 20px 0px #0000000d;
@@ -6808,6 +6833,10 @@ div#importantNoticeModal .modal-dialog {
     font-size: 13px;
   }
 }
+
+
+
+
 
 
 

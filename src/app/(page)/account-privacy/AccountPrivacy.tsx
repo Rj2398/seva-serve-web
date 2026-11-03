@@ -21,7 +21,7 @@ const AccountPrivacy = () => {
 
                   <div className="about-us-body">
                     <p className="about-us-data">
-                      SevaServe values your privacy and gives you full control over your personal
+                      Sevaserve values your privacy and gives you full control over your personal
                       information. You can manage your account settings anytime including changing
                       your password, updating contact details, or deleting your account directly
                       from Settings → Account Privacy. If you choose to delete your account, all
@@ -30,7 +30,7 @@ const AccountPrivacy = () => {
                     </p>
 
                     <p className="about-us-data">
-                      SevaServe values your privacy and gives you full control over your personal
+                      Sevaserve values your privacy and gives you full control over your personal
                       information. You can manage your account settings anytime including changing
                       your password, updating contact details, or deleting your account directly
                       from Settings → Account Privacy. If you choose to delete your account, all

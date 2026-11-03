@@ -914,7 +914,7 @@ useEffect(() => {
                                 <button
                                   onClick={() => {
                                     if (isLogin) {
-                                      router.push(`/serviceDetails?categoryId=${item?.categoryId}`);
+                                      router.push(`/serviceDetails?categoryId=${item?.categoryId}&subCategoryId=${item?.subcategoryId}`);
                                     }
                                   }}
                                   data-bs-toggle={
@@ -963,7 +963,7 @@ useEffect(() => {
                         </div>
                         <div className="right-leakage">
                           <div className="leakage-img">
-                            <img src={item?.image} alt={item?.serviceName} />
+                            <img src={item?.[0]?.image || "/images/header/logo.svg"} alt={item?.serviceName} />
                           </div>
                           <div className="right-text">
                             <p className="frist">
@@ -1137,7 +1137,7 @@ useEffect(() => {
                                     disabled={
                                       item?.assign_status !== true ||
                                       !canReschedule(item?.scheduledAt) ||
-                                      item?.is_previous_rescheduled
+                                      item?.is_previous_rescheduled||item?.reschedule_status=="requested"
                                     }
                                 >
                                   <img

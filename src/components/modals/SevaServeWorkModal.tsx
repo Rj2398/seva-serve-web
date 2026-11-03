@@ -32,7 +32,7 @@ const SevaServeWorkModal = () => {
                 />
               </div>
 
-              <h2>How SevaServe Works</h2>
+              <h2>How Sevaserve Works</h2>
 
               <div className="work-list">
 

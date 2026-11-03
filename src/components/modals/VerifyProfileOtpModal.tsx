@@ -291,7 +291,7 @@ const VerifyProfileOtpModal = ({
                         <h5>
                           Reliable Home Services,
                           <br />
-                          Powered by <span>SevaServe</span>
+                          Powered by <span>Sevaserve</span>
                         </h5>
                         <p>
                           Get fast, trusted, and professional help for any
@@ -307,7 +307,7 @@ const VerifyProfileOtpModal = ({
                         alt="..."
                       />
                       <div className="my-text-carousel">
-                        <h5>Tell SevaServe the Issue, We Handle the Rest</h5>
+                        <h5>Tell Sevaserve the Issue, We Handle the Rest</h5>
                         <p>
                           Describe your problem or upload a photo , our smart
                           system instantly identifies the right service.
@@ -325,7 +325,7 @@ const VerifyProfileOtpModal = ({
                           Clear Estimates. Easy Booking. Total Peace of Mind.
                         </h5>
                         <p>
-                          SevaServe gives you upfront pricing, secure payments,
+                          Sevaserve gives you upfront pricing, secure payments,
                           and flexible scheduling in just a few taps.
                         </p>
                       </div>

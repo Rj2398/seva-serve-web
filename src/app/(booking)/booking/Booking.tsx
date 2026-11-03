@@ -314,8 +314,15 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                   ?.is_accepted_customer === true;
 
                               const isGivenRating = Number(item?.rating) > 0;
-                              const canRescheduleBooking =
-                                !item?.is_previous_rescheduled;
+
+
+                              // const canRescheduleBooking =
+                              //   !item?.is_previous_rescheduled;
+      const hasAlreadyRescheduled =
+  item?.is_previous_rescheduled === true ||
+  String(item?.is_previous_rescheduled).toLowerCase() === "true";
+
+const canRescheduleBooking = !hasAlreadyRescheduled;
 
                               console.log(
                                 "isContractorReschedule",
@@ -328,126 +335,126 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                   className="my-inner-boking-top"
                                   key={item?.bookingId || index}
                                   style={{
-                                    cursor: "pointer" 
+                                    cursor: "pointer"
                                   }}
                                   onClick={(e) => {
                                     // if (isCompletedOrPrevious && item?.bookingId) {
-                                      router.push(
-                                        `/view-booking-detail?bookingId=${item?.bookingId}`
-                                      );
+                                    router.push(
+                                      `/view-booking-detail?bookingId=${item?.bookingId}`
+                                    );
                                     // }
                                   }}
                                 >
                                   <div className="my-quotes-inner">
                                     <div className="my-booking-wrpper">
                                       <div
-                                         className="booking-left-img"
-                                         style={{
-                                           width: "122px",
-                                           height: "98px",
-                                           minWidth: "122px",
-                                           maxWidth: "122px",
-                                           flexShrink: 0,
-                                         }}
-                                       >
-                                         {(() => {
-                                           const mediaUrl =
-                                             item?.categoryImageUrl ||
-                                             item?.mediaUrl ||
-                                             (Array.isArray(item?.media)
-                                               ? item?.media[0]?.url || item?.media[0]
-                                               : typeof item?.media === "string"
-                                               ? item?.media
-                                               : "");
+                                        className="booking-left-img"
+                                        style={{
+                                          width: "122px",
+                                          height: "98px",
+                                          minWidth: "122px",
+                                          maxWidth: "122px",
+                                          flexShrink: 0,
+                                        }}
+                                      >
+                                        {(() => {
+                                          const mediaUrl =
+                                            item?.categoryImageUrl ||
+                                            item?.mediaUrl ||
+                                            (Array.isArray(item?.media)
+                                              ? item?.media[0]?.url || item?.media[0]
+                                              : typeof item?.media === "string"
+                                                ? item?.media
+                                                : "");
 
-                                           const isVideo =
-                                             typeof mediaUrl === "string" &&
-                                             (/\.(mp4|webm|ogg|mov|avi|m4v)(\?.*)?$/i.test(mediaUrl) ||
-                                               /\/video\//i.test(mediaUrl));
+                                          const isVideo =
+                                            typeof mediaUrl === "string" &&
+                                            (/\.(mp4|webm|ogg|mov|avi|m4v)(\?.*)?$/i.test(mediaUrl) ||
+                                              /\/video\//i.test(mediaUrl));
 
-                                           if (isVideo) {
-                                             return (
-                                               <div
-                                                 role="button"
-                                                 tabIndex={0}
-                                                 onClick={(e) => {
-                                                   e.stopPropagation();
-                                                   setSelectedVideoModalUrl(mediaUrl);
-                                                 }}
-                                                 style={{
-                                                   position: "relative",
-                                                   width: "122px",
-                                                   height: "98px",
-                                                   cursor: "pointer",
-                                                   display: "flex",
-                                                   alignItems: "center",
-                                                   justifyContent: "center",
-                                                   borderRadius: "8px",
-                                                   overflow: "hidden",
-                                                 }}
-                                                 title="Play video"
-                                               >
-                                                 <video
-                                                   src={mediaUrl}
-                                                   muted
-                                                   playsInline
-                                                   preload="metadata"
-                                                   style={{
-                                                     width: "122px",
-                                                     height: "98px",
-                                                     objectFit: "cover",
-                                                     borderRadius: "8px",
-                                                     display: "block",
-                                                     pointerEvents: "none",
-                                                   }}
-                                                 />
-                                                 <div
-                                                   style={{
-                                                     position: "absolute",
-                                                     top: "50%",
-                                                     left: "50%",
-                                                     transform: "translate(-50%, -50%)",
-                                                     width: "32px",
-                                                     height: "32px",
-                                                     borderRadius: "50%",
-                                                     backgroundColor: "rgba(0, 0, 0, 0.65)",
-                                                     boxShadow: "0 2px 8px rgba(0,0,0,0.35)",
-                                                     display: "flex",
-                                                     alignItems: "center",
-                                                     justifyContent: "center",
-                                                     color: "#ffffff",
-                                                     pointerEvents: "none",
-                                                   }}
-                                                 >
-                                                   <svg
-                                                     width="14"
-                                                     height="14"
-                                                     viewBox="0 0 24 24"
-                                                     fill="currentColor"
-                                                     style={{ marginLeft: "2px" }}
-                                                   >
-                                                     <path d="M8 5v14l11-7z" />
-                                                   </svg>
-                                                 </div>
-                                               </div>
-                                             );
-                                           }
+                                          if (isVideo) {
+                                            return (
+                                              <div
+                                                role="button"
+                                                tabIndex={0}
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  setSelectedVideoModalUrl(mediaUrl);
+                                                }}
+                                                style={{
+                                                  position: "relative",
+                                                  width: "122px",
+                                                  height: "125px",
+                                                  cursor: "pointer",
+                                                  display: "flex",
+                                                  alignItems: "center",
+                                                  justifyContent: "center",
+                                                  borderRadius: "8px",
+                                                  overflow: "hidden",
+                                                }}
+                                                title="Play video"
+                                              >
+                                                <video
+                                                  src={mediaUrl}
+                                                  muted
+                                                  playsInline
+                                                  preload="metadata"
+                                                  style={{
+                                                    width: "122px",
+                                                    height: "98px",
+                                                    objectFit: "cover",
+                                                    borderRadius: "8px",
+                                                    display: "block",
+                                                    pointerEvents: "none",
+                                                  }}
+                                                />
+                                                <div
+                                                  style={{
+                                                    position: "absolute",
+                                                    top: "50%",
+                                                    left: "50%",
+                                                    transform: "translate(-50%, -50%)",
+                                                    width: "32px",
+                                                    height: "32px",
+                                                    borderRadius: "50%",
+                                                    backgroundColor: "rgba(0, 0, 0, 0.65)",
+                                                    boxShadow: "0 2px 8px rgba(0,0,0,0.35)",
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    justifyContent: "center",
+                                                    color: "#ffffff",
+                                                    pointerEvents: "none",
+                                                  }}
+                                                >
+                                                  <svg
+                                                    width="14"
+                                                    height="14"
+                                                    viewBox="0 0 24 24"
+                                                    fill="currentColor"
+                                                    style={{ marginLeft: "2px" }}
+                                                  >
+                                                    <path d="M8 5v14l11-7z" />
+                                                  </svg>
+                                                </div>
+                                              </div>
+                                            );
+                                          }
 
-                                           return (
-                                             <img
-                                               src={mediaUrl || item?.categoryImageUrl || "/images/header/logo.svg"}
-                                               alt={item?.categoryName || "Category"}
-                                               style={{
-                                                 width: "122px",
-                                                 height: "98px",
-                                                 objectFit: "cover",
-                                                 borderRadius: "8px",
-                                                 display: "block",
-                                               }}
-                                             />
-                                           );
-                                         })()}
-                                       </div>
+                                          return (
+                                            <img
+                                              src={mediaUrl || item?.categoryImageUrl || "/images/header/logo.svg"}
+                                              alt={item?.categoryName || "Category"}
+                                              style={{
+                                                width: "122px",
+                                                height: "125px",
+                                                objectFit: "cover",
+                                                borderRadius: "8px",
+                                                display: "block",
+                                              }}
+                                            />
+                                          );
+                                        })()}
+                                      </div>
                                       <div className="plumbing">
                                         {/* Header / Status Banner */}
                                         <div className="plumbing-top">
@@ -663,29 +670,81 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                             )}
                                             {isContractorReschedule ? (
                                               isUpcoming ? (
+                                                // isAccpectedDate ? (
+                                                //   <div className="service-quotes my-booking">
+                                                //     <div className="home-quotes-cta">
+                                                //       <button
+                                                //         className="reject-btn"
+                                                //         onClick={() => {
+                                                //           setSelectedBookingData(
+                                                //             item
+                                                //           );
+                                                //           setShowCancle(true);
+                                                //         }}
+                                                //       >
+                                                //         Cancel
+                                                //       </button>
+                                                //       <Link
+                                                //         href={`/view-booking-detail?bookingId=${item?.bookingId}`}
+                                                //         className="reject-btn"
+                                                //       >
+                                                //         View Details
+                                                //       </Link>
+                                                //     </div>
+                                                //   </div>
+
+
+
                                                 isAccpectedDate ? (
-                                                  <div className="service-quotes my-booking">
-                                                    <div className="home-quotes-cta">
-                                                      <button
-                                                        className="reject-btn"
-                                                        onClick={() => {
-                                                          setSelectedBookingData(
-                                                            item
-                                                          );
-                                                          setShowCancle(true);
-                                                        }}
-                                                      >
-                                                        Cancel
-                                                      </button>
-                                                      <Link
-                                                        href={`/view-booking-detail?bookingId=${item?.bookingId}`}
-                                                        className="reject-btn"
-                                                      >
-                                                        View Details
-                                                      </Link>
-                                                    </div>
-                                                  </div>
+                                              <div className="home-quotes-cta">
+                                                <button
+                                                  className="reject-btn"
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setSelectedBookingData(item);
+                                                    setShowCancle(true);
+                                                  }}
+                                                >
+                                                  Cancel
+                                                </button>
+
+                                                {canReschedule(item?.bookingDateTime) &&
+                                                item?.assign_status !== false ? (
+                                                 <button
+  className="primary-cta rgt"
+  disabled={!canRescheduleBooking}
+  style={{
+    opacity: canRescheduleBooking ? 1 : 0.5,
+    cursor: canRescheduleBooking ? "pointer" : "not-allowed",
+  }}
+  onClick={(e) => {
+    e.stopPropagation();
+
+    if (!canRescheduleBooking) return;
+
+    handleLoadRescheduleRequest(item);
+    setisReschedule(true);
+  }}
+>
+  <img
+    src="images/inner-page/clock-booking.svg"
+    className="img-left"
+    alt=""
+  />
+  Reschedule
+</button>
                                                 ) : (
+                                                  <Link
+                                                    href={`/view-booking-detail?bookingId=${item?.bookingId}`}
+                                                    className="reject-btn"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                  >
+                                                    View Details
+                                                  </Link>
+                                                )}
+                                              </div>
+                                            )
+                                                 : (
                                                   <div className="home-quotes-cta">
                                                     <Link
                                                       href={`/view-booking-detail?bookingId=${item?.bookingId}`}
@@ -746,44 +805,46 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                                   >
                                                     Cancel
                                                   </button>
-                                                 
-                                                    {item?.assign_status === false ? (
-                                                      <Link
-                                                        href={`/view-booking-detail?bookingId=${item?.bookingId}`}
-                                                        className="reject-btn"
-                                                      >
-                                                        View Details
-                                                      </Link>
-                                                    ) : canReschedule(item?.bookingDateTime) && item?.assign_status === false ? (
-                                                      <button
-                                                        className="primary-cta rgt"
-                                                        onClick={(e) => {
-                                                          e.stopPropagation();
-                                                          canRescheduleBooking
-                                                            ? handleLoadRescheduleRequest(item)
-                                                            : toast.error(
-                                                                "You have already rescheduled this booking once. Further rescheduling is not allowed."
-                                                              );
 
-                                                          setisReschedule(true);
-                                                        }}
-                                                        disabled={!canRescheduleBooking && item?.assign_status === false}
-                                                      >
-                                                        <img
-                                                          src="images/inner-page/clock-booking.svg"
-                                                          className="img-left"
-                                                          alt=""
-                                                        />
-                                                        Reschedule
-                                                      </button>
-                                                    ) : (
-                                                      <Link
-                                                        href={`/view-booking-detail?bookingId=${item?.bookingId}`}
-                                                        className="reject-btn"
-                                                      >
-                                                        View Details
-                                                      </Link>
-                                                    )}
+                                                  {item?.assign_status === false ? (
+                                                    <Link
+                                                      href={`/view-booking-detail?bookingId=${item?.bookingId}`}
+                                                      className="reject-btn"
+                                                    >
+                                                      View Details
+                                                    </Link>
+                                                  ) : canReschedule(item?.bookingDateTime) && item?.assign_status !== false ? (
+                                                    <button
+                                                      className="primary-cta rgt"
+                                                      disabled={!canRescheduleBooking}
+                                                      style={{
+                                                        opacity: canRescheduleBooking ? 1 : 0.5,
+                                                        cursor: canRescheduleBooking ? "pointer" : "not-allowed",
+                                                      }}
+                                                      onClick={(e) => {
+                                                        e.stopPropagation();
+
+                                                        if (!canRescheduleBooking) return;
+
+                                                        handleLoadRescheduleRequest(item);
+                                                        setisReschedule(true);
+                                                      }}
+                                                    >
+                                                      <img
+                                                        src="images/inner-page/clock-booking.svg"
+                                                        className="img-left"
+                                                        alt=""
+                                                      />
+                                                      Reschedule
+                                                    </button>
+                                                  ) : (
+                                                    <Link
+                                                      href={`/view-booking-detail?bookingId=${item?.bookingId}`}
+                                                      className="reject-btn"
+                                                    >
+                                                      View Details
+                                                    </Link>
+                                                  )}
                                                 </div>
                                               </div>
                                             ) : (
@@ -967,7 +1028,8 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                               <div className="home-quotes-cta">
                                                 <button
                                                   className="reject-btn"
-                                                  onClick={() => {
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
                                                     toast.error(
                                                       "Booking cancellation request is in review this action is not allowed at this moment."
                                                     );
@@ -975,38 +1037,38 @@ export default function Booking({ initialBookingData }: BookingProps) {
                                                 >
                                                   Cancel
                                                 </button>
-                                              {item?.assign_status === false ? (
-  <Link
-    href={`/view-booking-detail?bookingId=${item?.bookingId}`}
-    className="reject-btn"
-  >
-    View Details
-  </Link>
-) : canReschedule(item?.bookingDateTime) ? (
-  <button
-    className="primary-cta rgt"
-    onClick={() =>
-      toast.error(
-        "Booking cancellation request is in review this action is not allowed at this moment."
-      )
-    }
-    disabled={!canRescheduleBooking}
-  >
-    <img
-      src="images/inner-page/clock-booking.svg"
-      className="img-left"
-      alt=""
-    />
-    Reschedule
-  </button>
-) : (
-  <Link
-    href={`/view-booking-detail?bookingId=${item?.bookingId}`}
-    className="reject-btn"
-  >
-    View Details
-  </Link>
-)}
+                                                {item?.assign_status === false ? (
+                                                  <Link
+                                                    href={`/view-booking-detail?bookingId=${item?.bookingId}`}
+                                                    className="reject-btn"
+                                                  >
+                                                    View Details
+                                                  </Link>
+                                                ) : canReschedule(item?.bookingDateTime) && item?.assign_status !== false ? (
+                                                  <button
+                                                    className="primary-cta rgt"
+                                                    onClick={() =>
+                                                      toast.error(
+                                                        "Booking cancellation request is in review this action is not allowed at this moment."
+                                                      )
+                                                    }
+                                                    disabled={!canRescheduleBooking}
+                                                  >
+                                                    <img
+                                                      src="images/inner-page/clock-booking.svg"
+                                                      className="img-left"
+                                                      alt=""
+                                                    />
+                                                    Reschedule
+                                                  </button>
+                                                ) : (
+                                                  <Link
+                                                    href={`/view-booking-detail?bookingId=${item?.bookingId}`}
+                                                    className="reject-btn"
+                                                  >
+                                                    View Details
+                                                  </Link>
+                                                )}
                                               </div>
                                             </div>
                                           )}
