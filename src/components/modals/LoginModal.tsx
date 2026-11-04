@@ -37,34 +37,44 @@ const LoginModal = () => {
   const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   // const phoneRegex =
   //   /^(?:\+1\s?)?(?:\([2-9]\d{2}\)|[2-9]\d{2})[-.\s]?[2-9]\d{2}[-.\s]?\d{4}$/;
-   const phoneRegex = /^[0-9]{10}$/;
+  const phoneRegex = /^[0-9]{10}$/;
+  const normalizedPhone = (() => {
+    const digits = inputValue.replace(/\D/g, "");
+    return digits.length === 11 && digits.startsWith("1")
+      ? digits.slice(1)
+      : digits;
+  })();
 
   const isvalidInput = isEmailLogin
     ? emailRegex.test(inputValue)
-    : phoneRegex.test(inputValue);
+    : phoneRegex.test(normalizedPhone);
 
   const handleContinue = async () => {
     // 1. FRONTEND VALIDATION
-   if (isEmailLogin) {
-  if (!inputValue.trim()) {
-    setError("Email is required");
-    return;
-  }
+    const phoneDigits = inputValue.replace(/\D/g, "");
+    const phoneValue =
+      phoneDigits.length === 11 && phoneDigits.startsWith("1")
+        ? phoneDigits.slice(1)
+        : phoneDigits;
 
-  if (!emailRegex.test(inputValue.trim())) {
-    setError("Please enter valid email");
-    return;
-  }
-  }  else {
-      // const phoneRegex = /^[0-9]{10}$/;
+    if (isEmailLogin) {
+      if (!inputValue.trim()) {
+        setError("Email is required");
+        return;
+      }
 
+      if (!emailRegex.test(inputValue.trim())) {
+        setError("Please enter valid email");
+        return;
+      }
+    } else {
       if (!inputValue) {
         setError("Phone number is required");
         return;
       }
 
-      if (!phoneRegex.test(inputValue)) {
-        setError("Please enter valid 10 digit phone number");
+      if (!phoneRegex.test(phoneValue)) {
+        setError("Please enter a valid US phone number with 10 digits, or +1 followed by 10 digits");
         return;
       }
     }
@@ -90,7 +100,7 @@ const LoginModal = () => {
             // referrerId:257,
           }
         : {
-            value: inputValue,
+              value: phoneValue,
             channel: "phone",
             role: "customer",
             fcmToken: fcmToken || "",
@@ -306,9 +316,9 @@ const LoginModal = () => {
                       <input
                         type="text"
                         placeholder={
-                          isEmailLogin ? "Email Address" : "Phone Number"
+                          isEmailLogin ? "Email Address" : "US Phone Number (+1)"
                         }
-                        maxLength={isEmailLogin ? 50 : 10}
+                        maxLength={isEmailLogin ? 50 : 11}
                         pattern={isEmailLogin ? undefined : "[0-9]*"}
                         inputMode={isEmailLogin ? "email" : "numeric"}
                         autoComplete={isEmailLogin ? "email" : "tel"}
@@ -321,10 +331,9 @@ const LoginModal = () => {
                             setError(""); // Clear error on input change
                           } else {
                             // PHONE INPUT
-                            const onlyNumbers = e.target.value.replace(
-                              /\D/g,
-                              ""
-                            );
+                            const onlyNumbers = e.target.value
+                              .replace(/\D/g, "")
+                              .slice(0, 11);
                             setError(""); // Clear error on input change
                             setInputValue(onlyNumbers);
                           }

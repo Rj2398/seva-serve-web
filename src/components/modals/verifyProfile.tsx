@@ -30,6 +30,21 @@ const VerifyProfile = ({ initialMode = "phone" }: VerifyProfileProps) => {
     setError("");
   }, [initialMode]);
 
+  useEffect(() => {
+    const modal = document.getElementById("verify-profile-screen-1");
+    if (!modal) return;
+
+    const handleModalShow = () => {
+      setInputValue("");
+      setError("");
+    };
+
+    modal.addEventListener("show.bs.modal", handleModalShow);
+    return () => {
+      modal.removeEventListener("show.bs.modal", handleModalShow);
+    };
+  }, []);
+
   const handleContinue = async () => {
     const rawValue = isEmailLogin ? inputValue : inputValue.replace(/\D/g, "");
 
