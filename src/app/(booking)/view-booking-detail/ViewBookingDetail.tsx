@@ -8,6 +8,7 @@ import { db } from "@/config/firebase";
 import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react'
 import VideoModal from '@/components/modals/VideoModal';
+import toast from 'react-hot-toast';
 
 interface BookingUpdateProps {
   bookingtrackingData?: any;
@@ -29,6 +30,25 @@ const ViewBookingDetail = ({ bookingtrackingData }: BookingUpdateProps) => {
   console.log(bookingData?.is_pop_up, "shivamkjjkdksfdjasf")
 
   const bookingId = bookingData?.bookingId || bookingData?.id;
+
+  const handleDownloadInvoice = () => {
+    const invoiceUrl =
+      bookingData?.invoiceUrl ||
+      bookingData?.invoice_url;
+
+    if (!invoiceUrl) {
+      toast.error("Invoice not available.");
+      return;
+    }
+
+    const link = document.createElement("a");
+    link.href = invoiceUrl;
+    link.download = `invoice-${bookingId || "booking"}.pdf`;
+    link.target = "_blank";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   console.log(bookingId, "nndsnf")
 
@@ -682,6 +702,32 @@ const ViewBookingDetail = ({ bookingtrackingData }: BookingUpdateProps) => {
                                 </div>
                               )}
                           </div>
+                          {bookingData?.serviceStatus?.currentStep !== 4 && (
+                            <button
+                              type="button"
+                              className="primary-cta"
+                              onClick={handleDownloadInvoice}
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                gap: "6px",
+                                width: "auto",
+                                padding: "8px 16px",
+                                marginTop: "10px",
+                                border: "none",
+                                cursor: "pointer",
+                                alignSelf: "flex-start",
+                              }}
+                            >
+                              <img
+                                src="images/inner-page/download-icon.svg"
+                                alt=""
+                                style={{ width: "14px", height: "14px" }}
+                              />
+                              Invoice
+                            </button>
+                          )}
                         </>
                       ) : (
                         <div className="runing-late text-center">

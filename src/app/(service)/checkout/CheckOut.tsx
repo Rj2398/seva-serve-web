@@ -41,6 +41,7 @@ const CheckOutContent = ({ bookingData }: CheckOutProps) => {
   const [checkoutData, setCheckoutData] = useState<any>();
   console.log(checkoutData, "check out data*******");
   const [paymentMethod, setPaymentMethod] = useState<any>("4");
+  const isCardOrPayPal = paymentMethod === "4" || paymentMethod === "1";
 
   const isFirstPayment =
     checkoutData?.first_payment_status === true ||
@@ -75,6 +76,12 @@ const CheckOutContent = ({ bookingData }: CheckOutProps) => {
 
   const initialPayment =
     checkoutData?.job_summary?.initial_deposit?.amount || 0;
+  const paypalInitialPayment =
+    checkoutData?.job_summary?.initial_deposit?.paypal_amount ??
+    initialPayment;
+  const selectedInitialPayment = isCardOrPayPal
+    ? paypalInitialPayment
+    : initialPayment;
   const remainingPayment = checkoutData?.job_summary?.remaining_amount || 0;
 
   const totalCost =
@@ -82,6 +89,33 @@ const CheckOutContent = ({ bookingData }: CheckOutProps) => {
     initialPayment + remainingPayment;
 
   const finalAmount = initialPayment;
+  const offerList = Array.isArray(checkoutData?.offer_list)
+    ? checkoutData.offer_list
+    : [];
+  const couponOffer = checkoutData?.job_summary?.coupon_offer;
+  const hasCouponOffer = Boolean(couponOffer?.coupon_code);
+  const couponOfferIsListed = offerList.some(
+    (offer: { code?: string }) => offer?.code === couponOffer?.coupon_code
+  );
+  const offers = [
+    ...offerList,
+    ...(hasCouponOffer && !couponOfferIsListed
+      ? [
+          {
+            title: "Applied",
+            code: couponOffer.coupon_code,
+            description:
+              couponOffer.description ||
+              (couponOffer.discount_percentage
+                ? `Get ${couponOffer.discount_percentage}% OFF on Checkout`
+                : ""),
+          },
+        ]
+      : []),
+  ];
+  const hasActiveSubscription =
+    checkoutData?.subscription?.status === "active";
+  const showOffers = offers.length > 0;
 
   const currentQuoteId = checkoutData?.quote_id || bookingData?.quoteId || bookingId;
 
@@ -226,7 +260,7 @@ const CheckOutContent = ({ bookingData }: CheckOutProps) => {
         payload: {
           type: paymenttype || "initial",
           quote_id: String(currentQuoteId),
-          amount: paymentMethod === "1" ? String(1) : String(finalAmount.toFixed(2)),
+          amount: String(selectedInitialPayment.toFixed(2)),
           nonce: nonce,
         },
       });
@@ -387,7 +421,112 @@ const CheckOutContent = ({ bookingData }: CheckOutProps) => {
                   </div>
                   <div className="cost-details-wrp">
                     <h4>Booking Cost Details (ID: {bookingId})</h4>
+                    {showOffers && (
+                      <div
+                        style={{
+                          overflow: "hidden",
+                          borderRadius: "10px",
+                          margin: "0 8px 0",
+                        }}
+                      >
+                        <div
+                          style={{
+                            backgroundColor: "#991318",
+                            color: "#fff",
+                            padding: "5px 8px",
+                          }}
+                        >
+                          {offers.map(
+                            (
+                              offer: {
+                                title?: string;
+                                code?: string;
+                                description?: string;
+                              },
+                              index: number
+                            ) => (
+                              <div
+                                key={`${offer?.code || offer?.title || "offer"}-${index}`}
+                                style={{
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                  alignItems: "center",
+                                  gap: "12px",
+                                  minHeight: "18px",
+                                  marginTop: index > 0 ? "2px" : 0,
+                                  fontSize: "12px",
+                                }}
+                              >
+                                <span>
+                                  {offer?.title || "Subscribed"}
+                                  {(offer?.code ||
+                                    (offer?.title?.toLowerCase() === "subscribed"
+                                      ? checkoutData?.subscription?.billing_type
+                                      : "")) && (
+                                    <span
+                                      style={{
+                                        marginLeft: "6px",
+                                        padding: "2px 7px",
+                                        borderRadius: "16px",
+                                        backgroundColor:
+                                          "rgba(255,255,255,0.2)",
+                                        fontSize: "10px",
+                                        whiteSpace: "nowrap",
+                                      }}
+                                    >
+                                      {offer?.code ||
+                                        checkoutData?.subscription?.billing_type}
+                                    </span>
+                                  )}
+                                </span>
+                                <span style={{ textAlign: "right" }}>
+                                  {offer?.description}
+                                </span>
+                              </div>
+                            )
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    {checkoutData && !hasActiveSubscription && (
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          gap: "12px",
+                          margin: "0 8px 10px",
+                          color: "#363636",
+                          fontSize: "12px",
+                        }}
+                      >
+                        <span>Get upto 20% OFF more</span>
+                        <button
+                          type="button"
+                          onClick={() => router.push("/choose-plan")}
+                          style={{
+                            border: "none",
+                            borderRadius: "16px",
+                            backgroundColor: "#991318",
+                            color: "#fff",
+                            padding: "5px 12px",
+                            fontSize: "12px",
+                            cursor: "pointer",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          Subscribe Now
+                        </button>
+                      </div>
+                    )}
                     <div className="cost-details-in">
+
+                       <p>
+                        Total Booking Cost{" "}
+                        <span>
+                          ${totalCost.toFixed(2)}
+                        </span>
+                      </p>
                       <p>
                         Deposit / Deductible Amount{" "}
                         <span>${initialPayment.toFixed(2)}</span>
@@ -397,13 +536,13 @@ const CheckOutContent = ({ bookingData }: CheckOutProps) => {
                         <span>${remainingPayment.toFixed(2)}</span>
                       </p>
                       <hr />
-                      <p>
+                      {/* <p>
                         Total Cost{" "}
                         <span>
                           <b>${totalCost.toFixed(2)}</b>
                         </span>
-                      </p>
-                      <p
+                      </p> */}
+                      {/* <p
                         className="pay-now-highlight"
                         style={{ marginTop: "10px" }}
                       >
@@ -411,7 +550,56 @@ const CheckOutContent = ({ bookingData }: CheckOutProps) => {
                         <span>
                           <b>${finalAmount.toFixed(2)}</b>
                         </span>
+                      </p> */}
+
+                        <p
+                        className="pay-now-highlight"
+                        style={{ marginTop: "10px" }}
+                      >
+                        <b>Payment Summary </b>
+                        {/* <span>
+                          <b>${finalAmount.toFixed(2)}</b>
+                        </span> */}
                       </p>
+
+                      <p>
+                        Deposit  Amount{" "}
+                        <span>${initialPayment.toFixed(2)}</span>
+                      </p>
+
+                      {isCardOrPayPal ? (
+                        <>
+                          <p>
+                            Payment Gateway Charges
+                            <span>
+                              $
+                              {checkoutData?.job_summary?.paypal_charges?.total_fee?.toFixed(
+                                2
+                              )}
+                            </span>
+                          </p>
+                          <p>
+                            Total Initial Amount
+                            <span>
+                              $
+                              {checkoutData?.job_summary?.initial_deposit?.paypal_amount?.toFixed(
+                                2
+                              )}
+                            </span>
+                          </p>
+                        </>
+                      ) : (
+                        <p>
+                          Total Initial Amount
+                          <span>
+                            $
+                            {checkoutData?.job_summary?.initial_deposit?.amount?.toFixed(
+                              2
+                            )}
+                          </span>
+                        </p>
+                      )}
+
                     </div>
                   </div>
                   <div className="select-pay-met">
@@ -544,7 +732,7 @@ const CheckOutContent = ({ bookingData }: CheckOutProps) => {
                         pathname: `/zelle-payment`,
                         query: {
                           booking_id: bookingId || bookingData?.bookingId,
-                          initialpayment: initialPayment,
+                          initialpayment: selectedInitialPayment,
                           remaingPayment: remainingPayment,
                           paymenttype: paymenttype,
                           quoteId:
@@ -566,7 +754,7 @@ const CheckOutContent = ({ bookingData }: CheckOutProps) => {
                               : "/add-new-card",
                             query: {
                               booking_id: bookingId || bookingData?.bookingId,
-                              initialpayment: initialPayment,
+                              initialpayment: selectedInitialPayment,
                               remaingPayment: remainingPayment,
                               paymenttype: paymenttype,
                               quoteId:

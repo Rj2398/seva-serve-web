@@ -34,6 +34,18 @@ const PaymentPage = ({ bookingData }: CheckOutProps) => {
   const paymentType = searchParams.get("paymenttype") || "full";
   const [checkoutData, setCheckoutData] = useState<any>();
   const [couponCode, setCouponCode] = useState<string>("");
+  const subscriptionOffer = checkoutData?.job_summary?.subscription_offer;
+  const couponOffer = checkoutData?.job_summary?.coupon_offer;
+  const bannerOffer = checkoutData?.job_summary?.banner_offer;
+  const jobSummary = checkoutData?.job_summary;
+  const hasSubscriptionOffer = Boolean(
+    subscriptionOffer?.discount_percentage || subscriptionOffer?.discount_amount
+  );
+  const hasCouponOffer = Boolean(couponOffer?.coupon_code);
+  const hasBannerOffer = Boolean(bannerOffer?.coupon_code);
+  const subscriptionLabel =
+    checkoutData?.subscription?.billing_type ||
+    checkoutData?.subscription?.plan_name;
 
   const [paypalInstance, setPaypalInstance] = useState<any>(null);
   const [paypalLoading, setPaypalLoading] = useState(true);
@@ -124,8 +136,7 @@ const PaymentPage = ({ bookingData }: CheckOutProps) => {
         initialpayment:
           checkoutData?.job_summary?.initial_deposit_paid?.amount?.toString() ||
           "",
-        remaingPayment:
-          checkoutData?.job_summary?.remaining_cost?.toString() || "",
+        remaingPayment: String(cardOrPayPalAmount),
         paymenttype: paymentType,
       });
 
@@ -137,8 +148,7 @@ const PaymentPage = ({ bookingData }: CheckOutProps) => {
         initialpayment:
           checkoutData?.job_summary?.initial_deposit_paid?.amount?.toString() ||
           "",
-        remaingPayment:
-          checkoutData?.job_summary?.remaining_cost?.toString() || "",
+        remaingPayment: String(regularRemainingAmount),
         paymenttype: paymentType || "full",
         zelle_phone: checkoutData?.zelle_phone || "",
         zelle_email: checkoutData?.zelle_email || "",
@@ -149,10 +159,19 @@ const PaymentPage = ({ bookingData }: CheckOutProps) => {
   };
 
   const currentQuoteId = checkoutData?.quote_id || bookingId;
-  const payAmount =
-    checkoutData?.job_summary?.remaining_cost ||
-    checkoutData?.job_summary?.initial_deposit_paid?.amount ||
+  const regularRemainingAmount =
+    jobSummary?.remaining_cost ??
+    jobSummary?.initial_deposit_paid?.amount ??
     0;
+  const cardOrPayPalAmount =
+    jobSummary?.payable_amount ??
+    jobSummary?.paypal_charges?.payable_amount ??
+    regularRemainingAmount;
+  const isCardOrPayPal =
+    selectedMethod === "card" || selectedMethod === "paypal";
+  const payAmount = isCardOrPayPal
+    ? cardOrPayPalAmount
+    : regularRemainingAmount;
 
   const initializeBraintree = async () => {
     try {
@@ -213,7 +232,7 @@ const PaymentPage = ({ bookingData }: CheckOutProps) => {
         payload: {
           type: paymentType,
           quote_id: String(currentQuoteId),
-          amount: selectedMethod === "paypal" ? String(1) : String(Number(payAmount).toFixed(2)),
+          amount: String(Number(payAmount).toFixed(2)),
           nonce: nonce,
         },
       });
@@ -284,7 +303,7 @@ const PaymentPage = ({ bookingData }: CheckOutProps) => {
       setIsTokenizing(true);
       const payload = await paypalInstance.tokenize({
         flow: 'checkout',
-        amount: "1.00",
+        amount: Number(payAmount).toFixed(2),
         currency: 'USD'
       });
 
@@ -360,66 +379,175 @@ const PaymentPage = ({ bookingData }: CheckOutProps) => {
 
                       <div className="payment-in">
                         <h5>JOB SUMMARY {checkoutData?.quote_code}</h5>
+                        {(hasCouponOffer || hasSubscriptionOffer) && (
+                          <div
+                            style={{
+                              overflow: "hidden",
+                              borderRadius: "10px",
+                              margin: "0 0 16px",
+                              backgroundColor: "#991318",
+                              color: "#fff",
+                              padding: "6px 10px",
+                            }}
+                          >
+                            {hasCouponOffer && (
+                              <div
+                                style={{
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                  alignItems: "center",
+                                  gap: "12px",
+                                  minHeight: "20px",
+                                  fontSize: "12px",
+                                }}
+                              >
+                                <span>
+                                  Applied
+                                  {couponOffer?.coupon_code && (
+                                    <span
+                                      style={{
+                                        marginLeft: "6px",
+                                        padding: "2px 7px",
+                                        borderRadius: "14px",
+                                        backgroundColor:
+                                          "rgba(255,255,255,0.2)",
+                                        fontSize: "10px",
+                                        whiteSpace: "nowrap",
+                                      }}
+                                    >
+                                      {couponOffer.coupon_code}
+                                    </span>
+                                  )}
+                                </span>
+                                <span style={{ textAlign: "right" }}>
+                                  Get {couponOffer?.discount_percentage}% OFF on
+                                  Checkout
+                                </span>
+                              </div>
+                            )}
+                            {hasSubscriptionOffer && (
+                              <div
+                                style={{
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                  alignItems: "center",
+                                  gap: "12px",
+                                  minHeight: "20px",
+                                  marginTop: hasCouponOffer ? "2px" : 0,
+                                  fontSize: "12px",
+                                }}
+                              >
+                                <span>
+                                  Subscribed
+                                  {subscriptionLabel && (
+                                    <span
+                                      style={{
+                                        marginLeft: "6px",
+                                        padding: "2px 7px",
+                                        borderRadius: "14px",
+                                        backgroundColor:
+                                          "rgba(255,255,255,0.2)",
+                                        fontSize: "10px",
+                                        whiteSpace: "nowrap",
+                                      }}
+                                    >
+                                      {subscriptionLabel}
+                                    </span>
+                                  )}
+                                </span>
+                                <span style={{ textAlign: "right" }}>
+                                  Get {subscriptionOffer?.discount_percentage}%
+                                  OFF on Checkout
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        )}
 
                         <h6>
-                          Initial Deposit Paid{" "}
+                          Initial Deposit Paid
                           <b>
-                            $
-                            {
-                              checkoutData?.job_summary?.initial_deposit_paid
-                                ?.amount
-                            }
+                            -$
+                            {Number(
+                              jobSummary?.initial_deposit_paid?.amount || 0
+                            ).toFixed(2)}
                           </b>
                         </h6>
 
-                        <h6>
-                          Subscription Offer
-                          <span className="offer-tag">
-                            {
-                              checkoutData?.job_summary?.subscription_offer
-                                ?.discount_percentage
-                            }
-                            % OFF
-                          </span>{" "}
-                          <b>
-                            $
-                            {
-                              checkoutData?.job_summary?.subscription_offer
-                                ?.discount_amount
-                            }
-                          </b>
-                        </h6>
+                        {hasSubscriptionOffer && (
+                          <h6>
+                            Subscription Offer
+                            <span className="offer-tag">
+                              {subscriptionOffer.discount_percentage}% OFF
+                            </span>
+                            <b>
+                              -$
+                              {Number(
+                                subscriptionOffer.discount_amount || 0
+                              ).toFixed(2)}
+                            </b>
+                          </h6>
+                        )}
                         <hr />
                         <h6 className="text-black">
                           Total Service Cost
                           <b style={{ color: "#991318" }}>
-                            <del className="text-black"></del> $
-                            {checkoutData?.job_summary?.total_service_cost}
-                          </b>
-                        </h6>
-                        <h6>
-                          Coupon Offer{" "}
-                          <span
-                            className={
-                              checkoutData?.job_summary?.coupon_offer
-                                ?.coupon_code !== null
-                                ? "offer-tag"
-                                : ""
-                            }
-                          >
-                            {
-                              checkoutData?.job_summary?.coupon_offer
-                                ?.coupon_code
-                            }
-                          </span>
-                          <b>
+                            <del className="text-black">
+                              $
+                              {Number(
+                                jobSummary?.grand_total_service_cost ??
+                                  jobSummary?.total_service_cost ??
+                                  0
+                              ).toFixed(2)}
+                            </del>{" "}
                             $
-                            {
-                              checkoutData?.job_summary?.coupon_offer
-                                ?.discount_amount
-                            }
+                            {Number(
+                              jobSummary?.payable_service_cost ??
+                                jobSummary?.total_service_cost ??
+                                0
+                            ).toFixed(2)}
                           </b>
                         </h6>
+                        {hasBannerOffer && (
+                          <h6>
+                            Banner Offer
+                            <span className="offer-tag">
+                              {bannerOffer.coupon_code}
+                            </span>
+                            <b>
+                              -$
+                              {Number(
+                                bannerOffer.discount_amount || 0
+                              ).toFixed(2)}
+                            </b>
+                          </h6>
+                        )}
+                        {hasCouponOffer && (
+                          <h6>
+                            Coupon Offer
+                            <span className="offer-tag">
+                              {couponOffer.coupon_code}
+                            </span>
+                            <b>
+                              -$
+                              {Number(
+                                couponOffer.discount_amount || 0
+                              ).toFixed(2)}
+                            </b>
+                          </h6>
+                        )}
+                        {isCardOrPayPal &&
+                          jobSummary?.paypal_charges?.total_fee != null && (
+                          <h6>
+                            Payment Gateway Charge
+                            <b>
+                              $
+                              {Number(
+                                jobSummary.paypal_charges.total_fee
+                              ).toFixed(2)}
+                            </b>
+                          </h6>
+                        )}
                         <h6 className="mb-0" style={{ fontSize: "larger" }}>
                           Remaining Cost
                           <b
@@ -428,7 +556,8 @@ const PaymentPage = ({ bookingData }: CheckOutProps) => {
                               color: "#991318",
                             }}
                           >
-                            ${checkoutData?.job_summary?.remaining_cost}
+                            $
+                            {Number(payAmount).toFixed(2)}
                           </b>
                         </h6>
                       </div>

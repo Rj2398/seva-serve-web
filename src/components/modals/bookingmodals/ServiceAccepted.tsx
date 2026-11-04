@@ -84,7 +84,7 @@ const ServiceAccepted = ({ serviceId, isAddactional, additionalId }: ServiceAcce
                 <p>You’ve successfully accepted the additional services.</p>
                 <p>  The job details have been updated and work will continue as scheduled.</p>
               </> : <>
-                <p>Now pay to start the work</p>
+                <p>You’ve successfully accepted the service.</p>
               </>
               }
 
