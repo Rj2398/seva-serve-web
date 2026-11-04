@@ -336,6 +336,35 @@ zQIDAQAB
         return;
       }
 
+      let isFirstSavedCard = false;
+      const hasPaymentContext =
+        bookingId ||
+        quoteId ||
+        (planId && planId !== "null" && planAmount && planAmount !== "null");
+
+      if (!hasPaymentContext) {
+        try {
+          const cardsResponse = await globalServerRequest({
+            endpoint: "payment/card/fetch-cards",
+            method: "GET",
+          });
+
+          if (cardsResponse.success) {
+            const savedCards =
+              cardsResponse.data?.data || cardsResponse.data || [];
+            isFirstSavedCard =
+              Array.isArray(savedCards) && savedCards.length === 0;
+          } else {
+            console.error(
+              "Failed to check saved cards before adding:",
+              cardsResponse.error
+            );
+          }
+        } catch (error) {
+          console.error("Failed to check saved cards before adding:", error);
+        }
+      }
+
       const response = await globalServerRequest({
         endpoint: "payment/card/add",
         method: "POST",
@@ -345,7 +374,9 @@ zQIDAQAB
       if (response.success) {
         console.log("Response from card add:", response);
         toast.success("Card added successfully!", { id: toastId });
-        if (bookingId || quoteId) {
+        if (isFirstSavedCard) {
+          router.push("/");
+        } else if (bookingId || quoteId) {
           router.push(
             `/payment-method?booking_id=${bookingId || ""}&quote_id=${quoteId || ""}&initialpayment=${initialpayment || ""}&remaingPayment=${remainingPayment || ""}&paymenttype=${paymenttype || ""}`
           );

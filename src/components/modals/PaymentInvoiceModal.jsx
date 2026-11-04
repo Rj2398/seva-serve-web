@@ -124,22 +124,7 @@ const PaymentInvoiceModal = ({
   };
 
   const handleClose = () => {
-    const modalElement =
-      modalRef.current ||
-      (typeof document !== "undefined"
-        ? document.getElementById("dwonloadInvoice")
-        : null);
-
-    if (modalElement && typeof window !== "undefined" && window.bootstrap) {
-      const modalInstance = window.bootstrap.Modal.getInstance(modalElement);
-      if (modalInstance) {
-        modalInstance.hide();
-      }
-    }
-
-    if (setIsOpen) setIsOpen(false);
-    if (onClose) onClose();
-    cleanupBackdrop();
+    handleGoToBooking();
   };
 
   return (

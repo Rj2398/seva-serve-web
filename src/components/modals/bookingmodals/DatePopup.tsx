@@ -38,14 +38,24 @@ export interface ReschedulePayload {
 //   address: string;
 // }) => void;
 // }
+// interface DatePopupProps {
+//   isOpen: boolean;
+//   setIsOpen: (isOpen: boolean) => void;
+//   // Callback now receives your exact array payload format
+//   onConfirm?: (data: ReschedulePayload) => void;
+//   getAddressIdCallback?: (addressId: string) => void;
+//   booking_Id?: number | string;
+//   rescheduleKey?: boolean;
+// }
+
 interface DatePopupProps {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
-  // Callback now receives your exact array payload format
   onConfirm?: (data: ReschedulePayload) => void;
   getAddressIdCallback?: (addressId: string) => void;
   booking_Id?: number | string;
   rescheduleKey?: boolean;
+  isRequestQuote?: boolean;
 }
 
 const getTodayString = () => {
@@ -63,6 +73,7 @@ const DatePopup: React.FC<DatePopupProps> = ({
   getAddressIdCallback,
   booking_Id,
   rescheduleKey,
+  isRequestQuote,
 }) => {
   // console.log("onConfirm up", onConfirm)
   // console.log("isOpen up", isOpen)
@@ -218,38 +229,38 @@ const DatePopup: React.FC<DatePopupProps> = ({
     }
   }, [isOpen, selectedDate]);
 
-  // Bootstrap modal sync lifecycle
-  useEffect(() => {
-    const modalElement = modalRef.current;
-    if (!modalElement) return;
+useEffect(() => {
+  const modalElement = modalRef.current;
+  if (!modalElement) return;
 
-    const bootstrap = (window as any).bootstrap;
-    if (!bootstrap) return;
+  const bootstrap = (window as any).bootstrap;
+  if (!bootstrap) return;
 
-    const modalInstance =
-      bootstrap.Modal.getInstance(modalElement) ||
-      new bootstrap.Modal(modalElement, {
-        backdrop: "static",
-        keyboard: false,
-      });
+  const modalInstance =
+    bootstrap.Modal.getInstance(modalElement) ||
+    new bootstrap.Modal(modalElement, {
+      backdrop: "static",
+      keyboard: false,
+    });
 
-    if (isOpen) {
-      setSelectedSlots([]); // Clear slots on open
-      setSelectedDate(getTodayString()); // Set date to today on open
-      modalInstance.show();
-    } else {
-      modalInstance.hide();
-    }
+  if (isOpen) {
+    setSelectedSlots([]);
+    setSelectedDate(getTodayString());
+    modalInstance.show();
+  } else {
+    modalInstance.hide();
+  }
 
-    const handleModalHidden = () => {
-      setIsOpen(false);
-    };
+  const handleModalHidden = () => {
+    setIsOpen(false);
+  };
 
-    modalElement.addEventListener("hidden.bs.modal", handleModalHidden);
-    return () => {
-      modalElement.removeEventListener("hidden.bs.modal", handleModalHidden);
-    };
-  }, [isOpen, setIsOpen]);
+  modalElement.addEventListener("hidden.bs.modal", handleModalHidden);
+
+  return () => {
+    modalElement.removeEventListener("hidden.bs.modal", handleModalHidden);
+  };
+}, [isOpen, setIsOpen]);
 
   // JQuery UI Datepicker initialization
   useEffect(() => {
@@ -677,13 +688,24 @@ const DatePopup: React.FC<DatePopupProps> = ({
           </div>
         </div>
       </div>
-      <NewAddressModal
+      {/* <NewAddressModal
         selectedAddress={null}
         onSave={() => {
           fetchAddresses();
         }}
         onClose={() => { }}
-      />
+      /> */}
+
+ <NewAddressModal
+  selectedAddress={null}
+  onSave={() => {
+    fetchAddresses();
+    if (isRequestQuote) {
+      setIsOpen(true);
+    }
+  }}
+  onClose={() => {}}
+/>
     </>
   );
 };

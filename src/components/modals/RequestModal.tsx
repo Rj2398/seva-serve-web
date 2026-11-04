@@ -43,30 +43,40 @@ const RequestModal: React.FC<RequestModalProps> = ({ isOpen, setIsOpen }) => {
     };
   }, [isOpen, setIsOpen]);
 
-  const handleOkayClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault();
+  // const handleOkayClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+  //   e.preventDefault();
 
-    // 1. Close this modal via state management
-    setIsOpen(false);
+  //   // 1. Close this modal via state management
+  //   setIsOpen(false);
 
-    // 2. Safely direct the user back to the homepage
-    router.push("/");
+  //   // 2. Safely direct the user back to the homepage
+  //   router.push("/quotes");
 
-    /* 
-    💡 Note: If you want to open another modal on the homepage instead of navigating,
-    you can un-comment this legacy daisy-chain block. Otherwise, router.push works perfectly.
+  //   /* 
+  //   💡 Note: If you want to open another modal on the homepage instead of navigating,
+  //   you can un-comment this legacy daisy-chain block. Otherwise, router.push works perfectly.
     
-    const nextModal = document.getElementById("add-Your-Card");
-    if (nextModal) {
-      const bootstrap = (window as any).bootstrap;
-      const nextInstance =
-        bootstrap.Modal.getInstance(nextModal) ||
-        new bootstrap.Modal(nextModal);
-      nextInstance.show();
-    } 
-    */
-  };
+  //   const nextModal = document.getElementById("add-Your-Card");
+  //   if (nextModal) {
+  //     const bootstrap = (window as any).bootstrap;
+  //     const nextInstance =
+  //       bootstrap.Modal.getInstance(nextModal) ||
+  //       new bootstrap.Modal(nextModal);
+  //     nextInstance.show();
+  //   } 
+  //   */
+  // };
 
+
+const handleCloseModal = () => {
+  setIsOpen(false);
+  router.push("/quotes?is_requested=1");
+};
+
+const handleOkayClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+  e.preventDefault();
+  handleCloseModal();
+};
   return (
     <>
       <div
@@ -83,7 +93,7 @@ const RequestModal: React.FC<RequestModalProps> = ({ isOpen, setIsOpen }) => {
               <button
                 type="button"
                 className="btn-close"
-                onClick={() => setIsOpen(false)}
+                onClick={handleCloseModal}
                 aria-label="Close"
               ></button>
             </div>

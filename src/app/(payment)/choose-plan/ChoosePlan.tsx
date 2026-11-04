@@ -19,6 +19,8 @@ export default function ChoosePlan({ initialPlanData }: PlanProps) {
   console.log("plansData", myPlans.plans);
 
   const couponCode = myPlans.plans.coupon;
+  const hasActiveSubscription =
+    myPlans?.plans?.subscription?.status === "active";
 
   const [selectedPlan, setSelectedPlan] = useState<number | string | null>(() => {
     const subscription = myPlans?.plans?.subscription;
@@ -144,6 +146,7 @@ export default function ChoosePlan({ initialPlanData }: PlanProps) {
                   
                   </div>
 
+                  {hasActiveSubscription && (
                   <div className="coupon-unlocked-wrp">
                     <div className="left">
                       <div className="coupon-img">
@@ -179,6 +182,7 @@ export default function ChoosePlan({ initialPlanData }: PlanProps) {
                       </button>
                     </div> */}
                   </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -474,4 +478,3 @@ export default function ChoosePlan({ initialPlanData }: PlanProps) {
 //     </main>
 //   );
 // }
-

@@ -136,20 +136,47 @@ const NotificationDropdown = () => {
         },
       });
 
+      // if (response?.success) {
+      //   const data = response?.data?.data;
+
+      //   if (page === 1) {
+      //     setNotificationsData(data?.notifications || []);
+      //   } else {
+      //     setNotificationsData((prev: any[]) => [
+      //       ...prev,
+      //       ...(data?.notifications || []),
+      //     ]);
+      //   }
+
+      //   setHasNextPage(data?.hasNextPage || false);
+      // } 
+      
       if (response?.success) {
-        const data = response?.data?.data;
+  const data = response?.data?.data;
 
-        if (page === 1) {
-          setNotificationsData(data?.notifications || []);
-        } else {
-          setNotificationsData((prev: any[]) => [
-            ...prev,
-            ...(data?.notifications || []),
-          ]);
-        }
+  let notificationList = data?.notifications || [];
 
-        setHasNextPage(data?.hasNextPage || false);
-      } else {
+  // Active tab ke according filter
+  if (activeTab !== "All") {
+    const selectedType = typeMap[activeTab as keyof typeof typeMap];
+
+    notificationList = notificationList.filter(
+      (item: any) => item.type?.toLowerCase() === selectedType
+    );
+  }
+
+  if (page === 1) {
+    setNotificationsData(notificationList);
+  } else {
+    setNotificationsData((prev: any[]) => [
+      ...prev,
+      ...notificationList,
+    ]);
+  }
+
+  setHasNextPage(data?.hasNextPage || false);
+}
+      else {
         if (page === 1) {
           setNotificationsData([]);
         }
@@ -332,128 +359,291 @@ const NotificationDropdown = () => {
   //   router.push(finalUrl);
   // };
 
-  const handleRedirection = (notif: any) => {
+//   const handleRedirection = (notif: any) => {
 
 
- const dropdownElement = document.querySelector(
-    ".bell-icon .dropdown-toggle"
-  ) as HTMLElement;
+//  const dropdownElement = document.querySelector(
+//     ".bell-icon .dropdown-toggle"
+//   ) as HTMLElement;
 
-  if (dropdownElement && window.bootstrap) {
-    const dropdownInstance =
-      window.bootstrap.Dropdown.getOrCreateInstance(dropdownElement);
+//   if (dropdownElement && window.bootstrap) {
+//     const dropdownInstance =
+//       window.bootstrap.Dropdown.getOrCreateInstance(dropdownElement);
 
-    dropdownInstance.hide();
+//     dropdownInstance.hide();
+//   }
+
+//   if (!notif?.meta?.screen_type) {
+//     console.warn("screen_type missing:", notif);
+//     return;
+//   }
+//   if (!notif?.meta?.screen_type) {
+//     console.warn("screen_type missing:", notif);
+//     return;
+//   }
+
+//   const {
+//     screen_type,
+//     target_id,
+//     quote_id,
+//     booking_id,
+//   } = notif.meta;
+
+//   switch (screen_type) {
+//     case "quote": {
+//   const quoteId = quote_id || target_id;
+
+//   if (!quoteId) {
+//     console.warn("Quote ID missing:", notif);
+//     return;
+//   }
+
+//   const title = notif?.title?.trim();
+
+//   if (title === "Quote Request Submitted.") {
+//     router.push(
+//       `/quotes?status=Requested&quoteId=${quoteId}`
+//     );
+//   } else if (title === "Your Quotes Are Ready") {
+//     router.push(
+//       `/quotes?status=Received&quoteId=${quoteId}`
+//     );
+//   } else {
+//     // fallback agar future me koi aur quote notification aaye
+//     router.push(
+//       `/quotes?status=Received&quoteId=${quoteId}`
+//     );
+//   }
+
+//   break;
+// }
+
+//     case "job_tracking": {
+//       const bookingId = booking_id || target_id;
+
+//       if (!bookingId) {
+//         console.warn("Booking ID missing:", notif);
+//         return;
+//       }
+
+//       router.push(
+//         `/view-booking-detail?bookingId=${bookingId}`
+//       );
+//       break;
+//     }
+
+//     case "payment": {
+//       const bookingId = booking_id || target_id;
+
+//       if (!bookingId) {
+//         console.warn("Booking ID missing:", notif);
+//         return;
+//       }
+
+//       router.push(
+//         `/my-payment?bookingId=${bookingId}`
+//       );
+//       break;
+//     }
+
+//     case "booking": {
+//       const bookingId = booking_id || target_id;
+
+//       if (!bookingId) {
+//         console.warn("Booking ID missing:", notif);
+//         return;
+//       }
+
+//       router.push(
+//         `/booking?bookingId=${bookingId}`
+//       );
+//       break;
+//     }
+
+//     case "referral_earned":
+//       router.push("/referral");
+//       break;
+
+//     case "profile":
+//       router.push("/profile");
+//       break;
+
+//     case "general":
+//       console.log("General notification:", notif);
+//       break;
+
+//     default:
+//       console.warn(
+//         "Unknown screen_type:",
+//         screen_type,
+//         notif
+//       );
+//   }
+// };
+
+
+const handleRedirection = (notif: any) => {
+  if (!notif) return;
+
+  console.log("Clicked notification:", notif);
+
+  let meta = notif.meta || {};
+
+  if (typeof meta === "string") {
+    try {
+      meta = JSON.parse(meta);
+    } catch (error) {
+      console.error("Invalid notification meta:", meta);
+      return;
+    }
   }
 
-  if (!notif?.meta?.screen_type) {
-    console.warn("screen_type missing:", notif);
-    return;
-  }
-  if (!notif?.meta?.screen_type) {
-    console.warn("screen_type missing:", notif);
-    return;
-  }
+  const screenType = String(
+    meta?.screen_type || meta?.screenType || ""
+  )
+    .trim()
+    .toLowerCase()
+    .replace(/[-\s]/g, "_");
 
-  const {
-    screen_type,
-    target_id,
-    quote_id,
-    booking_id,
-  } = notif.meta;
+  const targetId = meta?.target_id;
+  const quoteId = meta?.quote_id;
+  const bookingId = meta?.booking_id;
 
-  switch (screen_type) {
+  const title = String(notif.title || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[.!?]+$/, "");
+
+  let url = "";
+  let quoteStatus: string | null = null;
+
+  switch (screenType) {
     case "quote": {
-  const quoteId = quote_id || target_id;
+      const id = quoteId || targetId;
 
-  if (!quoteId) {
-    console.warn("Quote ID missing:", notif);
-    return;
-  }
-
-  const title = notif?.title?.trim();
-
-  if (title === "Quote Request Submitted.") {
-    router.push(
-      `/quotes?status=Requested&quoteId=${quoteId}`
-    );
-  } else if (title === "Your Quotes Are Ready") {
-    router.push(
-      `/quotes?status=Received&quoteId=${quoteId}`
-    );
-  } else {
-    // fallback agar future me koi aur quote notification aaye
-    router.push(
-      `/quotes?status=Received&quoteId=${quoteId}`
-    );
-  }
-
-  break;
-}
-
-    case "job_tracking": {
-      const bookingId = booking_id || target_id;
-
-      if (!bookingId) {
-        console.warn("Booking ID missing:", notif);
+      if (!id) {
+        console.error("Quote ID missing:", notif);
         return;
       }
 
-      router.push(
-        `/view-booking-detail?bookingId=${bookingId}`
-      );
+      if (title.includes("reject") || title.includes("declin")) {
+        quoteStatus = "Rejected";
+      } else if (title.includes("accept") || title.includes("approv")) {
+        quoteStatus = "Accepted";
+      } else if (title.includes("ready") || title.includes("received")) {
+        quoteStatus = "Received";
+      } else if (
+        title.includes("request") ||
+        title.includes("submit") ||
+        title.includes("pending")
+      ) {
+        quoteStatus = "Requested";
+      } else {
+        quoteStatus =
+          meta?.quote_status ||
+          meta?.quoteStatus ||
+          meta?.status ||
+          "Received";
+      }
+
+      url = `/quotes?status=${encodeURIComponent(String(quoteStatus))}&quoteId=${encodeURIComponent(
+        String(id)
+      )}`;
+
+      break;
+    }
+
+    case "job_tracking":
+    case "tracking":
+    case "view_booking_detail": {
+      const id = bookingId || targetId;
+
+      if (!id) return;
+
+      url = `/view-booking-detail?bookingId=${encodeURIComponent(
+        String(id)
+      )}`;
+      break;
+    }
+
+    case "review": {
+      const id = bookingId || targetId;
+
+      if (!id) return;
+
+      url = `/booking?bookingId=${encodeURIComponent(String(id))}`;
       break;
     }
 
     case "payment": {
-      const bookingId = booking_id || target_id;
+      const id = bookingId || targetId;
 
-      if (!bookingId) {
-        console.warn("Booking ID missing:", notif);
-        return;
-      }
+      if (!id) return;
 
-      router.push(
-        `/my-payment?bookingId=${bookingId}`
-      );
+      url = `/my-payment?bookingId=${encodeURIComponent(String(id))}`;
       break;
     }
 
     case "booking": {
-      const bookingId = booking_id || target_id;
+      const id = bookingId || targetId;
 
-      if (!bookingId) {
-        console.warn("Booking ID missing:", notif);
-        return;
-      }
+      if (!id) return;
 
-      router.push(
-        `/booking?bookingId=${bookingId}`
-      );
+      url = `/booking?bookingId=${encodeURIComponent(String(id))}`;
       break;
     }
 
     case "referral_earned":
-      router.push("/referral");
+      url = "/referral";
       break;
 
     case "profile":
-      router.push("/profile");
+      url = "/profile";
       break;
 
     case "general":
       console.log("General notification:", notif);
-      break;
+      return;
 
     default:
-      console.warn(
-        "Unknown screen_type:",
-        screen_type,
-        notif
+      console.warn("Unknown screen_type:", screenType, notif);
+      return;
+  }
+
+  if (!url) return;
+
+  console.log("Final redirect URL:", url);
+
+  // Close Bootstrap dropdown first
+  const dropdownElement = document.querySelector(
+    ".bell-icon .dropdown-toggle"
+  ) as HTMLElement;
+
+  if (dropdownElement && (window as any).bootstrap) {
+    const dropdownInstance =
+      (window as any).bootstrap.Dropdown.getOrCreateInstance(
+        dropdownElement
       );
+
+    dropdownInstance.hide();
+  }
+
+  // Navigate after dropdown close
+  router.push(url);
+
+  const targetUrl = new URL(url, window.location.origin);
+  if (
+    targetUrl.pathname === window.location.pathname &&
+    targetUrl.search === window.location.search &&
+    targetUrl.pathname === "/quotes"
+  ) {
+    window.dispatchEvent(
+      new CustomEvent("quoteNotificationSelected", {
+        detail: { status: quoteStatus },
+      })
+    );
   }
 };
-
   return (
     <div className="icon bell-icon position-relative dropdown">
       <img

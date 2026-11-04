@@ -1423,38 +1423,61 @@ useEffect(() => {
                                         <div
                                           key={schedIndex}
                                           style={{
-                                            display: "flex",
-                                            alignItems: "center",
+                                            display: "grid",
+                                            gridTemplateColumns:
+                                              "42px 95px minmax(0, 1fr)",
+                                            alignItems: "start",
                                             marginBottom: "12px",
                                             lineHeight: "1.4",
                                           }}
                                         >
                                           <div
                                             style={{
-                                              width: "70px",
                                               fontWeight: "500",
                                               color: "#222222",
                                             }}
                                           >
-                                            {schedIndex === 0 ? "Date :" : ""}
+                                            {schedIndex === 0 ? "Date:" : ""}
                                           </div>
                                           <div
                                             style={{
-                                              width: "140px",
                                               letterSpacing: "0.3px",
                                               color: "#222",
+                                              whiteSpace: "nowrap",
                                             }}
                                           >
                                             {scheduleItem?.date}
                                           </div>
                                           <div
                                             style={{
-                                              letterSpacing: "0.5px",
+                                              display: "flex",
+                                              flexWrap: "wrap",
+                                              columnGap: "10px",
+                                              rowGap: "4px",
                                               color: "#222",
-                                              paddingLeft: "10px",
                                             }}
                                           >
-                                            {scheduleItem?.time}
+                                            {String(scheduleItem?.time || "")
+                                              .split(",")
+                                              .map((timeSlot: string) =>
+                                                timeSlot.trim()
+                                              )
+                                              .filter(Boolean)
+                                              .map(
+                                                (
+                                                  timeSlot: string,
+                                                  slotIndex: number
+                                                ) => (
+                                                  <span
+                                                    key={slotIndex}
+                                                    style={{
+                                                      whiteSpace: "nowrap",
+                                                    }}
+                                                  >
+                                                    {timeSlot}
+                                                  </span>
+                                                )
+                                              )}
                                           </div>
                                         </div>
                                       )

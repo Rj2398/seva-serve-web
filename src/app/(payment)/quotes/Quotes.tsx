@@ -13,12 +13,14 @@ import ConfirmCancelBooking from "@/components/modals/bookingmodals/ConfirmCance
 export default function Quotes() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const requestSequenceRef = useRef(0);
   const is_requested = searchParams.get("is_requested");
   const booking_id = searchParams.get('bookingId');
   const quote_id = searchParams.get('quoteId');
   const status = searchParams.get('status');
   const [activeTab, setActiveTab] = useState(is_requested === "1" ? "requested" : "received");
   const [quotes, setQuotes] = useState<any[]>([]);
+  const [notificationRefresh, setNotificationRefresh] = useState(0);
   const [showCancle, setShowCancle] = useState<boolean>(false);
   const [selectedBookingData, setSelectedBookingData] = useState<any>(null)
 
@@ -37,6 +39,33 @@ export default function Quotes() {
   const [additionalId, setAdditionalId] = useState<string>("");
   const [isAddactional, setIsAddactional] = useState<boolean>(false);
 
+  useEffect(() => {
+    const handleQuoteNotification = (event: Event) => {
+      const { status: notificationStatus } = (
+        event as CustomEvent<{ status?: string | null }>
+      ).detail;
+
+      if (!notificationStatus) return;
+
+      setActiveTab(notificationStatus.toLowerCase());
+      setPageNo(1);
+      setQuotes([]);
+      setHasMore(true);
+      setNotificationRefresh((current) => current + 1);
+    };
+
+    window.addEventListener(
+      "quoteNotificationSelected",
+      handleQuoteNotification
+    );
+
+    return () => {
+      window.removeEventListener(
+        "quoteNotificationSelected",
+        handleQuoteNotification
+      );
+    };
+  }, []);
 
   useEffect(() => {
     if (status) {
@@ -97,16 +126,69 @@ export default function Quotes() {
 
   // }, [activeTab, pageNo, limit, is_requested]);
 
+useEffect(() => {
+  if (!status) return;
 
-  const fetchQuotes = async () => {
-    setLoading(true);
+  const newStatus = status.toLowerCase();
 
-    try {
-      const endPoint = `quotes/get-quote?${booking_id ? `bookingId=${booking_id}` : `quoteId=${quote_id}`
-        }`;
+  setActiveTab(newStatus);
+  setPageNo(1);
+  setQuotes([]);
+  setHasMore(true);
+}, [quote_id, booking_id, status]);
 
-      const response = await globalServerRequest({
-        endpoint: endPoint,
+ const fetchQuotes = async () => {
+  const requestId = ++requestSequenceRef.current;
+
+  setLoading(true);
+
+  try {
+    const listEndpoint = "quotes/get-quote";
+    const endPoint = `${listEndpoint}?${
+      booking_id
+        ? `bookingId=${encodeURIComponent(booking_id)}`
+        : quote_id
+        ? `quoteId=${encodeURIComponent(quote_id)}`
+        : ""
+    }`;
+
+    let response = await globalServerRequest({
+      endpoint: endPoint,
+      method: "POST",
+      payload: {
+        type: activeTab,
+        pageNo,
+        limit,
+      },
+    });
+
+    const getQuotesFromResponse = (result: typeof response) => {
+      const data =
+        result?.data?.data?.quotes ||
+        result?.data?.data?.quote ||
+        result?.data?.data ||
+        result?.data ||
+        [];
+
+      if (Array.isArray(data)) return data;
+      if (data && typeof data === "object" && "quote_id" in data) {
+        return [data];
+      }
+
+      return [];
+    };
+
+    let newQuotes = response?.success
+      ? getQuotesFromResponse(response)
+      : [];
+
+    if (
+      quote_id &&
+      pageNo === 1 &&
+      (!response?.success || newQuotes.length === 0)
+    ) {
+      response = await globalServerRequest({
+        endpoint: listEndpoint,
         method: "POST",
         payload: {
           type: activeTab,
@@ -115,49 +197,48 @@ export default function Quotes() {
         },
       });
 
-      if (response.success) {
-        const data =
-          response?.data?.data?.quotes ||
-          response?.data?.data ||
-          response?.data ||
-          [];
+      if (requestId !== requestSequenceRef.current) return;
 
-        const pagination = response?.data?.data?.pagination;
-        const newQuotes = Array.isArray(data) ? data : [];
+      newQuotes = response?.success
+        ? getQuotesFromResponse(response)
+        : [];
+    }
 
-        if (booking_id) {
-          setActiveTab(response?.data?.data?.quotes?.status);
-        }
+    // Ignore old API responses
+    if (requestId !== requestSequenceRef.current) return;
 
-        if (pageNo === 1) {
-          setQuotes(newQuotes);
-        } else {
-          setQuotes((prev) => [...prev, ...newQuotes]);
-        }
-
-        if (pagination) {
-          setHasMore(pagination.has_next_page);
-        } else {
-          setHasMore(newQuotes.length === limit);
-        }
-      } else {
-        if (pageNo === 1) {
-          setQuotes([]);
-        }
-        setHasMore(false);
-      }
-    } catch (error) {
-      console.error("Failed to fetch quotes:", error);
+    if (response?.success) {
+      const pagination = response?.data?.data?.pagination;
 
       if (pageNo === 1) {
-        setQuotes([]);
+        setQuotes(newQuotes);
+      } else {
+        setQuotes((prev) => [...prev, ...newQuotes]);
       }
 
+      setHasMore(
+        pagination
+          ? pagination.has_next_page
+          : newQuotes.length === limit
+      );
+    } else {
+      if (pageNo === 1) setQuotes([]);
       setHasMore(false);
-    } finally {
+    }
+  } catch (error) {
+    if (requestId !== requestSequenceRef.current) return;
+
+    console.error("Failed to fetch quotes:", error);
+
+    if (pageNo === 1) setQuotes([]);
+    setHasMore(false);
+  } finally {
+    if (requestId === requestSequenceRef.current) {
       setLoading(false);
     }
-  };
+  }
+};
+
 
 
   useEffect(() => {
@@ -172,7 +253,16 @@ export default function Quotes() {
     return () => {
       window.removeEventListener("quoteUpdated", handleQuoteUpdate);
     };
-  }, [activeTab, pageNo, limit, is_requested]);
+  }, [
+    activeTab,
+    pageNo,
+    limit,
+    is_requested,
+    quote_id,
+    booking_id,
+    status,
+    notificationRefresh,
+  ]);
 
 
   useEffect(() => {
@@ -468,20 +558,74 @@ export default function Quotes() {
                                         </>
                                       )}
                                     </ol>
-                                    <div className="booking-schedule-container" style={{ padding: "15px", fontFamily: "'Segoe UI', Roboto, Helvetica, Arial, sans-serif", color: "#333", fontSize: "16px", maxWidth: "400px" }}>
-                                      {item?.schedule?.map((scheduleItem: any, schedIndex: number) => (
-                                        <div key={schedIndex} style={{ display: "flex", alignItems: "center", marginBottom: "12px", lineHeight: "1.4" }}>
-                                          <div style={{ width: "70px", fontWeight: "500", color: "#222222" }}>
-                                            {schedIndex === 0 ? "Date :" : ""}
+                                    <div
+                                      className="booking-schedule-container"
+                                      style={{
+                                        padding: "15px",
+                                        fontFamily:
+                                          "'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+                                        color: "#333",
+                                        fontSize: "16px",
+                                        maxWidth: "400px",
+                                      }}
+                                    >
+                                      {item?.schedule?.map(
+                                        (scheduleItem: any, schedIndex: number) => (
+                                          <div
+                                            key={schedIndex}
+                                            style={{
+                                              display: "grid",
+                                              gridTemplateColumns:
+                                                "42px 95px minmax(0, 1fr)",
+                                              alignItems: "start",
+                                              marginBottom: "12px",
+                                              lineHeight: "1.4",
+                                            }}
+                                          >
+                                            <div
+                                              style={{
+                                                fontWeight: "500",
+                                                color: "#222222",
+                                              }}
+                                            >
+                                              {schedIndex === 0 ? "Date:" : ""}
+                                            </div>
+                                            <div
+                                              style={{
+                                                letterSpacing: "0.3px",
+                                                color: "#222",
+                                                whiteSpace: "nowrap",
+                                              }}
+                                            >
+                                              {scheduleItem?.date}
+                                            </div>
+                                            <div
+                                              style={{
+                                                display: "flex",
+                                                flexWrap: "wrap",
+                                                columnGap: "10px",
+                                                rowGap: "4px",
+                                                color: "#222",
+                                              }}
+                                            >
+                                              {String(scheduleItem?.time || "")
+                                                .split(",")
+                                                .map((timeSlot: string) => timeSlot.trim())
+                                                .filter(Boolean)
+                                                .map((timeSlot: string, slotIndex: number) => (
+                                                  <span
+                                                    key={slotIndex}
+                                                    style={{
+                                                      whiteSpace: "nowrap",
+                                                    }}
+                                                  >
+                                                    {timeSlot}
+                                                  </span>
+                                                ))}
+                                            </div>
                                           </div>
-                                          <div style={{ width: "140px", letterSpacing: "0.3px", color: "#222" }}>
-                                            {scheduleItem?.date}
-                                          </div>
-                                          <div style={{ letterSpacing: "0.5px", color: "#222", paddingLeft: "10px" }}>
-                                            {scheduleItem?.time}
-                                          </div>
-                                        </div>
-                                      ))}
+                                        )
+                                      )}
                                     </div>
                                     {
                                       item?.has_additional_services && (

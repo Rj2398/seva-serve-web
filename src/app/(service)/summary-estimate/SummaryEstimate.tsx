@@ -1276,6 +1276,7 @@ const SummaryEstimate = () => {
           requestQuote(formattedSlots, chosenAddressId);
         }}
         getAddressIdCallback={setAddressId}
+        isRequestQuote={true}
       />
       <QuoteDatePopup
         isOpen={showQuoteDatePopup}
