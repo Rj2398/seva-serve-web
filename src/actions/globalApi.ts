@@ -1,6 +1,6 @@
 // "use client"
 import { isTokenExpired } from "@/utils/token";
-import { redirect } from "next/navigation";
+import { clearClientSession } from "@/utils/auth";
 import { toast } from "react-hot-toast";
 
 export const BASE_URL = "https://seva.tgastaging.com/api/v1/";
@@ -41,15 +41,12 @@ interface ApiOptions {
 // Secret key: ELEBBxZWK8-ZTuzuSGq1yz0DTI0Ze0AEQ2dOxen4lBe8L9Tq9paXncUuoh0zQmRY2y60MqE7TCl1b8DJ
  
 
-const forceLogoutClient = () => {
-  localStorage.clear();
+const handleSessionInvalidation = () => {
+  const hadActiveSession = clearClientSession();
+  if (!hadActiveSession) return;
 
-  document.cookie =
-    "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax; Secure";
-
-  window.dispatchEvent(new Event("loginStatusChanged"));
-
-  // Don't redirect here
+  toast.error("Your session has expired. Please log in again.");
+  window.location.replace("/");
 };
 
 /**
@@ -119,18 +116,12 @@ export async function globalServerRequest({
 
     if (token) {
       if (typeof window !== "undefined" && isTokenExpired(token)) {
-        localStorage.removeItem("user");
-        sessionStorage.clear();
-
-        window.location.href = "/";
+        handleSessionInvalidation();
 
         return {
           success: false,
           error: "Token expired",
-
         }
-
-        toast.error("Session expired. Please log in again.");
       }
 
       headers.set("Authorization", `Bearer ${token}`);
@@ -179,9 +170,8 @@ export async function globalServerRequest({
 
     if (!response.ok) {
       console.log("object", response.status)
-      if (response.status === 401 || response.status === 403 || response.status === 405) {
-        forceLogoutClient();
-        // console.log("hello")
+      if (response.status === 401) {
+        handleSessionInvalidation();
       }
 
       return {
@@ -195,8 +185,19 @@ export async function globalServerRequest({
             : `API Error: Status ${response.status}`),
       };
     }
-    if (responseData?.status === 401 || responseData?.message?.toLowerCase().includes("unauthorized")) {
-      // forceLogoutClient();
+    const responseMessage = String(
+      responseData?.message || responseData?.data?.message || ""
+    );
+    if (
+      Number(responseData?.status) === 401 ||
+      /unauthorized|token (expired|invalid)/i.test(responseMessage)
+    ) {
+      handleSessionInvalidation();
+      return {
+        success: false,
+        status: 401,
+        error: responseMessage || "Your session has expired.",
+      };
     }
 
     return { success: true, status: response.status, data: responseData };

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { isTokenExpired } from "@/utils/token";
+import { clearClientSession } from "@/utils/auth";
 import toast from "react-hot-toast";
 
 export default function ProtectedRoute({
@@ -16,8 +17,7 @@ export default function ProtectedRoute({
 
   useEffect(() => {
     const redirectToLogin = (message: string) => {
-      localStorage.removeItem("user");
-      sessionStorage.clear();
+      clearClientSession();
       if (pathname !== "/") {
         toast.error(message);
       } else {

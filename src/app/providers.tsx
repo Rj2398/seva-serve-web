@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import StoreProvider from "@/store/StoreProvider";
 import Header from "@/components/common/Header";
 import Footer from "@/components/common/Footer";
-import { Toaster } from "react-hot-toast";
+import { Toaster, toast } from "react-hot-toast";
 
 import LoginModal from "@/components/modals/LoginModal";
 import OtpModal from "@/components/modals/OtpModal";
@@ -22,6 +22,8 @@ import NetworkErrorModal from "@/components/modals/NetworkErrorModal";
 import ProtectedRoutes from "@/components/common/ProtectedRoutes";
 
 import { initializeFirebaseNotifications } from "@/utils/notification";
+import { clearClientSession } from "@/utils/auth";
+import { getTokenExpirationTime } from "@/utils/token";
 
 declare global {
   interface Window {
@@ -47,6 +49,60 @@ export default function ClientProviders({
   // --------------------------------------------------
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    let expiryTimer: ReturnType<typeof setTimeout> | undefined;
+
+    const expireSession = () => {
+      if (!clearClientSession()) return;
+
+      toast.error("Your session has expired. Please log in again.");
+      window.location.replace("/");
+    };
+
+    const checkSessionExpiry = () => {
+      if (expiryTimer) clearTimeout(expiryTimer);
+
+      const rawUser = localStorage.getItem("user");
+      if (!rawUser) return;
+
+      try {
+        const user = JSON.parse(rawUser);
+        const token =
+          user?.access_token ||
+          user?.data?.access_token ||
+          user?.token;
+
+        if (!token) {
+          if (localStorage.getItem("isLoggedIn") === "true") {
+            expireSession();
+          }
+          return;
+        }
+
+        const expiresAt = getTokenExpirationTime(token);
+        if (expiresAt === null || expiresAt <= Date.now()) {
+          expireSession();
+          return;
+        }
+
+        expiryTimer = setTimeout(
+          checkSessionExpiry,
+          Math.min(expiresAt - Date.now(), 2_147_483_647)
+        );
+      } catch {
+        expireSession();
+      }
+    };
+
+    checkSessionExpiry();
+    window.addEventListener("loginStatusChanged", checkSessionExpiry);
+
+    return () => {
+      if (expiryTimer) clearTimeout(expiryTimer);
+      window.removeEventListener("loginStatusChanged", checkSessionExpiry);
+    };
   }, []);
 
   // --------------------------------------------------
