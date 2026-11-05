@@ -34,6 +34,7 @@ const PaymentPage = ({ bookingData }: CheckOutProps) => {
   const paymentType = searchParams.get("paymenttype") || "full";
   const [checkoutData, setCheckoutData] = useState<any>();
   const [couponCode, setCouponCode] = useState<string>("");
+  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
   const subscriptionOffer = checkoutData?.job_summary?.subscription_offer;
   const couponOffer = checkoutData?.job_summary?.coupon_offer;
   const bannerOffer = checkoutData?.job_summary?.banner_offer;
@@ -94,34 +95,75 @@ const PaymentPage = ({ bookingData }: CheckOutProps) => {
   }, [bookingId]);
 
   const handleApplyCoupon = async () => {
-    if (
-      checkoutData?.job_summary?.coupon_offer?.coupon_code !== null &&
-      couponCode === checkoutData?.job_summary?.coupon_offer?.coupon_code
-    ) {
+    const enteredCouponCode = couponCode.trim();
+    const quoteId = checkoutData?.quote_id;
+    const appliedCouponCode =
+      checkoutData?.job_summary?.coupon_offer?.coupon_code;
+
+    if (!enteredCouponCode) {
+      toast.error("Please enter a coupon code.");
+      return;
+    }
+
+    if (!quoteId) {
+      toast.error("Unable to apply coupon because checkout details are not loaded.");
+      return;
+    }
+
+    if (appliedCouponCode && enteredCouponCode === appliedCouponCode) {
       toast.success("Coupon already applied");
       return;
     }
 
+    setIsApplyingCoupon(true);
     try {
       const response = await globalServerRequest({
         endpoint: "quotes/apply-coupon",
         method: "POST",
         payload: {
-          quote_id: checkoutData?.quote_id,
-          coupon_code: couponCode,
+          quote_id: quoteId,
+          coupon_code: enteredCouponCode,
         },
       } as any);
 
-      if (response.success) {
+      const responseData = response?.data?.data || response?.data;
+      const applicationFailed =
+        responseData?.success === false ||
+        responseData?.status === false ||
+        ["error", "failed", "failure"].includes(
+          String(responseData?.status).toLowerCase()
+        );
+
+      if (response.success && !applicationFailed) {
         toast.success("Coupon applied successfully");
-        setCheckoutData(response.data?.data || response.data);
+        setCheckoutData(responseData);
         await fetchCheckoutDetails();
       } else {
-        console.error("Failed to apply coupon:", response.error);
-        toast.error(response.error);
+        const errorMessage =
+          response?.error ||
+          responseData?.message ||
+          responseData?.messages ||
+          responseData?.error ||
+          responseData?.errors;
+        const readableError = Array.isArray(errorMessage)
+          ? errorMessage.join(" ")
+          : typeof errorMessage === "string"
+            ? errorMessage
+            : errorMessage && typeof errorMessage === "object"
+              ? Object.values(errorMessage).flat().join(" ")
+              : "Unable to apply coupon. Please check the code and try again.";
+        console.error("Failed to apply coupon:", errorMessage);
+        toast.error(readableError);
       }
     } catch (error) {
       console.error("Error applying coupon:", error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Unable to apply coupon. Please try again."
+      );
+    } finally {
+      setIsApplyingCoupon(false);
     }
   };
 
@@ -681,8 +723,12 @@ const PaymentPage = ({ bookingData }: CheckOutProps) => {
                           value={couponCode}
                           onChange={(e) => setCouponCode(e.target.value)}
                         />
-                        <button type="submit" onClick={handleApplyCoupon}>
-                          Apply
+                        <button
+                          type="button"
+                          onClick={handleApplyCoupon}
+                          disabled={isApplyingCoupon}
+                        >
+                          {isApplyingCoupon ? "Applying..." : "Apply"}
                         </button>
                       </div>
                     </div>
