@@ -271,27 +271,42 @@ const VerifyProfile = ({ initialMode = "phone" }: VerifyProfileProps) => {
                       handleContinue();
                     }}
                   >
-                    <div className="phone-number">
+                    <div
+                      className={`phone-number ${
+                        isEmailLogin ? "" : "us-phone-number"
+                      }`}
+                    >
                       <input
                         type="text"
                         placeholder={
-                          isEmailLogin ? "Email Address" : "Phone Number"
+                          isEmailLogin ? "Email Address" : "US Phone Number"
                         }
+                        maxLength={isEmailLogin ? 50 : 11}
+                        inputMode={isEmailLogin ? "email" : "numeric"}
+                        autoComplete={isEmailLogin ? "email" : "tel"}
                         value={inputValue}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                           if (isEmailLogin) {
                             setInputValue(e.target.value);
                             setError("");
                           } else {
-                            const onlyNumbers = e.target.value
-                              .replace(/\D/g, "")
-                              .substring(0, 10);
-                            let formatted = onlyNumbers;
+                            const enteredDigits = e.target.value.replace(
+                              /\D/g,
+                              ""
+                            );
+                            const formatted =
+                              enteredDigits.length === 11 &&
+                              enteredDigits.startsWith("1")
+                                ? enteredDigits.slice(1)
+                                : enteredDigits.slice(0, 10);
                             setError("");
                             setInputValue(formatted);
                           }
                         }}
                       />
+                      {!isEmailLogin && (
+                        <span className="us-phone-prefix">+1</span>
+                      )}
                       <img
                         src={
                           isEmailLogin

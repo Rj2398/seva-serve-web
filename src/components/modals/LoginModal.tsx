@@ -312,13 +312,15 @@ const LoginModal = () => {
                       handleContinue();
                     }}
                   >
-                    <div className="phone-number">
+                    <div
+                      className={`phone-number ${
+                        isEmailLogin ? "" : "us-phone-number"
+                      }`}
+                    >
                       <input
                         type="text"
-                        placeholder={
-                          isEmailLogin ? "Email Address" : "US Phone Number (+1)"
-                        }
-                        maxLength={isEmailLogin ? 50 : 11}
+                        placeholder={isEmailLogin ? "Email Address" : "US Phone Number"}
+                        maxLength={isEmailLogin ? 50 : 10}
                         pattern={isEmailLogin ? undefined : "[0-9]*"}
                         inputMode={isEmailLogin ? "email" : "numeric"}
                         autoComplete={isEmailLogin ? "email" : "tel"}
@@ -331,14 +333,17 @@ const LoginModal = () => {
                             setError(""); // Clear error on input change
                           } else {
                             // PHONE INPUT
-                            const onlyNumbers = e.target.value
-                              .replace(/\D/g, "")
-                              .slice(0, 11);
+                            const enteredDigits = e.target.value.replace(/\D/g, "");
+                            const onlyNumbers =
+                              enteredDigits.length === 11 && enteredDigits.startsWith("1")
+                                ? enteredDigits.slice(1)
+                                : enteredDigits.slice(0, 10);
                             setError(""); // Clear error on input change
                             setInputValue(onlyNumbers);
                           }
                         }}
                       />
+                      {!isEmailLogin && <span className="us-phone-prefix">+1</span>}
                       <img
                         src={
                           isEmailLogin

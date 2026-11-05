@@ -1914,12 +1914,29 @@ img.thd-img {
   position: relative;
 }
 
+.right-slider-pop .us-phone-number input {
+  padding-left: 76px;
+}
+
+.right-slider-pop .us-phone-prefix {
+  position: absolute;
+  left: 43px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6a719399;
+  font-size: 14px;
+}
+
 .right-slider-pop .phone-number img {
   width: 26px;
   height: 26px;
   position: absolute;
   left: 11px;
   top: 11px;
+}
+
+.right-slider-pop .us-phone-number img {
+  left: 11px;
 }
 
 .phone-number input::placeholder {
@@ -6918,7 +6935,4 @@ div#importantNoticeModal .modal-dialog {
     transform: rotate(360deg);
   }
 }
-
-
-
 
