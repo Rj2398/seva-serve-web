@@ -388,12 +388,14 @@ useEffect(() => {
         !$hero.hasClass("slick-initialized")
       ) {
         try {
+          const heroSlideCount = $hero.children().length;
+
           $hero.slick({
             infinite: true,
-            slidesToShow: 2,
-            slidesToScroll: 2,
+            slidesToShow: heroSlideCount === 1 ? 1 : 2,
+            slidesToScroll: heroSlideCount === 1 ? 1 : 2,
             arrows: false,
-            dots: true,
+            dots: heroSlideCount > 1,
             autoplay: true,
             autoplaySpeed: 3000,
 
@@ -440,8 +442,7 @@ useEffect(() => {
             slidesToShow: 1,
             arrows: false,
 
-            // Sirf multiple items hone par autoplay
-            autoplay: $upcoming.children().length > 1,
+            autoplay: $upcoming.children().length >= 4,
             autoplaySpeed: 3000,
 
             variableWidth: true,
@@ -832,6 +833,9 @@ useEffect(() => {
               flex: 0 0 auto !important;
               width: 48%;
             }
+            .hero-slider.single-hero-slide:not(.slick-initialized) .item-inner {
+              width: 100%;
+            }
             .hero-slider .slick-track,
             .upcoming-slider .slick-track {
               margin-left: 0 !important;
@@ -856,12 +860,18 @@ useEffect(() => {
               <div className="container">
                 <div className="row">
                   <div className="col-lg-12">
-                    <div className="hero-slider">
+                    <div
+                      className={`hero-slider ${
+                        data.topServiceCards.length === 1
+                          ? "single-hero-slide"
+                          : ""
+                      }`}
+                    >
                       {data?.topServiceCards.map((item: any, index: any) => (
                         <div className="item-inner" key={index}>
                           <div
                             className="inner-hero"
-                            style={{ minHeight: "276px" }}
+                            style={{ minHeight: "320px" }}
                           >
                             <div
                               className="hero-img"
@@ -2063,10 +2073,10 @@ useEffect(() => {
                                   style={{ width: "308px" }}
                                 />
                               </div>
-                              <div className="upcoming-data">
-                                <p className="up-text">{item?.name}</p>
-                                <div className="upcm-slider-btn pop-srv">
-                                  <button className="primary-cta upcm-btn pop-srv-btn">
+                              <div className="popular-service-data">
+                                <p className="popular-service-title">{item?.name}</p>
+                                <div className="popular-service-actions">
+                                  <button className="primary-cta popular-service-button">
                                     Request Exact Quote
                                   </button>
                                 </div>

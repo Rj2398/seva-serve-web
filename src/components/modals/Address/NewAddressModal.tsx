@@ -526,6 +526,88 @@ const NewAddressModal: React.FC<NewAddressModalProps> = ({ selectedAddress, onSa
       setLoading(true);
 
       try {
+        let currentGeocoder = geocoder.current;
+
+        // @ts-ignore
+        if (!currentGeocoder && window.google?.maps?.Geocoder) {
+          // @ts-ignore
+          currentGeocoder = new window.google.maps.Geocoder();
+          geocoder.current = currentGeocoder;
+        }
+
+        if (!currentGeocoder) {
+          toast.error("Address verification is unavailable. Please try again.");
+          return;
+        }
+
+        const addressToVerify = [
+          values.house,
+          values.floor,
+          values.area,
+          values.city_name,
+          values.state_name,
+          values.Zip_code,
+        ]
+          .filter((part) => part.trim())
+          .join(", ");
+
+        const verifiedCoordinates = await new Promise<{
+          lat: string;
+          long: string;
+        } | null>((resolve) => {
+          currentGeocoder.geocode(
+            { address: addressToVerify },
+            (results: any, status: any) => {
+              if (status !== "OK" || !results?.length) {
+                resolve(null);
+                return;
+              }
+
+              const verifiedResult = results.find((result: any) => {
+                const componentTypes = new Set(
+                  result.address_components.flatMap(
+                    (component: any) => component.types
+                  )
+                );
+                const hasStreetAddress = [
+                  "street_number",
+                  "premise",
+                  "subpremise",
+                  "route",
+                ].some((type) => componentTypes.has(type));
+                const hasLocationContext = [
+                  "locality",
+                  "sublocality",
+                  "postal_code",
+                  "administrative_area_level_1",
+                ].some((type) => componentTypes.has(type));
+
+                return (
+                  hasStreetAddress &&
+                  hasLocationContext &&
+                  result.geometry?.location &&
+                  result.geometry.location_type !== "APPROXIMATE"
+                );
+              });
+
+              if (!verifiedResult) {
+                resolve(null);
+                return;
+              }
+
+              resolve({
+                lat: verifiedResult.geometry.location.lat().toString(),
+                long: verifiedResult.geometry.location.lng().toString(),
+              });
+            }
+          );
+        });
+
+        if (!verifiedCoordinates) {
+          toast.error("Please enter a valid, complete address.");
+          return;
+        }
+
         // Build payload matching the API spec
         const payload: any = {
           flat_house_building: values.house,
@@ -537,8 +619,8 @@ const NewAddressModal: React.FC<NewAddressModalProps> = ({ selectedAddress, onSa
           label: values.addressType.toLowerCase(),
 
           is_default: false,
-          lat: values.lat,
-          long: values.long,
+          lat: verifiedCoordinates.lat,
+          long: verifiedCoordinates.long,
 
           // zip_code: values.Zip_code,
           // pin_code: values.Zip_code,
@@ -1427,7 +1509,6 @@ const NewAddressModal: React.FC<NewAddressModalProps> = ({ selectedAddress, onSa
 }
 
 export default NewAddressModal
-
 
 
 

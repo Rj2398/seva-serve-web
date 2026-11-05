@@ -595,6 +595,35 @@ a.wrp-img {
   color: var(--white);
 }
 
+.popular-slider .popular-service-data {
+  left: 0;
+  right: 0;
+  position: absolute;
+  bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.popular-slider .popular-service-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--white);
+  margin: 0 0 15px;
+}
+
+.popular-slider .popular-service-actions {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.popular-slider button.primary-cta.popular-service-button {
+  width: auto;
+  justify-content: center;
+}
+
 /* Upcoming Bookings Slider */
 
 /* my-quotes */
@@ -4199,6 +4228,13 @@ a.hel-cta {
   /* width: 339px */
 }
 
+.services-sec-wrp .upcoming-img img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .services-sec-wrp {
   width: 100%;
   margin-bottom: 40px;
@@ -6882,9 +6918,6 @@ div#importantNoticeModal .modal-dialog {
     transform: rotate(360deg);
   }
 }
-
-
-
 
 
 

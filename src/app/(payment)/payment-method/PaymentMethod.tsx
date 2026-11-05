@@ -523,35 +523,36 @@ useEffect(() => {
 </button> */}
 
 
-<button
-  type="button"
-  className="primary-cta"
-  disabled={
-    !isPayable ||
-    cards.length === 0 ||
-    isPaying ||
-    isPaymentCompleted
-  }
-  onClick={() => {
-    if (isPaymentCompleted || isPaying) return;
-
-    if (bookingId || quoteId) {
-      handlePayment();
-    } else if (hasSubscriptionPayment) {
-      handleSubscription();
+{isPayable && (
+  <button
+    type="button"
+    className="primary-cta"
+    disabled={
+      cards.length === 0 ||
+      isPaying ||
+      isPaymentCompleted
     }
-  }}
->
-  {isPaying
-    ? "Processing..."
-    : isPaymentCompleted
-      ? "Payment Completed"
-      : (
-        <span style={{ fontWeight: 500 }}>
-          Pay Now{displayAmount}
-        </span>
-      )}
-</button>
+    onClick={() => {
+      if (isPaymentCompleted || isPaying) return;
+
+      if (bookingId || quoteId) {
+        handlePayment();
+      } else if (hasSubscriptionPayment) {
+        handleSubscription();
+      }
+    }}
+  >
+    {isPaying
+      ? "Processing..."
+      : isPaymentCompleted
+        ? "Payment Completed"
+        : (
+          <span style={{ fontWeight: 500 }}>
+            Pay Now{displayAmount}
+          </span>
+        )}
+  </button>
+)}
                    
                     
                   </div>
