@@ -363,14 +363,11 @@ const SummaryEstimate = () => {
                       <div className="category">
                         <p>Selected Category</p>
                       </div>
-                      <h4 style={{ fontSize: "20px", color: "#000" }}>
+                      <h4>
                         {summary_estimate?.category?.name || "$0"}
                       </h4>
                     </div>
-                    <div
-                      className="issue-details-wrp d-flex flex-column gap-3"
-                      style={{ padding: "10px" }}
-                    >
+                    <div className="issue-details-wrp">
 
                       {(summary_estimate?.subCategories?.length ?? 0) > 0 && (
                         <div className="category">
@@ -406,7 +403,6 @@ const SummaryEstimate = () => {
                                   )}
                                   <h4
                                     className="m-0 fw-bold text-black"
-                                    style={{ fontSize: "15px", color: "#000" }}
                                   >
                                     {subCatIndex + 1}. {subCat?.name || "N/A"}
                                   </h4>
@@ -957,8 +953,8 @@ const SummaryEstimate = () => {
                                                   }
                                                   style={{
                                                     position: "relative",
-                                                    width: "100px",
-                                                    height: "100px",
+                                                    width: "125px",
+                                                    height: "125px",
                                                     cursor: "pointer",
                                                     display: "flex",
                                                     alignItems: "center",
@@ -1018,8 +1014,8 @@ const SummaryEstimate = () => {
                                                   src={mediaUrl}
                                                   alt={`Uploaded attachment ${index + 1}`}
                                                   style={{
-                                                    width: "100px",
-                                                    height: "100px",
+                                                    width: "125px",
+                                                    height: "125px",
                                                     objectFit: "cover",
                                                     borderRadius: "20px",
                                                     border: "1px solid #eee",
