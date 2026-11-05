@@ -953,7 +953,7 @@ useEffect(() => {
           )}
 
           {data?.activeBookings?.length > 0 && (
-            <section>
+            <section style={{ marginTop: "20px" }}>
               <div
                 className="container"
                 onClick={() =>
