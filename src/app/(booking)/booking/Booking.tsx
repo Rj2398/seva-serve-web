@@ -318,11 +318,11 @@ export default function Booking({ initialBookingData }: BookingProps) {
 
                               // const canRescheduleBooking =
                               //   !item?.is_previous_rescheduled;
-      const hasAlreadyRescheduled =
-  item?.is_previous_rescheduled === true ||
-  String(item?.is_previous_rescheduled).toLowerCase() === "true";
+                                  const hasAlreadyRescheduled =
+                              item?.is_previous_rescheduled === true ||
+                              String(item?.is_previous_rescheduled).toLowerCase() === "true";
 
-const canRescheduleBooking = !hasAlreadyRescheduled;
+                            const canRescheduleBooking = !hasAlreadyRescheduled;
 
                               console.log(
                                 "isContractorReschedule",
@@ -461,7 +461,7 @@ const canRescheduleBooking = !hasAlreadyRescheduled;
                                           {isCompleted && (
                                             <>
                                               <p className="plm cmp">
-                                                <p>{`#${item?.quoteNumber}`}</p>
+                                                <p>{`${item?.quoteNumber}`}</p>
                                                 {item?.categoryName}
                                                 <img
                                                   src="images/home/up-right-arrow.svg"
@@ -499,7 +499,7 @@ const canRescheduleBooking = !hasAlreadyRescheduled;
                                         {isCancelled && (
                                           <div className="plumbing-top">
                                             <p className="plm">
-                                              <p>{`#${item?.quoteNumber}`}</p>
+                                              <p>{`${item?.quoteNumber}`}</p>
                                               {item?.categoryName}
                                               <img
                                                 src="images/home/up-right-arrow.svg"
@@ -534,7 +534,7 @@ const canRescheduleBooking = !hasAlreadyRescheduled;
                                           <div className="plumbing-top">
 
                                             <p className="plm">
-                                              <p>{`#${item?.quoteNumber}`}</p>
+                                              <p>{`${item?.quoteNumber}`}</p>
                                               {item?.categoryName}
                                               <img
                                                 src="images/home/up-right-arrow.svg"
