@@ -18,7 +18,9 @@ export default function Quotes() {
   const booking_id = searchParams.get('bookingId');
   const quote_id = searchParams.get('quoteId');
   const status = searchParams.get('status');
-  const [activeTab, setActiveTab] = useState(is_requested === "1" ? "requested" : "received");
+  const [activeTab, setActiveTab] = useState(
+    (status || (is_requested === "1" ? "requested" : "received")).toLowerCase()
+  );
   const [quotes, setQuotes] = useState<any[]>([]);
   const [notificationRefresh, setNotificationRefresh] = useState(0);
   const [showCancle, setShowCancle] = useState<boolean>(false);
@@ -181,6 +183,27 @@ useEffect(() => {
     let newQuotes = response?.success
       ? getQuotesFromResponse(response)
       : [];
+
+    if (
+      quote_id &&
+      pageNo === 1 &&
+      (!response?.success || newQuotes.length === 0)
+    ) {
+      response = await globalServerRequest({
+        endpoint: endPoint,
+        method: "POST",
+        payload: {
+          pageNo,
+          limit,
+        },
+      });
+
+      if (requestId !== requestSequenceRef.current) return;
+
+      newQuotes = response?.success
+        ? getQuotesFromResponse(response)
+        : [];
+    }
 
     if (
       quote_id &&

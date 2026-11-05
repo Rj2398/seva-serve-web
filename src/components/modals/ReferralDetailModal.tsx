@@ -65,7 +65,7 @@ const ReferralDetailModal = ({referdetail}:ReferedDetailProps) => {
                     <p>
                       Earn ${referdetail?.user_referral?.your_reward} when your
                       <br />
-                      referral books a service.
+                      referred friend schedules a job.
                     </p>
                   </div>
                 </div>
@@ -78,7 +78,7 @@ const ReferralDetailModal = ({referdetail}:ReferedDetailProps) => {
                     <p>
                       Your friend will receive ${referdetail?.user_referral?.friend_reward}
                       <br />
-                      after completing qualifying
+                      after meeting the  qualifying
                       <br />
                       criteria.
                     </p>
@@ -136,7 +136,7 @@ const ReferralDetailModal = ({referdetail}:ReferedDetailProps) => {
                     <p>
                       Earn ${referdetail?.provider_referral?.your_reward} when your
                       <br />
-                      referred provider qualifies.
+                      referred technician accept a job.
                     </p>
                   </div>
                 </div>
@@ -145,9 +145,9 @@ const ReferralDetailModal = ({referdetail}:ReferedDetailProps) => {
                   <span className="reward-amount">${referdetail?.provider_referral?.provider_reward}</span>
 
                   <div className="reward-content">
-                    <h4>Provider's Reward</h4>
+                    <h4>Technician's Reward</h4>
                     <p>
-                      The referred provider will receive
+                      Your friend will receive
                       <br />
                       ${referdetail?.provider_referral?.provider_reward} after meeting the qualifying
                       <br />

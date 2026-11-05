@@ -6570,7 +6570,7 @@ div#importantNoticeModal .modal-dialog {
   margin: auto;
   border: none;
   border-radius: 24px;
-  background: #fffdf1;
+  /* background: #fffdf1; */
   overflow: hidden;
 }
 

@@ -10,7 +10,7 @@ interface RequestModalProps {
 
 const RequestModal: React.FC<RequestModalProps> = ({ isOpen, setIsOpen }) => {
   const modalRef = useRef<HTMLDivElement>(null);
-  const router = useRouter(); // 💡 Initialize router instance
+  const router = useRouter();
 
   // Sync React's isOpen prop with Bootstrap's programmatic Modal instance
   useEffect(() => {
@@ -70,7 +70,7 @@ const RequestModal: React.FC<RequestModalProps> = ({ isOpen, setIsOpen }) => {
 
 const handleCloseModal = () => {
   setIsOpen(false);
-  router.push("/quotes?is_requested=1");
+  router.push("/quotes?status=Requested");
 };
 
 const handleOkayClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
