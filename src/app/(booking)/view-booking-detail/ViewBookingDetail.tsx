@@ -3,7 +3,7 @@ import { globalServerRequest } from '@/actions/globalApi';
 import CompletedService from '@/components/modals/bookingmodals/CompletedService'
 import ReviewAdditionalServices from '@/components/modals/bookingmodals/ReviewAdditionalServices'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { db } from "@/config/firebase";
 import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react'
@@ -19,6 +19,8 @@ const ViewBookingDetail = ({ bookingtrackingData }: BookingUpdateProps) => {
   const [bookingData, setBookingData] = useState(bookingtrackingData);
   const isProcessingTrigger = React.useRef(false);
   const router = useRouter()
+  const searchParams = useSearchParams();
+  const returnToBooking = searchParams.get("returnTo") === "booking";
   const [showDropdown, setShowDropdown] = useState(false);
   const [showMaterialDropdown, setShowMaterialDropdown] = useState(false);
   const [selectedVideoModalUrl, setSelectedVideoModalUrl] = useState<string | null>(null);
@@ -202,7 +204,11 @@ const ViewBookingDetail = ({ bookingtrackingData }: BookingUpdateProps) => {
                     <div className="browse-ctg-head my-con-head">
                       <h2 className="sub-cate-page">
                         <Link href="" onClick={() => {
-                          router.back()
+                          if (returnToBooking) {
+                            router.push("/booking");
+                          } else {
+                            router.back();
+                          }
                         }}><img src="images/home/left-arrow.svg" alt="" /></Link>
                         Booking Tracking
                       </h2>

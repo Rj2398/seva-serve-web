@@ -86,7 +86,7 @@ const BookingUpdate = ({ bookingData }: BookingUpdateProps) => {
                   <div className="browse-wrp">
                     <div className="browse-ctg-head my-con-head">
                       <h2 className="sub-cate-page">
-                        <Link href={`/view-booking-detail?bookingId=${bookings.booking_id}`}><img src="images/home/left-arrow.svg" alt="" /></Link>
+                        <Link href={`/view-booking-detail?bookingId=${bookings.booking_id}&returnTo=booking`}><img src="images/home/left-arrow.svg" alt="" /></Link>
                         Booking Update
                       </h2>
                       <Link href="/help-support" className="hel-cta"><i className="fa-regular fa-circle-question"></i> Help & Support</Link>
