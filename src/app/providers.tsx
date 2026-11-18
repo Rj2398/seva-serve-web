@@ -20,6 +20,7 @@ import RateSevaServe from "@/components/modals/bookingmodals/RateSevaServe";
 import DeleteAccountModal from "@/components/modals/deleteAccountModal";
 import NetworkErrorModal from "@/components/modals/NetworkErrorModal";
 import ProtectedRoutes from "@/components/common/ProtectedRoutes";
+import ResponsivePopup from "@/components/common/ResponsivePopup";
 
 import { initializeFirebaseNotifications } from "@/utils/notification";
 import { clearClientSession } from "@/utils/auth";
@@ -379,6 +380,8 @@ export default function ClientProviders({
             feedback="abcdefghijklmnopqrstuvwxyz"
             reviewPayload={undefined}
           />
+
+          <ResponsivePopup />
 
           <Toaster position="top-right" />
         </>

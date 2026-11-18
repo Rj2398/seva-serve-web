@@ -9,6 +9,7 @@ import Link from "next/link";
 import toast from "react-hot-toast";
 import CancelBooking from "@/components/modals/bookingmodals/CancelBooking";
 import ConfirmCancelBooking from "@/components/modals/bookingmodals/ConfirmCancelBooking";
+import RemarksPopup from "@/components/RemarksPopup";
 
 export default function Quotes() {
   const searchParams = useSearchParams();
@@ -17,6 +18,7 @@ export default function Quotes() {
   const is_requested = searchParams.get("is_requested");
   const booking_id = searchParams.get('bookingId');
   const quote_id = searchParams.get('quoteId');
+  const openRemarks = searchParams.get("openRemarks") === "1";
   const status = searchParams.get('status');
   const [activeTab, setActiveTab] = useState(
     (status || (is_requested === "1" ? "requested" : "received")).toLowerCase()
@@ -25,6 +27,8 @@ export default function Quotes() {
   const [notificationRefresh, setNotificationRefresh] = useState(0);
   const [showCancle, setShowCancle] = useState<boolean>(false);
   const [selectedBookingData, setSelectedBookingData] = useState<any>(null)
+  const [showRemarks, setShowRemarks] = useState(false);
+  const [quoteId, setQuoteId] = useState<number | string | null>(null);
 
   console.log(quotes, "quotes****************");
 
@@ -43,31 +47,67 @@ export default function Quotes() {
 
   useEffect(() => {
     const handleQuoteNotification = (event: Event) => {
-      const { status: notificationStatus } = (
-        event as CustomEvent<{ status?: string | null }>
+      const {
+        status: notificationStatus,
+        openRemarks: shouldOpenRemarks,
+        quoteId: notificationQuoteId,
+      } = (
+        event as CustomEvent<{
+          status?: string | null;
+          openRemarks?: boolean;
+          quoteId?: number | string;
+        }>
       ).detail;
 
-      if (!notificationStatus) return;
+      if (notificationStatus) {
+        setActiveTab(notificationStatus.toLowerCase());
+        setPageNo(1);
+        setQuotes([]);
+        setHasMore(true);
+        setNotificationRefresh((current) => current + 1);
+      }
 
-      setActiveTab(notificationStatus.toLowerCase());
+      if (shouldOpenRemarks && notificationQuoteId) {
+        setQuoteId(notificationQuoteId);
+        setShowRemarks(true);
+      }
+    };
+
+    const handlePushMessage = (event: MessageEvent) => {
+      if (event.data?.type !== "OPEN_QUOTE_REMARKS" || !event.data.quoteId) {
+        return;
+      }
+
+      setActiveTab("requested");
       setPageNo(1);
       setQuotes([]);
       setHasMore(true);
       setNotificationRefresh((current) => current + 1);
+      setQuoteId(String(event.data.quoteId));
+      setShowRemarks(true);
     };
 
     window.addEventListener(
       "quoteNotificationSelected",
       handleQuoteNotification
     );
+    navigator.serviceWorker?.addEventListener("message", handlePushMessage);
 
     return () => {
       window.removeEventListener(
         "quoteNotificationSelected",
         handleQuoteNotification
       );
+      navigator.serviceWorker?.removeEventListener("message", handlePushMessage);
     };
   }, []);
+
+  useEffect(() => {
+    if (openRemarks && quote_id) {
+      setQuoteId(quote_id);
+      setShowRemarks(true);
+    }
+  }, [openRemarks, quote_id]);
 
   useEffect(() => {
     if (status) {
@@ -478,7 +518,29 @@ useEffect(() => {
                             return (
                               <div className="my-quotes-inner" key={index}>
                                 <div className="add-user">
-                                  <p className="left">{item.quote_number || `#${item.quote_id}`}</p>
+                                  <p className="left">{item.quote_number || `#${item.quote_id}`} 
+                                    {/* <span style={{ color: "#991318" ,border:'1px solid #991318',borderRadius:'20px',padding:'5px 10px' ,margin:'0 5px' }}>remarks</span> */}
+                                   {(activeTab === "requested" && item?.has_admin_remarks) && (
+                                    <span onClick={() =>{ setShowRemarks
+                                    (true),setQuoteId(item.quote_id)}}  
+  style={{
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "8px",
+    color: "#991318",
+    backgroundColor: "#F6E9E9",
+    border: "1px solid #F6E9E9",
+    borderRadius: "30px",
+    padding: "8px 18px",
+    margin: "0 5px",
+    fontSize: "16px",
+    fontWeight: "500",
+  }}
+>
+  <i className="fa-solid fa-comments"></i>
+  Remarks
+</span>)}
+                                     </p>
                                   {item?.has_additional_services && (
                                     <p className="right">Additional Services</p>
                                   )}
@@ -949,6 +1011,11 @@ useEffect(() => {
       <ServiceAccepted serviceId={serviceId} isAddactional={isAddactional} additionalId={additionalId} />
       <ServiceRejected serviceId={serviceId} />
       <NewServiceRejectionModal serviceId={serviceId} onConfirm={handleReject} isAddactional={isAddactional} />
+   
+
+        {showRemarks && (
+          <RemarksPopup onClose={() => setShowRemarks(false)} quoteId={quoteId} />
+        )}
     </>
   );
 }

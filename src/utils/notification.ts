@@ -1,6 +1,61 @@
 import { getMessaging, onMessage, isSupported } from "firebase/messaging";
 import app from "@/config/firebase";
 
+const parseNotificationObject = (value: any) => {
+  if (typeof value === "string") {
+    try {
+      value = JSON.parse(value);
+    } catch {
+      return {};
+    }
+  }
+
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? value
+    : {};
+};
+
+const getNotificationData = (payload: any) => {
+  const data = parseNotificationObject(payload?.data);
+  const nestedData = parseNotificationObject(data.data);
+  const meta = parseNotificationObject(
+    data.meta || nestedData.meta || payload?.meta
+  );
+
+  return {
+    ...parseNotificationObject(payload?.notification),
+    ...nestedData,
+    ...data,
+    ...meta,
+  };
+};
+
+const getNotificationScreenType = (data: any) => {
+  const screenType = String(
+    data?.screen_type ||
+      data?.screenType ||
+      data?.notification_type ||
+      data?.notificationType ||
+      data?.type ||
+      ""
+  )
+    .trim()
+    .toLowerCase()
+    .replace(/[-\s]/g, "_");
+
+  const titleAndBody = `${data?.title || ""} ${data?.body || ""}`.toLowerCase();
+  const isQuoteRemark =
+    (screenType.includes("quote") && screenType.includes("remark")) ||
+    (screenType.includes("remark") &&
+      Boolean(data?.quote_id || data?.quoteId || data?.target_id || data?.targetId)) ||
+    (titleAndBody.includes("remark") &&
+      (screenType === "quote" ||
+        titleAndBody.includes("quote") ||
+        Boolean(data?.quote_id || data?.quoteId)));
+
+  return isQuoteRemark ? "quote_remarks" : screenType;
+};
+
 export const initializeFirebaseNotifications = async () => {
   const supported = await isSupported();
 
@@ -10,19 +65,20 @@ export const initializeFirebaseNotifications = async () => {
 
   onMessage(messaging, async (payload) => {
     console.log("Foreground Notification:", payload);
+    const notificationData = getNotificationData(payload);
 
     const title =
-      payload.data?.title ||
+      notificationData.title ||
       payload.notification?.title ||
       "New Notification";
 
     const body =
-      payload.data?.body ||
+      notificationData.body ||
       payload.notification?.body ||
       "";
 
     const icon =
-      payload.data?.icon ||
+      notificationData.icon ||
       payload.notification?.icon ||
       "/images/header/logo.svg";
 
@@ -44,7 +100,7 @@ export const initializeFirebaseNotifications = async () => {
         await registration.showNotification(title, {
           body,
           icon,
-          data: payload.data || {},
+          data: notificationData,
         });
       } else {
         const notification = new Notification(title, {
@@ -55,7 +111,7 @@ export const initializeFirebaseNotifications = async () => {
         notification.onclick = () => {
           window.focus();
 
-          handleNotificationNavigation(payload.data);
+          handleNotificationNavigation(notificationData);
           notification.close();
         };
       }
@@ -72,15 +128,28 @@ export const initializeFirebaseNotifications = async () => {
 };
 
 const handleNotificationNavigation = (data: any) => {
-  const screenType = data?.screen_type?.toLowerCase();
+  const screenType = getNotificationScreenType(data);
 
-  const targetId = data?.target_id;
-  const quoteId = data?.quote_id;
-  const bookingId = data?.booking_id;
+  const targetId = data?.target_id || data?.targetId;
+  const quoteId = data?.quote_id || data?.quoteId;
+  const bookingId = data?.booking_id || data?.bookingId;
 
   let url = "/";
 
   switch (screenType) {
+    case "quote_remarks":
+    case "quote_remark": {
+      const id = quoteId || targetId;
+
+      if (id) {
+        url = `/quotes?status=Requested&quoteId=${encodeURIComponent(
+          String(id)
+        )}&openRemarks=1`;
+      }
+
+      break;
+    }
+
     case "quote": {
       const id = quoteId || targetId;
 
@@ -294,4 +363,3 @@ const handleNotificationNavigation = (data: any) => {
 //     window.dispatchEvent(new Event("newNotification"));
 //   });
 // };
-

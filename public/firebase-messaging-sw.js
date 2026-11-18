@@ -17,53 +17,127 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
+const parseNotificationObject = (value) => {
+  if (typeof value === "string") {
+    try {
+      value = JSON.parse(value);
+    } catch (error) {
+      console.error(
+        "[firebase-messaging-sw.js] Invalid notification data:",
+        error
+      );
+      return {};
+    }
+  }
+
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? value
+    : {};
+};
+
+const getNotificationData = (payload) => {
+  const data = parseNotificationObject(payload?.data);
+  const nestedData = parseNotificationObject(data.data);
+  const meta = parseNotificationObject(
+    data.meta || nestedData.meta || payload?.meta
+  );
+
+  return {
+    ...parseNotificationObject(payload?.notification),
+    ...nestedData,
+    ...data,
+    ...meta,
+  };
+};
+
+const getNotificationScreenType = (data) => {
+  const screenType = String(
+    data?.screen_type ||
+      data?.screenType ||
+      data?.notification_type ||
+      data?.notificationType ||
+      data?.type ||
+      ""
+  )
+    .trim()
+    .toLowerCase()
+    .replace(/[-\s]/g, "_");
+
+  const titleAndBody = `${data?.title || ""} ${data?.body || ""}`.toLowerCase();
+  const isQuoteRemark =
+    (screenType.includes("quote") && screenType.includes("remark")) ||
+    (screenType.includes("remark") &&
+      Boolean(data?.quote_id || data?.quoteId || data?.target_id || data?.targetId)) ||
+    (titleAndBody.includes("remark") &&
+      (screenType === "quote" ||
+        titleAndBody.includes("quote") ||
+        Boolean(data?.quote_id || data?.quoteId)));
+
+  return isQuoteRemark ? "quote_remarks" : screenType;
+};
+
 messaging.onBackgroundMessage((payload) => {
   console.log(
     "[firebase-messaging-sw.js] Background message:",
     JSON.stringify(payload)
   );
 
+  const data = getNotificationData(payload);
   const title =
-    payload.data?.title ||
+    data.title ||
     payload.notification?.title ||
     "New Notification";
 
   const body =
-    payload.data?.body ||
+    data.body ||
     payload.notification?.body ||
     "";
 
   const icon =
-    payload.data?.icon ||
+    data.icon ||
     payload.notification?.icon ||
     "/images/header/logo.svg";
 
   return self.registration.showNotification(title, {
     body,
     icon,
-    data: payload.data || {},
+    data,
   });
 });
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
-  const data = event.notification.data || {};
+  const data = getNotificationData({
+    data: event.notification.data || {},
+  });
 
   console.log(
     "[firebase-messaging-sw.js] Notification click:",
     JSON.stringify(data)
   );
 
-  const screenType = data?.screen_type?.toLowerCase();
+  const screenType = getNotificationScreenType(data);
 
-  const targetId = data?.target_id;
-  const quoteId = data?.quote_id;
-  const bookingId = data?.booking_id;
+  const targetId = data?.target_id || data?.targetId;
+  const quoteId = data?.quote_id || data?.quoteId;
+  const bookingId = data?.booking_id || data?.bookingId;
+  const quoteRemarkId = quoteId || targetId;
 
   let url = "/";
 
   switch (screenType) {
+    case "quote_remarks":
+    case "quote_remark": {
+      const id = quoteRemarkId;
+
+      if (id) {
+        url = `/quotes?status=Requested&quoteId=${encodeURIComponent(String(id))}&openRemarks=1`;
+      }
+
+      break;
+    }
+
  case "quote": {
     const id = quoteId || targetId;
 
@@ -134,10 +208,8 @@ self.addEventListener("notificationclick", (event) => {
       );
   }
 
-  const fullUrl = new URL(
-    url,
-    self.location.origin
-  ).href;
+  const fullUrl = new URL(url, self.location.origin).href;
+  const isQuoteRemarks = screenType === "quote_remarks" || screenType === "quote_remark";
 
   event.waitUntil(
     clients
@@ -146,21 +218,31 @@ self.addEventListener("notificationclick", (event) => {
         includeUncontrolled: true,
       })
       .then((windowClients) => {
-        for (const client of windowClients) {
-          if (
-            client.url?.startsWith(self.location.origin) &&
-            "focus" in client
-          ) {
-            if ("focus" in client) {
-              client.focus();
-            }
+        const client = windowClients.find((windowClient) =>
+          windowClient.url?.startsWith(self.location.origin)
+        );
 
-            if (url !== "/") {
-              return client.navigate(fullUrl);
-            }
+        if (client) {
+          client.focus();
+
+          if (
+            isQuoteRemarks &&
+            quoteRemarkId &&
+            new URL(client.url).pathname === "/quotes"
+          ) {
+            client.postMessage({
+              type: "OPEN_QUOTE_REMARKS",
+              quoteId: String(quoteRemarkId),
+            });
 
             return;
           }
+
+          if (url !== "/") {
+            return client.navigate(fullUrl);
+          }
+
+          return;
         }
 
         if (clients.openWindow) {
@@ -297,5 +379,3 @@ self.addEventListener("notificationclick", (event) => {
 //       })
 //   );
 // });
-
-

@@ -508,6 +508,10 @@ const handleRedirection = (notif: any) => {
   const targetId = meta?.target_id;
   const quoteId = meta?.quote_id;
   const bookingId = meta?.booking_id;
+  const isQuoteRemarks = [
+    "quote_remarks",
+    "quote_remark",
+  ].includes(screenType);
 
   const title = String(notif.title || "")
     .trim()
@@ -518,6 +522,22 @@ const handleRedirection = (notif: any) => {
   let quoteStatus: string | null = null;
 
   switch (screenType) {
+    case "quote_remarks":
+    case "quote_remark": {
+      const id = quoteId || targetId;
+
+      if (!id) {
+        console.error("Quote ID missing from quote remarks notification:", notif);
+        return;
+      }
+
+      quoteStatus = "Requested";
+      url = `/quotes?status=Requested&quoteId=${encodeURIComponent(
+        String(id)
+      )}&openRemarks=1`;
+      break;
+    }
+
     case "quote": {
       const id = quoteId || targetId;
 
@@ -639,7 +659,7 @@ const handleRedirection = (notif: any) => {
   ) {
     window.dispatchEvent(
       new CustomEvent("quoteNotificationSelected", {
-        detail: { status: quoteStatus },
+        detail: { status: quoteStatus, openRemarks: isQuoteRemarks, quoteId: quoteId || targetId },
       })
     );
   }
