@@ -14,6 +14,12 @@ interface CheckOutProps {
   bookingData?: any;
 }
 
+type OfferListItem = {
+  title?: string;
+  code?: string;
+  description?: string;
+};
+
 const PaymentPage = ({ bookingData }: CheckOutProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -47,6 +53,38 @@ const PaymentPage = ({ bookingData }: CheckOutProps) => {
   const subscriptionLabel =
     checkoutData?.subscription?.billing_type ||
     checkoutData?.subscription?.plan_name;
+  const offerList: OfferListItem[] =
+    Array.isArray(jobSummary?.offer_list) && jobSummary.offer_list.length > 0
+      ? jobSummary.offer_list
+      : [
+          ...(hasCouponOffer
+            ? [
+                {
+                  title: "Applied",
+                  code: couponOffer.coupon_code,
+                  description: `Get ${couponOffer.discount_percentage || 0}% off on checkout`,
+                },
+              ]
+            : []),
+          ...(hasBannerOffer
+            ? [
+                {
+                  title: "Applied",
+                  code: bannerOffer.coupon_code,
+                  description: `Get ${bannerOffer.discount_percentage || 0}% off on checkout`,
+                },
+              ]
+            : []),
+          ...(hasSubscriptionOffer
+            ? [
+                {
+                  title: "Subscribed",
+                  code: subscriptionLabel,
+                  description: `Get ${subscriptionOffer.discount_percentage || 0}% off on checkout`,
+                },
+              ]
+            : []),
+        ];
 
   const [paypalInstance, setPaypalInstance] = useState<any>(null);
   const [paypalLoading, setPaypalLoading] = useState(true);
@@ -421,7 +459,7 @@ const PaymentPage = ({ bookingData }: CheckOutProps) => {
 
                       <div className="payment-in">
                         <h5>JOB SUMMARY {checkoutData?.quote_code}</h5>
-                        {(hasCouponOffer || hasSubscriptionOffer) && (
+                        {offerList.length > 0 && (
                           <div
                             style={{
                               overflow: "hidden",
@@ -432,20 +470,22 @@ const PaymentPage = ({ bookingData }: CheckOutProps) => {
                               padding: "6px 10px",
                             }}
                           >
-                            {hasCouponOffer && (
+                            {offerList.map((offer, index) => (
                               <div
+                                key={`${offer.code || offer.title || "offer"}-${index}`}
                                 style={{
                                   display: "flex",
                                   justifyContent: "space-between",
                                   alignItems: "center",
                                   gap: "12px",
                                   minHeight: "20px",
+                                  marginTop: index > 0 ? "2px" : 0,
                                   fontSize: "12px",
                                 }}
                               >
                                 <span>
-                                  Applied
-                                  {couponOffer?.coupon_code && (
+                                  {offer.title}
+                                  {offer.code && (
                                     <span
                                       style={{
                                         marginLeft: "6px",
@@ -457,52 +497,15 @@ const PaymentPage = ({ bookingData }: CheckOutProps) => {
                                         whiteSpace: "nowrap",
                                       }}
                                     >
-                                      {couponOffer.coupon_code}
+                                      {offer.code}
                                     </span>
                                   )}
                                 </span>
                                 <span style={{ textAlign: "right" }}>
-                                  Get {couponOffer?.discount_percentage}% OFF on
-                                  Checkout
+                                  {offer.description}
                                 </span>
                               </div>
-                            )}
-                            {hasSubscriptionOffer && (
-                              <div
-                                style={{
-                                  display: "flex",
-                                  justifyContent: "space-between",
-                                  alignItems: "center",
-                                  gap: "12px",
-                                  minHeight: "20px",
-                                  marginTop: hasCouponOffer ? "2px" : 0,
-                                  fontSize: "12px",
-                                }}
-                              >
-                                <span>
-                                  Subscribed
-                                  {subscriptionLabel && (
-                                    <span
-                                      style={{
-                                        marginLeft: "6px",
-                                        padding: "2px 7px",
-                                        borderRadius: "14px",
-                                        backgroundColor:
-                                          "rgba(255,255,255,0.2)",
-                                        fontSize: "10px",
-                                        whiteSpace: "nowrap",
-                                      }}
-                                    >
-                                      {subscriptionLabel}
-                                    </span>
-                                  )}
-                                </span>
-                                <span style={{ textAlign: "right" }}>
-                                  Get {subscriptionOffer?.discount_percentage}%
-                                  OFF on Checkout
-                                </span>
-                              </div>
-                            )}
+                            ))}
                           </div>
                         )}
 
@@ -516,20 +519,6 @@ const PaymentPage = ({ bookingData }: CheckOutProps) => {
                           </b>
                         </h6>
 
-                        {hasSubscriptionOffer && (
-                          <h6>
-                            Subscription Offer
-                            <span className="offer-tag">
-                              {subscriptionOffer.discount_percentage}% OFF
-                            </span>
-                            <b>
-                              -$
-                              {Number(
-                                subscriptionOffer.discount_amount || 0
-                              ).toFixed(2)}
-                            </b>
-                          </h6>
-                        )}
                         <hr />
                         <h6 className="text-black">
                           Total Service Cost
@@ -550,20 +539,6 @@ const PaymentPage = ({ bookingData }: CheckOutProps) => {
                             ).toFixed(2)}
                           </b>
                         </h6>
-                        {hasBannerOffer && (
-                          <h6>
-                            Banner Offer
-                            <span className="offer-tag">
-                              {bannerOffer.coupon_code}
-                            </span>
-                            <b>
-                              -$
-                              {Number(
-                                bannerOffer.discount_amount || 0
-                              ).toFixed(2)}
-                            </b>
-                          </h6>
-                        )}
                         {hasCouponOffer && (
                           <h6>
                             Coupon Offer
