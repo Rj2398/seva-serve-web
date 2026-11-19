@@ -1413,6 +1413,7 @@ li.list-group-item.custom-item {
   border: 1px solid #99131833;
   padding: 20px;
   border-radius: 30px;
+  flex: 0 0 auto;
 }
 
 .service-important p {
@@ -1446,6 +1447,31 @@ li.list-group-item.custom-item {
   gap: 15px;
 }
 
+.notice-footer-btn button.primary-cta {
+  width: 100%;
+  justify-content: center;
+  text-align: center;
+}
+
+.notice-footer-btn button.delete-confirm-cta {
+  position: relative;
+  justify-content: center;
+  align-items: center;
+  padding-left: 40px;
+  padding-right: 40px;
+}
+
+.delete-confirm-label {
+  width: 100%;
+  text-align: center;
+}
+
+.delete-confirm-arrow {
+  position: absolute;
+  right: 18px;
+  margin-right: 0;
+}
+
 .notice-footer-btn a.primary-cta img {
   width: 15px;
   height: 15px;
@@ -1456,6 +1482,35 @@ li.list-group-item.custom-item {
   display: flex;
   flex-direction: column;
   gap: 20px;
+}
+
+.pending-bookings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: min(40vh, 320px);
+  max-height: min(40vh, 320px);
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  padding: 0 6px 4px 0;
+  scrollbar-width: thin;
+  scrollbar-color: #991318 #f3f3f3;
+}
+
+.pending-bookings-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.pending-bookings-list::-webkit-scrollbar-track {
+  background: #f3f3f3;
+  border-radius: 10px;
+}
+
+.pending-bookings-list::-webkit-scrollbar-thumb {
+  background: #991318;
+  border-radius: 10px;
 }
 
 /* Important Notice */

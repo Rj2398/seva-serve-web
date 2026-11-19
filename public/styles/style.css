@@ -48,6 +48,7 @@ img {
   height: 40px;
   color: var(--white);
   align-items: center;
+  justify-content: center;
 }
 
 .primary-cta:disabled {
@@ -1463,6 +1464,7 @@ li.list-group-item.custom-item {
   border: 1px solid #99131833;
   padding: 20px;
   border-radius: 30px;
+  margin-bottom: 20px;
 }
 
 .service-important p {
@@ -7241,4 +7243,12 @@ div#importantNoticeModal .modal-dialog {
     height: 75vh;
     max-height: 500px;
   }
+}
+
+.pending-bookings-list{
+      /* scroll-axis-lock: auto; */
+    overflow-y: auto;
+    /* overflow-x: hidden; */
+    /* border: 1px solid; */
+    height: 250px;
 }

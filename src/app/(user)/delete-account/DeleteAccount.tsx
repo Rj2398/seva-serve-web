@@ -20,86 +20,102 @@ export default function DeleteAccount() {
 
   const [feedback, setFeedback] = useState<any | null>(null);
   const [modalData, setModalData] = useState<any>(null);
-
-  // const handleDeleteClick = async () => {
-  //   if (reason && feedback) {
-  //     const [deleteMyAccount] = await Promise.all([
-  //       globalServerRequest({
-  //         endpoint: "profile/delete-request",
-  //         method: "POST",
-  //         payload: { reason_to_delete: reason, delete_feedback: feedback },
-  //       }),
-  //     ])
-  //     if (deleteMyAccount.success) {
-  //       console.log("deleteMyAccount", deleteMyAccount.data.data.has_pending_payment)
-  //       const modal = document.getElementById("importantNoticeModal");
-  //       const modalInstance = window.bootstrap?.Modal.getInstance(modal);
-  //       modalInstance.show();
-  //       if (deleteMyAccount.data.data.has_pending_payment) {
-  //         if (modal) modalInstance?.show();
-  //       } else {
-  //         if (modal) modalInstance?.show();
-  //       }
-  //     }
-  //     console.log("Account deleted successfully");
-  //   }
-  // }
-
-
-
-
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDeleteClick = async () => {
-    if (reason && feedback) {
-      try {
-        const [deleteMyAccount] = await Promise.all([
-          globalServerRequest({
-            endpoint: "profile/delete-request",
-            method: "POST",
-            payload: { reason_to_delete: reason, delete_feedback: feedback },
-          }),
-        ]);
+    if (!reason) {
+      toast.error("Please select a reason for deleting your account.");
+      return;
+    }
 
-        if (deleteMyAccount && deleteMyAccount.success) {
-          const hasPendingPayment = deleteMyAccount.data?.data?.has_pending_payment;
-          console.log("has_pending_payment:", hasPendingPayment);
-          const modal = document.getElementById("importantNoticeModal");
+    if (isDeleting) return;
+    setIsDeleting(true);
 
-          if (modal) {
-            const bootstrap = (window as any).bootstrap;
-            const modalInstance = bootstrap?.Modal.getOrCreateInstance(modal);
-            setModalData(deleteMyAccount);
+    try {
+      const deleteMyAccount = await globalServerRequest({
+        endpoint: "profile/delete-request",
+        method: "POST",
+        payload: {
+          reason_to_delete: reason,
+          delete_feedback: feedback || "",
+        },
+      });
 
-            if (modalInstance) {
-              if (hasPendingPayment) {
-                modalInstance.show();
-              } else {
-                const [deleteConfirm] = await Promise.all([
-                  globalServerRequest({
-                    endpoint: "profile/delete-confirm",
-                    method: "DELETE",
-                  }),
-                ]);
-                if (deleteConfirm && deleteConfirm.success) {
-                  console.log("Account deletion confirmed successfully");
-                  toast.success("Your account has been deleted successfully.");
-                  // alert("Your account has been deleted successfully.");
-                  router.push("/home");
-                }
-
-                // modalInstance.show();
-              }
-            }
-          }
-
-          console.log("Account deletion request processed successfully");
-        }
-      } catch (error) {
-        console.error("Something went wrong while deleting account:", error);
+      if (!deleteMyAccount?.success) {
+        toast.error(
+          deleteMyAccount?.error ||
+          deleteMyAccount?.data?.message ||
+          "Unable to process the delete request."
+        );
+        return;
       }
+
+      const deleteResponse =
+        deleteMyAccount.data?.data || deleteMyAccount.data || deleteMyAccount;
+      const pendingCountProvided =
+        deleteResponse?.pending_bookings_count !== undefined &&
+        deleteResponse?.pending_bookings_count !== null;
+      const pendingCount = pendingCountProvided
+        ? Number(deleteResponse.pending_bookings_count)
+        : 0;
+      const hasPendingPayment = pendingCountProvided
+        ? pendingCount > 0
+        : deleteResponse?.has_pending_payment === true;
+
+      if (!hasPendingPayment) {
+        await handleConfirmDelete();
+      } else {
+        setModalData(deleteResponse);
+        const modal = document.getElementById("importantNoticeModal");
+        const bootstrap = (window as any).bootstrap;
+        const modalInstance =
+          modal && bootstrap?.Modal
+            ? bootstrap.Modal.getOrCreateInstance(modal)
+            : null;
+        modalInstance?.show();
+      }
+    } catch (error) {
+      console.error("Something went wrong while deleting account:", error);
+      toast.error("Unable to process the delete request.");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
+  const handleConfirmDelete = async () => {
+    if (isDeleting) return;
+    setIsDeleting(true);
+
+    try {
+      const deleteConfirm = await globalServerRequest({
+        endpoint: "profile/delete-confirm",
+        method: "DELETE",
+      });
+
+      if (deleteConfirm?.success) {
+        const modal = document.getElementById("importantNoticeModal");
+        const bootstrap = (window as any).bootstrap;
+        const modalInstance = modal
+          ? bootstrap?.Modal?.getInstance(modal)
+          : null;
+        modalInstance?.hide();
+
+        toast.success("Your account has been deleted successfully.");
+        router.push("/home");
+      } else {
+        toast.error(
+          deleteConfirm?.error ||
+          deleteConfirm?.data?.message ||
+          "Unable to delete your account."
+        );
+      }
+    } catch (error) {
+      console.error("Something went wrong while confirming account deletion:", error);
+      toast.error("Unable to delete your account.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
     <main>
@@ -130,8 +146,12 @@ export default function DeleteAccount() {
 
                     <div className="delete-btn-rgt">
                       <button
-                        // data-bs-target="#importantNoticeModal"
-                        data-bs-toggle="modal" className="primary-cta" onClick={handleDeleteClick}>Delete Account</button>
+                        className="primary-cta"
+                        onClick={handleDeleteClick}
+                        disabled={isDeleting}
+                      >
+                        {isDeleting ? "Please wait..." : "Delete Account"}
+                      </button>
                     </div>
 
                   </div>
@@ -143,6 +163,8 @@ export default function DeleteAccount() {
 
         <DeleteMyAccountModal
           accountData={modalData}
+          onConfirm={handleConfirmDelete}
+          isDeleting={isDeleting}
         />
       </div>
     </main>
