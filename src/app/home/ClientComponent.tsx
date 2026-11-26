@@ -922,9 +922,21 @@ useEffect(() => {
                                 style={{ pointerEvents: "auto" }}
                               >
                                 <button
+                                  // onClick={() => {
+                                  //   if (isLogin) {
+                                  //     router.push(`/serviceDetails?categoryId=${item?.categoryId}&subCategoryId=${item?.subcategoryId}`);
+                                  //   }
+                                  // }}
+
                                   onClick={() => {
                                     if (isLogin) {
-                                      router.push(`/serviceDetails?categoryId=${item?.categoryId}&subCategoryId=${item?.subcategoryId}`);
+                                      if (!item?.categoryId) {
+                                        router.push("/category");
+                                      } else {
+                                        router.push(
+                                          `/serviceDetails?categoryId=${item?.categoryId}&subCategoryId=${item?.subcategoryId}`
+                                        );
+                                      }
                                     }
                                   }}
                                   data-bs-toggle={
